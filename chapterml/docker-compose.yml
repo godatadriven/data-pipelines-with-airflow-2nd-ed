@@ -353,23 +353,12 @@ services:
     command: server --backend-store-uri postgresql://mlflow:mlflow123@postgres-mlflow:5432/mlflowdb --default-artifact-root s3://mlflow/ --host 0.0.0.0 --port ${MLFLOW_PORT}
 
   docker-socket-proxy:
-    image: bobrik/socat
+    image: alpine/socat
     command: "TCP4-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock"
     ports:
       - "2376:2375"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-
-  # docker-socket-proxy:
-  #   image: tecnativa/docker-socket-proxy:latest
-  #   environment:
-  #     CONTAINERS: 1
-  #     IMAGES: 1
-  #     AUTH: 1
-  #     POST: 1
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #   restart: always
 
   # These aren't actual services, but we include them to make sure that the
   # corresponding images are built by when pulling up docker-compose.
