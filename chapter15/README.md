@@ -27,8 +27,10 @@ helm repo add apache-airflow https://airflow.apache.org
 helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer
 ```
 
-to verify the running services/pods we can check with the follwong command:
+to verify the running services/pods we can check with the following command:
 
 ```bash
 kubectl --namespace airflow get pods
 ```
+
+access the webserver at http://localhost:8080
