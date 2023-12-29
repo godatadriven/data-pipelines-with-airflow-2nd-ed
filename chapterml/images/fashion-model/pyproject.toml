@@ -15,7 +15,6 @@ typer = "^0.9.0"
 aiobotocore = {extras = ["boto3"], version = "^2.9.0"}
 mlflow-skinny = "^2.9.2"
 pandas = "^2.1.4"
-tensorflow = {version = "~2.13.0" }
 tensorflow-macos = { version = "~2.13.0", platform = "darwin", markers = "platform_machine=='arm64'" }
 tensorflow-intel = { version = "~2.13.0", platform = "win32" }
 tensorflow-cpu = [
