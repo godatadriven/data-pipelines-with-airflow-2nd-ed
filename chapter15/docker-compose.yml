@@ -20,8 +20,6 @@ services:
     image: "rancher/k3s:${K3S_VERSION:-latest}"
     command: 
     - server
-    - "--disable"
-    - "traefik"
     - "--tls-san"
     - "k3s-server"
     - "--bind-address"
@@ -49,6 +47,7 @@ services:
     - 6443:6443  # Kubernetes API Server
     - 80:80      # Ingress controller port 80
     - 443:443    # Ingress controller port 443
+    - 8080:8080  # Airflow web UI
 
   k3s-agent:
     image: "rancher/k3s:${K3S_VERSION:-latest}"
