@@ -344,7 +344,7 @@ services:
   mlflow:
     image: bitnami/mlflow:latest
     environment:
-      MLFLOW_S3_ENDPOINT_URL: http://minio:${MLFLOW_PORT}
+      MLFLOW_S3_ENDPOINT_URL: http://minio:${MINIO_API_PORT}
       AWS_ACCESS_KEY_ID: ${MINIO_ID}
       AWS_SECRET_ACCESS_KEY: ${MINIO_KEY}
     ports:
