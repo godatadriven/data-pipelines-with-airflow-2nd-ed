@@ -9,7 +9,10 @@ def _print_context(**kwargs):
 with DAG(
     dag_id="listing_4_03",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule_interval="@hourly"
+    schedule_interval="@daily"
 ):
 
-    print_context = PythonOperator(task_id="print_context", python_callable=_print_context)
+    print_context = PythonOperator(
+        task_id="print_context", 
+        python_callable=_print_context
+        )
