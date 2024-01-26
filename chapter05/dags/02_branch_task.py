@@ -22,7 +22,7 @@ def _fetch_sales_new(**context):
 
 
 def _clean_sales(**context):
-    if context["execution_date"] < pendulum.today("UTC").add(days=-1):
+    if context["data_interval_start"] < ERP_CHANGE_DATE:
         _clean_sales_old(**context)
     else:
         _clean_sales_new(**context)
