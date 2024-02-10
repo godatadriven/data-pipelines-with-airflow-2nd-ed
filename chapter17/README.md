@@ -23,6 +23,7 @@ docker exec -ti chapter17-k3s-cli-1 /bin/bash
 Inside the k3s-cli container we can deploy airflow with the following commands:
 
 ```bash
+/enable-external-dns
 helm repo add apache-airflow https://airflow.apache.org
 helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer
 ```

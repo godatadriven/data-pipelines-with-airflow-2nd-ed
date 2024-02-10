@@ -74,6 +74,7 @@ services:
     - KUBECONFIG=/input/kubeconfig.yaml
     volumes:
     - .k3s:/input
+    - ./enable-external-dns.sh:/enable-external-dns
 
 volumes:
   k3s-server:
