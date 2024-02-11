@@ -1,8 +1,8 @@
 import pendulum
 from airflow import DAG
+from airflow.exceptions import AirflowSkipException
 from airflow.operators.empty import EmptyOperator
-from airflow.operators.latest_only import LatestOnlyOperator
-from airflow.operators.python import BranchPythonOperator
+from airflow.operators.python import BranchPythonOperator, PythonOperator
 
 ERP_CHANGE_DATE = pendulum.today("UTC").add(days=-1)
 
@@ -14,8 +14,17 @@ def _pick_erp_system(**context):
         return "fetch_sales_new"
 
 
+def _latest_only(**context):
+    now = pendulum.now("UTC")
+    left_window = context["dag"].following_schedule(context["data_interval_start"])
+    right_window = context["dag"].following_schedule(left_window)
+
+    if not left_window < now <= right_window:
+        raise AirflowSkipException()
+
+
 with DAG(
-    dag_id="07_condition_dag_op",
+    dag_id="17_condition_dag",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):
@@ -37,7 +46,7 @@ with DAG(
     join_datasets = EmptyOperator(task_id="join_datasets")
     train_model = EmptyOperator(task_id="train_model")
 
-    latest_only = LatestOnlyOperator(task_id="latest_only")
+    latest_only = PythonOperator(task_id="latest_only", python_callable=_latest_only)
 
     deploy_model = EmptyOperator(task_id="deploy_model")
 
