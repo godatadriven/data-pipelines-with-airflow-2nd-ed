@@ -26,7 +26,7 @@ def _is_latest_run(**context):
 
 
 with DAG(
-    dag_id="05_condition_function",
+    dag_id="16_condition_function",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):

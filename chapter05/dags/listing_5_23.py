@@ -8,7 +8,7 @@ from airflow.operators.python import PythonOperator
 
 def _train_model(**context):
     model_id = str(uuid.uuid4())
-    context["task_instance"].xcom_push(key="model_id", value=model_id)
+    return model_id
 
 
 def _deploy_model(templates_dict, **context):
@@ -17,7 +17,7 @@ def _deploy_model(templates_dict, **context):
 
 
 with DAG(
-    dag_id="10_xcoms_template",
+    dag_id="23_xcoms_return",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):
