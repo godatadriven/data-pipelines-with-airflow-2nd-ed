@@ -2,16 +2,8 @@ from pathlib import Path
 
 import pendulum
 from airflow import DAG
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.sensors.python import PythonSensor
-
-dag = DAG(
-    dag_id="figure_6_11",
-    start_date=pendulum.today("UTC").add(days=-3),
-    schedule_interval="0 16 * * *",
-    description="A batch workflow for ingesting supermarket promotions data, demonstrating the PythonSensor.",
-    default_args={"depends_on_past": True},
-)
 
 
 def _wait_for_supermarket(supermarket_id_):
@@ -21,15 +13,21 @@ def _wait_for_supermarket(supermarket_id_):
     return data_files and success_file.exists()
 
 
-for supermarket_id in range(1, 5):
-    wait = PythonSensor(
-        task_id=f"wait_for_supermarket_{supermarket_id}",
-        python_callable=_wait_for_supermarket,
-        op_kwargs={"supermarket_id_": f"supermarket{supermarket_id}"},
-        timeout=600,
-        dag=dag,
-    )
-    copy = DummyOperator(task_id=f"copy_to_raw_supermarket_{supermarket_id}", dag=dag)
-    process = DummyOperator(task_id=f"process_supermarket_{supermarket_id}", dag=dag)
-    create_metrics = DummyOperator(task_id=f"create_metrics_{supermarket_id}", dag=dag)
-    wait >> copy >> process >> create_metrics
+with DAG(
+    dag_id="figure_6_11",
+    start_date=pendulum.today("UTC").add(days=-3),
+    schedule="0 16 * * *",
+    description="A batch workflow for ingesting supermarket promotions data, demonstrating the PythonSensor.",
+    default_args={"depends_on_past": True},
+):
+    for supermarket_id in range(1, 5):
+        wait = PythonSensor(
+            task_id=f"wait_for_supermarket_{supermarket_id}",
+            python_callable=_wait_for_supermarket,
+            op_kwargs={"supermarket_id_": f"supermarket{supermarket_id}"},
+            timeout=600,
+        )
+        copy = EmptyOperator(task_id=f"copy_to_raw_supermarket_{supermarket_id}")
+        process = EmptyOperator(task_id=f"process_supermarket_{supermarket_id}")
+        create_metrics = EmptyOperator(task_id=f"create_metrics_{supermarket_id}")
+        wait >> copy >> process >> create_metrics

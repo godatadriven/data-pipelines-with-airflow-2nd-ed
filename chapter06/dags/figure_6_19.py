@@ -1,33 +1,33 @@
 import pendulum
 from airflow import DAG
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 
 dag1 = DAG(
     dag_id="figure_6_19_dag_1",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule_interval="0 0 * * *",
+    schedule="0 0 * * *",
 )
 dag2 = DAG(
     dag_id="figure_6_19_dag_2",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule_interval="0 0 * * *",
+    schedule="0 0 * * *",
 )
 dag3 = DAG(
     dag_id="figure_6_19_dag_3",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule_interval="0 0 * * *",
+    schedule="0 0 * * *",
 )
 dag4 = DAG(
     dag_id="figure_6_19_dag_4",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule_interval=None,
+    schedule=None,
 )
 
-DummyOperator(task_id="etl", dag=dag1)
-DummyOperator(task_id="etl", dag=dag2)
-DummyOperator(task_id="etl", dag=dag3)
+EmptyOperator(task_id="etl", dag=dag1)
+EmptyOperator(task_id="etl", dag=dag2)
+EmptyOperator(task_id="etl", dag=dag3)
 [
     ExternalTaskSensor(
         task_id="wait_for_etl_dag1",
