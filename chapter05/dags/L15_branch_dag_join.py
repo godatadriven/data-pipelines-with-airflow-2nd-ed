@@ -30,7 +30,7 @@ def _clean_sales_new(**context):
 
 
 with DAG(
-    dag_id="15_branch_dag_join",
+    dag_id="L15_branch_dag_join",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):
@@ -44,7 +44,7 @@ with DAG(
     fetch_sales_new = PythonOperator(task_id="fetch_sales_new", python_callable=_fetch_sales_new)
     clean_sales_new = PythonOperator(task_id="clean_sales_new", python_callable=_clean_sales_new)
 
-    join_erp = EmptyOperator(task_id="join_erp_branch", trigger_rule="none_failed")
+    join_branch = EmptyOperator(task_id="join_erp_branch", trigger_rule="none_failed")
 
     fetch_weather = EmptyOperator(task_id="fetch_weather")
     clean_weather = EmptyOperator(task_id="clean_weather")
@@ -57,7 +57,7 @@ with DAG(
     pick_erp_system >> [fetch_sales_old, fetch_sales_new]
     fetch_sales_old >> clean_sales_old
     fetch_sales_new >> clean_sales_new
-    [clean_sales_old, clean_sales_new] >> join_erp
+    [clean_sales_old, clean_sales_new] >> join_branch
     fetch_weather >> clean_weather
-    [join_erp, clean_weather] >> join_datasets
+    [join_branch, clean_weather] >> join_datasets
     join_datasets >> train_model >> deploy_model

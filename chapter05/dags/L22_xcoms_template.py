@@ -17,7 +17,7 @@ def _deploy_model(templates_dict, **context):
 
 
 with DAG(
-    dag_id="22_xcoms_template",
+    dag_id="L22_xcoms_template",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):

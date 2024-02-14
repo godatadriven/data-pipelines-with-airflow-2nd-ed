@@ -1,23 +1,9 @@
-import uuid
-
 import pendulum
 from airflow import DAG
 from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import PythonOperator
-
-
-def _train_model(**context):
-    model_id = str(uuid.uuid4())
-    return model_id
-
-
-def _deploy_model(templates_dict, **context):
-    model_id = templates_dict["model_id"]
-    print(f"Deploying model {model_id}")
-
 
 with DAG(
-    dag_id="23_xcoms_return",
+    dag_id="L03_rocket_pipeline_dependencies",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):
@@ -30,14 +16,8 @@ with DAG(
     clean_weather = EmptyOperator(task_id="clean_weather")
 
     join_datasets = EmptyOperator(task_id="join_datasets")
-
-    train_model = PythonOperator(task_id="train_model", python_callable=_train_model)
-
-    deploy_model = PythonOperator(
-        task_id="deploy_model",
-        python_callable=_deploy_model,
-        templates_dict={"model_id": "{{task_instance.xcom_pull(task_ids='train_model', key='model_id')}}"},
-    )
+    train_model = EmptyOperator(task_id="train_model")
+    deploy_model = EmptyOperator(task_id="deploy_model")
 
     start >> [fetch_sales, fetch_weather]
     fetch_sales >> clean_sales

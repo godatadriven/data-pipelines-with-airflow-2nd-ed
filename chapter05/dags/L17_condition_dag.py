@@ -24,7 +24,7 @@ def _latest_only(**context):
 
 
 with DAG(
-    dag_id="17_condition_dag",
+    dag_id="L17_condition_dag",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):
