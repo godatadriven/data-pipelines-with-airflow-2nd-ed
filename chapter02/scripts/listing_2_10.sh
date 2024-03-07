@@ -11,7 +11,7 @@ SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 docker run \
 -ti \
 -p 8080:8080 \
--v ${SCRIPT_DIR}/../dags/11_download_rocket_launches.py:/opt/airflow/dags/11_download_rocket_launches.py \
+-v ${SCRIPT_DIR}/../dags/05_download_rocket_launches.py:/opt/airflow/dags/05_download_rocket_launches.py \
 --rm \
 --name airflow \
 --entrypoint=/bin/bash \
