@@ -153,3 +153,6 @@ logs
 
 # Data
 data
+
+# Mpypy
+.mypy_cache
