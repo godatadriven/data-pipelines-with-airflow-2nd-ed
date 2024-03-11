@@ -12,9 +12,6 @@ class Dataset:
     images: npt.NDArray[np.uint8]
     labels: npt.NDArray[np.uint8]
 
-    # test_images: npt.NDArray[np.uint8]
-    # test_labels: npt.NDArray[np.uint8]
-
     @classmethod
     def load(cls, dataset_path: str):
         fs, base_path = fsspec.core.url_to_fs(dataset_path)
