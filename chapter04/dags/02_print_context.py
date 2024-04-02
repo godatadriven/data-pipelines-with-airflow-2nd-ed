@@ -10,7 +10,7 @@ def _print_context(**kwargs):
 
 
 with DAG(
-    dag_id="L03_print_context",
+    dag_id="02_print_context",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@hourly",
 ):

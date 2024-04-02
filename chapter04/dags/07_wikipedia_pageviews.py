@@ -1,14 +1,9 @@
-# """
-# Documentation of pageview format: https://wikitech.wikimedia.org/wiki/Analytics/Data_Lake/Traffic/Pageviews
-# """
-
 from urllib import request
 
 import pendulum
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.providers.postgres.operators.postgres import PostgresOperator
 
 
 def _get_data(year, month, day, hour, output_path, **_):
@@ -19,7 +14,7 @@ def _get_data(year, month, day, hour, output_path, **_):
     request.urlretrieve(url, output_path)
 
 
-def _fetch_pageviews(pagenames, data_interval_start):
+def _fetch_pageviews(pagenames):
     result = dict.fromkeys(pagenames, 0)
     with open("/tmp/wikipageviews") as f:
         for line in f:
@@ -27,21 +22,14 @@ def _fetch_pageviews(pagenames, data_interval_start):
             if domain_code == "en" and page_title in pagenames:
                 result[page_title] = view_counts
 
-    with open("/tmp/postgres_query.sql", "w") as f:
-        for pagename, pageviewcount in result.items():
-            f.write(
-                "INSERT INTO pageview_counts VALUES ("
-                f"'{pagename}', {pageviewcount}, '{data_interval_start}'"
-                ")"
-                "ON CONFLICT (date) DO NOTHINHG);\n"
-            )
+    print(result)
+    # Prints e.g. "{'Facebook': '778', 'Apple': '20', 'Google': '451', 'Amazon': '9', 'Microsoft': '119'}"
 
 
 with DAG(
-    dag_id="L20_postgres_call",
+    dag_id="07_wikipedia_pageviews",
     start_date=pendulum.today("UTC").add(days=-1),
     schedule="@hourly",
-    template_searchpath="/tmp",
     max_active_runs=1,
 ):
     get_data = PythonOperator(
@@ -56,18 +44,23 @@ with DAG(
         },
     )
 
-    extract_gz = BashOperator(task_id="extract_gz", bash_command="gunzip --force /tmp/wikipageviews.gz")
+    extract_gz = BashOperator(
+        task_id="extract_gz",
+        bash_command="gunzip --force /tmp/wikipageviews.gz",
+    )
 
     fetch_pageviews = PythonOperator(
         task_id="fetch_pageviews",
         python_callable=_fetch_pageviews,
-        op_kwargs={"pagenames": {"Google", "Amazon", "Apple", "Microsoft", "Facebook"}},
+        op_kwargs={
+            "pagenames": {
+                "Google",
+                "Amazon",
+                "Apple",
+                "Microsoft",
+                "Facebook",
+            }
+        },
     )
 
-    write_to_postgres = PostgresOperator(
-        task_id="write_to_postgres",
-        postgres_conn_id="my_postgres",
-        sql="postgres_query.sql",
-    )
-
-    get_data >> extract_gz >> fetch_pageviews >> write_to_postgres
+    get_data >> extract_gz >> fetch_pageviews

@@ -1,9 +1,14 @@
+# """
+# Documentation of pageview format: https://wikitech.wikimedia.org/wiki/Analytics/Data_Lake/Traffic/Pageviews
+# """
+
 from urllib import request
 
 import pendulum
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator
 
 
 def _get_data(year, month, day, hour, output_path, **_):
@@ -14,7 +19,7 @@ def _get_data(year, month, day, hour, output_path, **_):
     request.urlretrieve(url, output_path)
 
 
-def _fetch_pageviews(pagenames, data_interval_start, **_):
+def _fetch_pageviews(pagenames, data_interval_start):
     result = dict.fromkeys(pagenames, 0)
     with open("/tmp/wikipageviews") as f:
         for line in f:
@@ -27,14 +32,16 @@ def _fetch_pageviews(pagenames, data_interval_start, **_):
             f.write(
                 "INSERT INTO pageview_counts VALUES ("
                 f"'{pagename}', {pageviewcount}, '{data_interval_start}'"
-                ");\n"
+                ")"
+                "ON CONFLICT (pagename, datetime) DO NOTHING;\n"
             )
 
 
 with DAG(
-    dag_id="L18_writting_insert_statements",
+    dag_id="09_postgres_call",
     start_date=pendulum.today("UTC").add(days=-1),
     schedule="@hourly",
+    template_searchpath="/tmp",
     max_active_runs=1,
 ):
     get_data = PythonOperator(
@@ -57,4 +64,10 @@ with DAG(
         op_kwargs={"pagenames": {"Google", "Amazon", "Apple", "Microsoft", "Facebook"}},
     )
 
-    get_data >> extract_gz >> fetch_pageviews
+    write_to_postgres = PostgresOperator(
+        task_id="write_to_postgres",
+        postgres_conn_id="my_postgres",
+        sql="postgres_query.sql",
+    )
+
+    get_data >> extract_gz >> fetch_pageviews >> write_to_postgres
