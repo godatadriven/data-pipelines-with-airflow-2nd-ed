@@ -12,18 +12,24 @@ docker-compose up -d
 
 ## More information
 
+### Kubectl and helm
+
 To work with the kubernetes cluster a separate container is available to execute `kubectl` and `helm` commands against the cluster
 
 ```bash
 docker exec -ti chapter17-k3s-cli-1 /bin/bash
 ```
 
+#### K9s or local kubectl as an alternative
+
+You could use [k9s](https://k9scli.io/) or install kubectl locally. To make sure you can connect to the k3s cluster you need to make sure the k3s-server hostname is known locally (add `127.0.0.1 k3s-server` to you hosts file) and you need to use the cluster config (`KUBECONFIG=.k3s/kubeconfig.yaml`)
+
 ### Deployment of default airflow in K8S
 
 Inside the k3s-cli container we can deploy airflow with the following commands:
 
 ```bash
-/enable-external-dns
+/enable-external-dns # make sure the other docker services can be reached from within the k3s cluster
 helm repo add apache-airflow https://airflow.apache.org
 helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer
 ```

@@ -2,15 +2,16 @@
 version: '3.8'
 services:
   postgres:
-    image: postgres:15
+    image: postgres:16
     environment:
       POSTGRES_USER: airflow
+      PGUSER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "airflow"]
+      test: ["CMD-SHELL", "pg_isready"]
       interval: 10s
       retries: 5
       start_period: 5s
@@ -67,7 +68,7 @@ services:
     - K3S_TOKEN=26576147927211
 
   k3s-cli:
-    image: alpine/k8s:1.28.4
+    image: alpine/k8s:1.29.2
     tty: true
     privileged: true
     environment:
