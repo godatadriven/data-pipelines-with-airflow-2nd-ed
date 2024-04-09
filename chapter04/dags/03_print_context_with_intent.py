@@ -8,7 +8,7 @@ def _print_context(**context):
 
 
 with DAG(
-    dag_id="04_print_context_with_intent",
+    dag_id="03_print_context_with_intent",
     start_date=pendulum.today("UTC").add(days=-1),
     schedule="@daily",
 ):
