@@ -14,9 +14,9 @@ def _get_data(year, month, day, hour, output_path, **_):
     request.urlretrieve(url, output_path)
 
 
-def _fetch_pageviews(pagenames):
+def _fetch_pageviews(pagenames, data_interval_start, **_):
     result = dict.fromkeys(pagenames, 0)
-    with open("/tmp/wikipageviews") as f:
+    with open(f"/tmp/wikipageviews-{ data_interval_start.format('YYYYMMDDHH') }") as f:
         for line in f:
             domain_code, page_title, view_counts, _ = line.split(" ")
             if domain_code == "en" and page_title in pagenames:
@@ -40,13 +40,13 @@ with DAG(
             "month": "{{ data_interval_start.month }}",
             "day": "{{ data_interval_start.day }}",
             "hour": "{{ data_interval_start.hour }}",
-            "output_path": "/tmp/wikipageviews.gz",
+            "output_path": "/tmp/wikipageviews-{{ data_interval_start.format('YYYYMMDDHH') }}.gz",
         },
     )
 
     extract_gz = BashOperator(
         task_id="extract_gz",
-        bash_command="gunzip --force /tmp/wikipageviews.gz",
+        bash_command="gunzip --force /tmp/wikipageviews-{{ data_interval_start.format('YYYYMMDDHH') }}.gz",
     )
 
     fetch_pageviews = PythonOperator(

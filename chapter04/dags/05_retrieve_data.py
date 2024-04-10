@@ -27,6 +27,6 @@ with DAG(
             "month": "{{ data_interval_start.month }}",
             "day": "{{ data_interval_start.day }}",
             "hour": "{{ data_interval_start.hour }}",
-            "output_path": "/tmp/wikipageviews.gz",
+            "output_path": "/tmp/wikipageviews-{{ data_interval_start.format('YYYYMMDDHH') }}.gz",
         },
     )

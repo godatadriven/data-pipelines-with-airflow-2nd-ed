@@ -8,7 +8,7 @@ import pendulum
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 
 
 def _get_data(year, month, day, hour, output_path, **_):
@@ -21,7 +21,7 @@ def _get_data(year, month, day, hour, output_path, **_):
 
 def _fetch_pageviews(pagenames, data_interval_start):
     result = dict.fromkeys(pagenames, 0)
-    with open("/tmp/wikipageviews") as f:
+    with open(f"/tmp/wikipageviews-{ data_interval_start.format('YYYYMMDDHH') }") as f:
         for line in f:
             domain_code, page_title, view_counts, _ = line.split(" ")
             if domain_code == "en" and page_title in pagenames:
@@ -52,11 +52,11 @@ with DAG(
             "month": "{{ data_interval_start.month }}",
             "day": "{{ data_interval_start.day }}",
             "hour": "{{ data_interval_start.hour }}",
-            "output_path": "/tmp/wikipageviews.gz",
+            "output_path": "/tmp/wikipageviews-{{ data_interval_start.format('YYYYMMDDHH') }}.gz",
         },
     )
 
-    extract_gz = BashOperator(task_id="extract_gz", bash_command="gunzip --force /tmp/wikipageviews.gz")
+    extract_gz = BashOperator(task_id="extract_gz", bash_command="gunzip --force /tmp/wikipageviews-{{ data_interval_start.format('YYYYMMDDHH') }}.gz")
 
     fetch_pageviews = PythonOperator(
         task_id="fetch_pageviews",
@@ -64,10 +64,11 @@ with DAG(
         op_kwargs={"pagenames": {"Google", "Amazon", "Apple", "Microsoft", "Facebook"}},
     )
 
-    write_to_postgres = PostgresOperator(
+    write_to_postgres = SQLExecuteQueryOperator(
         task_id="write_to_postgres",
-        postgres_conn_id="my_postgres",
+        conn_id="my_postgres",
         sql="postgres_query.sql",
+        return_last=False,
     )
 
     get_data >> extract_gz >> fetch_pageviews >> write_to_postgres
