@@ -1,74 +1,81 @@
+from datetime import date, timedelta
+import itertools
 import time
-from datetime import datetime, timedelta
 
-import pandas as pd
-import pendulum
 from faker import Faker
-from flask import Flask, jsonify, request
-from numpy import random
+from fastapi import FastAPI
+import numpy as np
+import pandas as pd
+
+app = FastAPI()
 
 
-def _generate_events(end_date):
-    """Generates a fake dataset with events for 30 days before end date."""
-
-    events = pd.concat(
-        [_generate_events_for_day(generation_date=end_date - timedelta(days=(30 - i))) for i in range(30)],
-        axis=0,
-    )
-
-    return events
-
-
-def _generate_events_for_day(generation_date):
-    """Generates events for a given day."""
+def _generate_events_daily(event_date: date):
+    """Generates events for a given date."""
 
     # Use date as seed.
-    seed = int(time.mktime(generation_date.timetuple()))
+    seed = int(time.mktime(event_date.timetuple()))
 
     Faker.seed(seed)
-    random_state = random.RandomState(seed)
+    random_state = np.random.RandomState(seed)
 
     # Determine how many users and how many events we will have.
     n_users = random_state.randint(low=50, high=100)
-    n_events = random_state.randint(low=200, high=2000)
+    n_events = random_state.randint(low=200, high=1000)
 
     # Generate a bunch of users.
     fake = Faker()
     users = [fake.ipv4() for _ in range(n_users)]
 
-    return pd.DataFrame(
+    # Generate events for each user.
+    events = pd.DataFrame(
         {
             "user": random_state.choice(users, size=n_events, replace=True),
-            "date": pd.to_datetime(generation_date),
+            "timestamp": _random_datetimes(event_date, size=n_events, random_state=random_state),
         }
+    ).sort_values(by="timestamp")
+
+    # Convert events to records.
+    records = events.to_dict(orient="records")
+
+    return records
+
+
+def _random_datetimes(event_date: date, size: int, random_state):
+    """Generates a column of random datetimes on the given date."""
+    return pd.to_timedelta(random_state.rand(size), unit='D') + pd.to_datetime(event_date)
+
+
+def _generate_events_range(start_date: date, end_date: date):
+    """Generates events for a range of dates (up to the end date, exclusive)."""
+    return list(
+        itertools.chain.from_iterable(
+            _generate_events_daily(d)
+            for d in date_range(start_date, end_date)
+        )
     )
 
 
-app = Flask(__name__)
-app.config["events"] = _generate_events(end_date=pendulum.today().add(days=10).naive())
+def date_range(start_date: date, end_date: date):
+    """Iterator for a range of dates between start and end date (exclusive)."""
+    for n in range(int((end_date - start_date).days)):
+        yield start_date + timedelta(n)
 
 
-@app.route("/events")
-def events():
-    start_date = _str_to_datetime(request.args.get("start_date", None))
-    end_date = _str_to_datetime(request.args.get("end_date", None))
-
-    events = app.config.get("events")
-
-    if start_date is not None:
-        events = events.loc[events["date"] >= start_date]
-
-    if end_date is not None:
-        events = events.loc[events["date"] < end_date]
-
-    return jsonify(events.to_dict(orient="records"))
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
 
 
-def _str_to_datetime(value):
-    if value is None:
-        return None
-    return datetime.strptime(value, "%Y-%m-%d")
+@app.get("/events/latest")
+def events_latest():
+    """Endpoint that returns events for the past 7 days."""
+    start_date = date.today() - timedelta(days=7)
+    end_date = date.today()
+    return _generate_events_range(start_date, end_date)
 
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+@app.get("/events/range/{start_date}/{end_date}")
+def events_range(start_date: date, end_date: date):
+    """Endpoint that returns events between the given start and end dates (exclusive)."""
+    return _generate_events_range(start_date, end_date)

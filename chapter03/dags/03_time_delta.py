@@ -1,31 +1,36 @@
+import datetime
 from pathlib import Path
 
-import pandas as pd
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from pendulum import datetime, timedelta
+import pandas as pd
+import pendulum
 
 
 def _calculate_stats(input_path, output_path):
     """Calculates event statistics."""
 
-    events = pd.read_json(input_path)
-    stats = events.groupby(["date", "user"]).size().reset_index()
+    events = pd.read_json(input_path, convert_dates=["timestamp"])
+
+    stats = (events
+             .assign(date=lambda df: df["timestamp"].dt.date)
+             .groupby(["date", "user"]).size().reset_index()
+    )
 
     Path(output_path).parent.mkdir(exist_ok=True)
     stats.to_csv(output_path, index=False)
 
 
 with DAG(
-    dag_id="L04_time_delta",
-    schedule=timedelta(days=3),
-    start_date=datetime(2024, 1, 1),
-    end_date=datetime(2024, 1, 5),
+    dag_id="03_time_delta",
+    schedule=datetime.timedelta(days=2),
+    start_date=pendulum.datetime(year=2024, month=1, day=1),
+    end_date=pendulum.datetime(year=2024, month=1, day=5),
 ):
     fetch_events = BashOperator(
         task_id="fetch_events",
-        bash_command="curl -o /data/events.json http://events_api:5000/events",
+        bash_command="curl -o /data/events.json http://events-api:8081/events/latest",
     )
 
     calculate_stats = PythonOperator(

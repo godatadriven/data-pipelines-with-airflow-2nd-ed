@@ -77,6 +77,9 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+#=======
+#    - ${AIRFLOW_PROJ_DIR:-.}/data:/data
+#>>>>>>> 43628ba (Push updates.):chapter03/docker-compose.yml
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -283,6 +286,12 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+
+#  events-api:
+#    build: ./docker/events-api
+#    image: manning-airflow/events-api
+#    ports:
+#      - "8081:8081"
 
 volumes:
   postgres-db-volume:
