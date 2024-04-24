@@ -14,7 +14,7 @@ def _get_data(year, month, day, hour, output_path, **_):
 
 
 with DAG(
-    dag_id="L13_retrieve_data",
+    dag_id="05_retrieve_data",
     start_date=pendulum.today("UTC").add(days=-1),
     schedule="@hourly",
     max_active_runs=1,
@@ -27,6 +27,6 @@ with DAG(
             "month": "{{ data_interval_start.month }}",
             "day": "{{ data_interval_start.day }}",
             "hour": "{{ data_interval_start.hour }}",
-            "output_path": "/tmp/wikipageviews.gz",
+            "output_path": "/tmp/wikipageviews-{{ data_interval_start.format('YYYYMMDDHH') }}.gz",
         },
     )
