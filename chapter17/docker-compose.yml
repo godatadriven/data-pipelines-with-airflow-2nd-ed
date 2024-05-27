@@ -66,6 +66,8 @@ services:
     - K3S_NODE_NAME=k3s-agent
     - K3S_URL=https://k3s-server:6443
     - K3S_TOKEN=26576147927211
+    ports:
+    - 8081:8080  # Airflow web UI if loadbalancer is on agent server
 
   k3s-cli:
     image: alpine/k8s:1.29.2
