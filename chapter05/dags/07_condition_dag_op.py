@@ -8,7 +8,7 @@ ERP_CHANGE_DATE = pendulum.today("UTC").add(days=-1)
 
 
 def _pick_erp_system(**context):
-    if context["execution_date"] < ERP_CHANGE_DATE:
+    if context["logical_date"] < ERP_CHANGE_DATE:
         return "fetch_sales_old"
     else:
         return "fetch_sales_new"

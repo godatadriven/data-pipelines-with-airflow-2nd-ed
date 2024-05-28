@@ -5,7 +5,7 @@ from airflow.operators.python import PythonOperator
 
 
 def _fetch_sales(**context):
-    if context["execution_date"] > pendulum.today("UTC").add(days=-2):
+    if context["logical_date"] > pendulum.today("UTC").add(days=-2):
         raise Exception("Something when wrong")
 
 

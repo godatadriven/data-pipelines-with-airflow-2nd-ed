@@ -7,7 +7,7 @@ ERP_CHANGE_DATE = pendulum.today("UTC").add(days=-1)
 
 
 def _fetch_sales(**context):
-    if context["execution_date"] < ERP_CHANGE_DATE:
+    if context["logical_date"] < ERP_CHANGE_DATE:
         _fetch_sales_old(**context)
     else:
         _fetch_sales_new(**context)
@@ -22,7 +22,7 @@ def _fetch_sales_new(**context):
 
 
 def _clean_sales(**context):
-    if context["execution_date"] < ERP_CHANGE_DATE:
+    if context["logical_date"] < ERP_CHANGE_DATE:
         _clean_sales_old(**context)
     else:
         _clean_sales_new(**context)
