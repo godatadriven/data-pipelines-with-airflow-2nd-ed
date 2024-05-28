@@ -1,3 +1,7 @@
+"""
+    Listing: 6.3
+"""
+
 import pendulum
 from airflow import DAG
 from airflow.operators.empty import EmptyOperator
@@ -8,5 +12,4 @@ with DAG(
     schedule="@daily",
     concurrency=50,
 ):
-
     EmptyOperator(task_id="dummy")

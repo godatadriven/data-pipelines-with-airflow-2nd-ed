@@ -1,3 +1,8 @@
+"""
+    Figure: 6.9, 6.10
+"""
+
+
 from pathlib import Path
 
 import pendulum
@@ -5,22 +10,21 @@ from airflow import DAG
 from airflow.operators.empty import EmptyOperator
 from airflow.sensors.python import PythonSensor
 
+
+def _wait_for_supermarket(supermarket_id_):
+    supermarket_path = Path("/data/" + supermarket_id_)
+    data_files = supermarket_path.glob("data-*.csv")
+    success_file = supermarket_path / "_SUCCESS"
+    return data_files and success_file.exists()
+
+
 with DAG(
     dag_id="08_reschedule_mode_example",
     start_date=pendulum.today("UTC").add(days=-14),
     schedule="0 16 * * *",
     description="A batch workflow for ingesting supermarket promotions data, demonstrating the PythonSensor.",
 ):
-
     create_metrics = EmptyOperator(task_id="create_metrics")
-
-
-    def _wait_for_supermarket(supermarket_id_):
-        supermarket_path = Path("/data/" + supermarket_id_)
-        data_files = supermarket_path.glob("data-*.csv")
-        success_file = supermarket_path / "_SUCCESS"
-        return data_files and success_file.exists()
-
 
     for supermarket_id in range(1, 5):
         wait = PythonSensor(

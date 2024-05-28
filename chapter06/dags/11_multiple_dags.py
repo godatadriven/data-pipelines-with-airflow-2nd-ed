@@ -1,3 +1,9 @@
+"""
+    Listing 6.4
+    Figure: 6.13, 6.14, 6.15, 6.16
+"""
+
+
 from pathlib import Path
 
 import pendulum
@@ -19,7 +25,6 @@ with DAG(
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="0 16 * * *",
 ):
-
     for supermarket_id in range(1, 5):
         wait = PythonSensor(
             task_id=f"wait_for_supermarket_{supermarket_id}",
@@ -42,4 +47,5 @@ with DAG(
     compute_differences = EmptyOperator(task_id="compute_differences")
     update_dashboard = EmptyOperator(task_id="update_dashboard")
     notify_new_data = EmptyOperator(task_id="notify_new_data")
+
     compute_differences >> update_dashboard

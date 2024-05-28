@@ -1,10 +1,14 @@
+"""
+    Figure: 6.11
+"""
+
+
 from pathlib import Path
 
 import pendulum
 from airflow import DAG
 from airflow.operators.empty import EmptyOperator
 from airflow.sensors.python import PythonSensor
-
 
 
 def _wait_for_supermarket(supermarket_id_):
@@ -21,7 +25,6 @@ with DAG(
     description="A batch workflow for ingesting supermarket promotions data, demonstrating the PythonSensor.",
     default_args={"depends_on_past": True},
 ):
-
     for supermarket_id in range(1, 5):
         wait = PythonSensor(
             task_id=f"wait_for_supermarket_{supermarket_id}",

@@ -1,3 +1,7 @@
+"""
+    Figure: 6.7, 6.8
+"""
+
 import pendulum
 from airflow import DAG
 from airflow.operators.empty import EmptyOperator
@@ -9,7 +13,6 @@ with DAG(
     schedule="0 16 * * *",
     description="Create a file /data/supermarket1/data.csv, and behold a sensor deadlock.",
 ):
-
     create_metrics = EmptyOperator(task_id="create_metrics")
     for supermarket_id in [1, 2, 3, 4]:
         copy = FileSensor(

@@ -1,3 +1,7 @@
+"""
+    Figure: 6.19
+"""
+
 import pendulum
 from airflow import DAG
 from airflow.operators.empty import EmptyOperator
@@ -10,14 +14,13 @@ with DAG(
     schedule="0 0 * * *",
 ):
     EmptyOperator(task_id="etl")
-    
+
 with DAG(
     dag_id="figure_6_19_dag_2",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="0 0 * * *",
 ):
     EmptyOperator(task_id="etl")
-
 
 
 with DAG(
@@ -32,7 +35,6 @@ with DAG(
     start_date=pendulum.today("UTC").add(days=-3),
     schedule=None,
 ):
-
     [
         ExternalTaskSensor(
             task_id="wait_for_etl_dag1",
