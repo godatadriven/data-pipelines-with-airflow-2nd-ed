@@ -1,83 +1,84 @@
-version: "3.7"
-# ====================================== AIRFLOW ENVIRONMENT VARIABLES =======================================
-x-environment: &airflow_environment
-  # Airflow settings.
-  - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-  - AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS=False
-  - AIRFLOW__CORE__LOAD_EXAMPLES=False
-  - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql://airflow:airflow@postgres:5432/airflow
-  - AIRFLOW__CORE__STORE_DAG_CODE=True
-  - AIRFLOW__CORE__STORE_SERIALIZED_DAGS=True
-  - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
-  - AIRFLOW__WEBSERVER__RBAC=False
-  # Movielens settings.
-  - AIRFLOW_CONN_MOVIELENS=http://airflow:airflow@movielens
-  - MOVIELENS_USER=airflow
-  - MOVIELENS_PASSWORD=airflow
-  # Azure setttings.
-  - AIRFLOW_CONN_MY_WASB_CONN=wasb://${BLOB_ACCOUNT_NAME}:${BLOB_ACCOUNT_KEY}@azure
-  - AIRFLOW_CONN_MY_ODBC_CONN=odbc://${SYNAPSE_USER}:${SYNAPSE_PASSWORD}@${SYNAPSE_HOST}/${SYNAPSE_DB}
-x-airflow-image: &airflow_image apache/airflow:2.0.0-python3.8
-# ====================================== /AIRFLOW ENVIRONMENT VARIABLES ======================================
+---
+version: '3.8'
 services:
   postgres:
-    image: postgres:12-alpine
+    image: postgres:16
     environment:
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
-    ports:
-      - "5432:5432"
-  init:
-    build:
-      context: docker/airflow-azure
-      args:
-        AIRFLOW_BASE_IMAGE: *airflow_image
-    image: manning-airflow/airflow-azure
-    depends_on:
-      - postgres
-    environment: *airflow_environment
-    entrypoint: /bin/bash
-    command: -c 'airflow db upgrade && sleep 5 && airflow users create --username admin --password admin --firstname Anonymous --lastname Admin --role Admin --email admin@example.org'
-  webserver:
-    build:
-      context: docker/airflow-azure
-      args:
-        AIRFLOW_BASE_IMAGE: *airflow_image
-    image: manning-airflow/airflow-azure
-    restart: always
-    depends_on:
-      - postgres
-    ports:
-      - "8080:8080"
+      POSTGRES_USER: airflow
+      PGUSER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
     volumes:
-      - logs:/opt/airflow/logs
-    environment: *airflow_environment
-    command: webserver
-  scheduler:
-    build:
-      context: docker/airflow-azure
-      args:
-        AIRFLOW_BASE_IMAGE: *airflow_image
-    image: manning-airflow/airflow-azure
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
     restart: always
-    depends_on:
-      - postgres
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - data:/data
-      - logs:/opt/airflow/logs
-    environment: *airflow_environment
-    command: scheduler
-  movielens:
-    build: ../chapter08/docker/movielens-api
-    image: manning-airflow/movielens-api
-    ports:
-      - "5000:5000"
+
+  k3s-server:
+    image: "rancher/k3s:${K3S_VERSION:-latest}"
+    command: 
+    - server
+    - "--tls-san"
+    - "k3s-server"
+    - "--bind-address"
+    - "k3s-server"
+    tmpfs:
+    - /run
+    - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    restart: always
     environment:
-      API_USER: airflow
-      API_PASSWORD: airflow
+    - K3S_NODE_NAME=k3s-server
+    - K3S_TOKEN=26576147927211
+    - K3S_KUBECONFIG_OUTPUT=/output/kubeconfig.yaml
+    - K3S_KUBECONFIG_MODE=666
+    volumes:
+    - k3s-server:/var/lib/rancher/k3s
+    # This is just so that we get the kubeconfig file out
+    - .k3s:/output
+    ports:
+    - 6443:6443  # Kubernetes API Server
+    - 80:80      # Ingress controller port 80
+    - 443:443    # Ingress controller port 443
+    - 8080:8080  # Airflow web UI
+
+  k3s-agent:
+    image: "rancher/k3s:${K3S_VERSION:-latest}"
+    tmpfs:
+    - /run
+    - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    restart: always
+    environment:
+    - K3S_NODE_NAME=k3s-agent
+    - K3S_URL=https://k3s-server:6443
+    - K3S_TOKEN=26576147927211
+    ports:
+    - 8081:8080  # Airflow web UI if loadbalancer is on agent server
+
+  k3s-cli:
+    image: alpine/k8s:1.29.2
+    tty: true
+    privileged: true
+    environment:
+    - KUBECONFIG=/input/kubeconfig.yaml
+    volumes:
+    - .k3s:/input
+    - ./enable-external-dns.sh:/enable-external-dns
 
 volumes:
-  data:
-  logs:
+  k3s-server:
+  postgres-db-volume:
