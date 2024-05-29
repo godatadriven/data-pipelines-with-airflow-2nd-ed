@@ -42,7 +42,7 @@ def _clean_sales_new(**context):
 
 
 with DAG(
-    dag_id="L07_branch_function",
+    dag_id="02_branch_function",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):
