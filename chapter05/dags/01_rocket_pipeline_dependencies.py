@@ -7,7 +7,7 @@ from airflow import DAG
 from airflow.operators.empty import EmptyOperator
 
 with DAG(
-    dag_id="L03_rocket_pipeline_dependencies",
+    dag_id="01_rocket_pipeline_dependencies",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):

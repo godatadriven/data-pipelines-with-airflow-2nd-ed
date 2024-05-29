@@ -1,8 +1,14 @@
+"""
+Listing: 5.17, 5.18
+Figure: 5.12, 5.13
+"""
+
+
 import pendulum
 from airflow import DAG
+from airflow.exceptions import AirflowSkipException
 from airflow.operators.empty import EmptyOperator
-from airflow.operators.latest_only import LatestOnlyOperator
-from airflow.operators.python import BranchPythonOperator
+from airflow.operators.python import BranchPythonOperator, PythonOperator
 
 ERP_CHANGE_DATE = pendulum.today("UTC").add(days=-1)
 
@@ -14,8 +20,17 @@ def _pick_erp_system(**context):
         return "fetch_sales_new"
 
 
+def _latest_only(dag,data_interval_end, **_):
+    task_exec_start = pendulum.now("UTC")
+    next_data_interval_end = dag.following_schedule(data_interval_end)#
+
+    if not data_interval_end < task_exec_start < next_data_interval_end:#B
+        raise AirflowSkipException("Not the most recent run!")
+
+
+
 with DAG(
-    dag_id="L18_latest_only_condition",
+    dag_id="06_condition_dag",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):
@@ -37,7 +52,7 @@ with DAG(
     join_datasets = EmptyOperator(task_id="join_datasets")
     train_model = EmptyOperator(task_id="train_model")
 
-    latest_only = LatestOnlyOperator(task_id="latest_only")
+    latest_only = PythonOperator(task_id="latest_only", python_callable=_latest_only)
 
     deploy_model = EmptyOperator(task_id="deploy_model")
 

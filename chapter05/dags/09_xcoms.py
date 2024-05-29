@@ -1,3 +1,8 @@
+"""
+Listing: 5.20, 5.21
+Figure: 5.16
+"""
+
 import uuid
 
 import pendulum
@@ -8,16 +13,16 @@ from airflow.operators.python import PythonOperator
 
 def _train_model(**context):
     model_id = str(uuid.uuid4())
-    return model_id
+    context["task_instance"].xcom_push(key="model_id", value=model_id)
 
 
-def _deploy_model(templates_dict, **context):
-    model_id = templates_dict["model_id"]
+def _deploy_model(**context):
+    model_id = context["task_instance"].xcom_pull(task_ids="train_model", key="model_id")
     print(f"Deploying model {model_id}")
 
 
 with DAG(
-    dag_id="L23_xcoms_return",
+    dag_id="09_xcoms",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):
@@ -33,11 +38,7 @@ with DAG(
 
     train_model = PythonOperator(task_id="train_model", python_callable=_train_model)
 
-    deploy_model = PythonOperator(
-        task_id="deploy_model",
-        python_callable=_deploy_model,
-        templates_dict={"model_id": "{{task_instance.xcom_pull(task_ids='train_model', key='model_id')}}"},
-    )
+    deploy_model = PythonOperator(task_id="deploy_model", python_callable=_deploy_model)
 
     start >> [fetch_sales, fetch_weather]
     fetch_sales >> clean_sales

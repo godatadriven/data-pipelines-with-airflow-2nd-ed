@@ -35,7 +35,7 @@ def _clean_sales_new(**context):
 
 
 with DAG(
-    dag_id="L09_branch_dag_old_new",
+    dag_id="03_branch_dag_old_new",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
 ):
