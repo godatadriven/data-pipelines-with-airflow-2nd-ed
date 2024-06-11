@@ -22,7 +22,7 @@ docker exec -ti chapter17-k3s-cli-1 /bin/bash
 
 #### K9s or local kubectl as an alternative
 
-You could use [k9s](https://k9scli.io/) or install kubectl locally. To make sure you can connect to the k3s cluster you need to make sure the k3s-server hostname is known locally (add `127.0.0.1 k3s-server` to you hosts file) and you need to use the cluster config (`KUBECONFIG=.k3s/kubeconfig.yaml`)
+You could use [k9s](https://k9scli.io/) or install kubectl locally. To make sure you can connect to the k3s cluster you need to make sure the k3s-server hostname is known locally (add `127.0.0.1 k3s-server` to your hosts file) and you need to use the cluster config (`KUBECONFIG=.k3s/kubeconfig.yaml`)
 
 ### Deployment of default airflow in K8S
 
