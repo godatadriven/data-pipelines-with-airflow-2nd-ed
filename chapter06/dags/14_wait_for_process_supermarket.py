@@ -9,7 +9,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 
 with DAG(
-    dag_id="ingest_supermarket_data",
+    dag_id="14_ingest_supermarket_data",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="0 16 * * *",
 ):
@@ -22,7 +22,7 @@ with DAG(
 ):
     wait = ExternalTaskSensor(
         task_id="wait_for_process_supermarket",
-        external_dag_id="ingest_supermarket_data",
+        external_dag_id="14_ingest_supermarket_data",
         external_task_id="process_supermarket",
     )
     report = EmptyOperator(task_id="report")

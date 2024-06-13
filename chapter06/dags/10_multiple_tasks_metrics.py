@@ -10,8 +10,8 @@ from airflow.operators.empty import EmptyOperator
 from airflow.sensors.python import PythonSensor
 
 
-def _wait_for_supermarket(supermarket_id_):
-    supermarket_path = Path("/data/" + supermarket_id_)
+def _wait_for_supermarket(supermarket_id):
+    supermarket_path = Path("/data/" + supermarket_id)
     data_files = supermarket_path.glob("data-*.csv")
     success_file = supermarket_path / "_SUCCESS"
     return data_files and success_file.exists()
