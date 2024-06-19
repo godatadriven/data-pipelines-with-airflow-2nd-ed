@@ -27,7 +27,7 @@ def _email_stats(stats, email):
 
 
 with DAG(
-    dag_id="L13_non_atomic_send",
+    dag_id="10_non_atomic_send",
     schedule="@daily",
     start_date=datetime(2024, 1, 1),
     end_date=datetime(2024, 1, 5),
@@ -36,8 +36,9 @@ with DAG(
     fetch_events = BashOperator(
         task_id="fetch_events",
         bash_command=(
-            "curl -o /data/events/{{data_interval_start | ds}}.json "
-            "http://events_api:5000/events?"
+            "mkdir -p /data/10_non_atomic_send/events && "
+            "curl -o /data/10_non_atomic_send/events/{{logical_date | ds}}.json "
+            "http://events-api:8081/events/range?"
             "start_date={{data_interval_start | ds}}&"
             "end_date={{data_interval_end | ds}}"
         ),
@@ -47,8 +48,8 @@ with DAG(
         task_id="calculate_stats",
         python_callable=_calculate_stats,
         templates_dict={
-            "input_path": "/data/events/{{data_interval_start | ds}}.json",
-            "output_path": "/data/stats/{{data_interval_start | ds}}.csv",
+            "input_path": "/data/10_non_atomic_send/events/{{logical_date | ds}}.json",
+            "output_path": "/data/10_non_atomic_send/stats/{{logical_date | ds}}.csv",
         },
     )
 

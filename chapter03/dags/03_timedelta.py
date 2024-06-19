@@ -1,11 +1,10 @@
+import datetime
 from pathlib import Path
-
-import pandas as pd
 
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.timetables.events import EventsTimetable
+import pandas as pd
 import pendulum
 
 
@@ -23,29 +22,17 @@ def _calculate_stats(input_path, output_path):
     stats.to_csv(output_path, index=False)
 
 
-scheduled_launches = EventsTimetable(
-    event_dates=[
-        pendulum.datetime(year=2024, month=1, day=3),
-        pendulum.datetime(year=2024, month=1, day=4),
-        pendulum.datetime(year=2024, month=1, day=7)
-    ]
-)
-
 with DAG(
-    dag_id="04_timetable",
-    schedule=scheduled_launches,
+    dag_id="03_timedelta",
+    schedule=datetime.timedelta(days=2),
     start_date=pendulum.datetime(year=2024, month=1, day=1),
+    end_date=pendulum.datetime(year=2024, month=1, day=5),
 ):
-    print_context = PythonOperator(
-        task_id="print_context",
-        python_callable=lambda **context: print(context["data_interval_start"], context["data_interval_end"]),
-    )
-
     fetch_events = BashOperator(
         task_id="fetch_events",
         bash_command=(
-            "mkdir -p /data/04_timetable/events && "
-            "curl -o /data/04_timetable/events/{{ ds }}.json"
+            "mkdir -p /data/03_timedelta && "
+            "curl -o /data/03_timedelta/events.json"
             " http://events-api:8081/events/latest"
         ),
     )
@@ -54,9 +41,9 @@ with DAG(
         task_id="calculate_stats",
         python_callable=_calculate_stats,
         op_kwargs={
-            "input_path": "/data/04_timetable/events/{{ ds }}.json",
-            "output_path": "/data/04_timetable/stats/{{ ds }}.csv",
+            "input_path": "/data/03_timedelta/events.json",
+            "output_path": "/data/03_timedelta/stats.csv",
         },
     )
 
-    print_context >> fetch_events >> calculate_stats
+    fetch_events >> calculate_stats

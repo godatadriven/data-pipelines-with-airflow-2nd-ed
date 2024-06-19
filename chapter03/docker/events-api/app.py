@@ -75,7 +75,7 @@ def events_latest():
     return _generate_events_range(start_date, end_date)
 
 
-@app.get("/events/range/{start_date}/{end_date}")
+@app.get("/events/range")
 def events_range(start_date: date, end_date: date):
     """Endpoint that returns events between the given start and end dates (exclusive)."""
     return _generate_events_range(start_date, end_date)
