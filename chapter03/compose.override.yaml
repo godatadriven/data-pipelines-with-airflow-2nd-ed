@@ -48,7 +48,7 @@ services:
     # yamllint enable rule:line-length
     user: "0:0"
 
-  events_api:
+  events-api:
     build: ./docker/events-api
     image: manning-airflow/events-api
     ports:
