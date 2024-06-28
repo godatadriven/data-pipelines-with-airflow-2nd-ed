@@ -287,11 +287,5 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-#  events-api:
-#    build: ./docker/events-api
-#    image: manning-airflow/events-api
-#    ports:
-#      - "8081:8081"
-
 volumes:
   postgres-db-volume:
