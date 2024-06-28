@@ -34,7 +34,7 @@ with DAG(
         bash_command=(
             "mkdir -p /data/07_no_catchup/events && "
             "curl -o /data/07_no_catchup/events/{{ logical_date | ds}}.json "
-            "http://events-api:8081/events/range?start_date={{ data_interval_start | ds }}&end_date={{ data_interval_end | ds }}"
+            "'http://events-api:8081/events/range?start_date={{ data_interval_start | ds }}&end_date={{ data_interval_end | ds }}'"
         ),
     )
 
