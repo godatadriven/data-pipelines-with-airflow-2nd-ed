@@ -7,8 +7,8 @@ from airflow.decorators import task
 with DAG(
     dag_id="12_taskflow",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule_interval="@daily",
-) as dag:
+    schedule="@daily",
+):
 
     @task
     def train_model():
