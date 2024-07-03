@@ -12,8 +12,7 @@ events_dataset = Dataset("/data/09_data_aware/events")
 
 def _calculate_stats(input_path, output_path):
     """Calculates event statistics."""
-
-    events = pd.read_json(input_path, convert_dates=["timestamp"])
+    events = pd.read_json(input_path, convert_dates=["timestamp"], lines=True)
 
     stats = (events
              .assign(date=lambda df: df["timestamp"].dt.date)
@@ -29,9 +28,13 @@ with DAG(
     schedule=[events_dataset],
     start_date=pendulum.datetime(year=2024, month=1, day=1)
 ):
+    def _print_context(**context):
+        print(f'dataset_events: {list(context["triggering_dataset_events"].values())[0][0].source_dag_run.logical_date }')
+
+
     print_context = PythonOperator(
         task_id="print_context",
-        python_callable=lambda **context: print(context),
+        python_callable=_print_context,
     )
 
     calculate_stats = PythonOperator(

@@ -68,9 +68,9 @@ def read_root():
 
 
 @app.get("/events/latest")
-def events_latest():
+def events_latest(days: int = 7):
     """Endpoint that returns events for the past 7 days."""
-    start_date = date.today() - timedelta(days=7)
+    start_date = date.today() - timedelta(days=days)
     end_date = date.today()
     return _generate_events_range(start_date, end_date)
 

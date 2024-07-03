@@ -22,7 +22,7 @@ def _calculate_stats(input_path, output_path):
     Path(output_path).parent.mkdir(exist_ok=True)
     stats.to_csv(output_path, index=False)
 
-holiday_days = EventsTimetable(
+public_holidays = EventsTimetable(
     event_dates=[
         pendulum.datetime(2024, 1, 1),
         pendulum.datetime(2024, 3, 31),
@@ -31,14 +31,13 @@ holiday_days = EventsTimetable(
 )
 
 
-pendulum
 with DAG(
-    dag_id="08_timetable",
-    schedule=holiday_days,
+    dag_id="08a_timetable",
+    schedule=public_holidays,
     start_date=pendulum.datetime(year=2024, month=1, day=1),
 ):
     def _print_context(**context):
-        print(f'Start: {context["data_interval_start"]}, End: {context["data_interval_end"]}')
+        print(f'Start: {context["data_interval_start"]}, End: {context["data_interval_end"]}, Logical: {context["logical_date"]}')
 
     print_context = PythonOperator(
         task_id="print_context",
@@ -49,8 +48,8 @@ with DAG(
         task_id="fetch_events",
         bash_command=(
             "mkdir -p /data/08_timetable/events && "
-            "curl -o /data/08_timetable/events/{{ logical_date | ds }}.json"
-            " http://events-api:8081/events/latest"
+            "curl -o /data/08_timetable/events/{{ logical_date | ds }}.json "
+            "'http://events-api:8081/events/range?start_date={{ macros.ds_add(data_interval_start | ds, -1) }}&end_date={{ data_interval_end | ds }}'"
         ),
     )
 

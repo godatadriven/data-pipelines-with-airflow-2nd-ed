@@ -23,7 +23,7 @@ def _calculate_stats(input_path, output_path):
 
 
 with DAG(
-    dag_id="06_daily_interval",
+    dag_id="06_daily_incremental",
     schedule="@daily",
     start_date=pendulum.datetime(year=2024, month=1, day=1),
     end_date=pendulum.datetime(year=2024, month=1, day=5),
