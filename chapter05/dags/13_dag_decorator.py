@@ -14,7 +14,7 @@ from airflow.decorators import task, dag
 )
 def taskflow_api_decorator(): 
 
-    @task #C
+    @task 
     def train_model():
         model_id = str(uuid.uuid4())
         return model_id
