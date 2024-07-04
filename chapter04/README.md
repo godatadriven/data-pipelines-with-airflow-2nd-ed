@@ -5,7 +5,7 @@ Code accompanying Chapter 4 of the book [Data Pipelines with Apache Airflow](htt
 ## Contents
 
 This folder contains DAGs from Chapter 4. The filenames and DAG ids follow the listing ids in the book. Near
-the end of the chapter, we demonstrate usage of the PostgresOperator. The Docker Compose example in this
+the end of the chapter, we demonstrate usage of the SQLExecuteQueryOperator. The Docker Compose example in this
 folder creates a second Postgres database so you don't have to setup things yourself when running the example.
 If you like, you can access it:
 
