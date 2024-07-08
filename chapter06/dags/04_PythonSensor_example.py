@@ -4,6 +4,7 @@
 
 
 from pathlib import Path
+from datetime import timedelta
 
 import pendulum
 from airflow import DAG
@@ -28,4 +29,5 @@ with DAG(
         task_id="wait_for_supermarket_1",
         python_callable=_wait_for_supermarket,
         op_kwargs={"supermarket_id": "supermarket1"},
+        timeout=timedelta(minutes=5),
     )
