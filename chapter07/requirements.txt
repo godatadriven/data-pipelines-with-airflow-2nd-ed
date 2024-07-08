@@ -1,0 +1,5 @@
+apache-airflow
+minio
+pandas
+apache-airflow-providers-amazon
+sagemaker
