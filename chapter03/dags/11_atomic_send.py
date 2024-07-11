@@ -31,7 +31,7 @@ def _send_stats(email, **context):
 
 with DAG(
     dag_id="11_atomic_send",
-    schedule_interval="@daily",
+    schedule="@daily",
     start_date=datetime(2024, 1, 1),
     end_date=datetime(2024, 1, 5),
 ):
