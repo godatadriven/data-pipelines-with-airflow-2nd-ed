@@ -12,14 +12,14 @@ events_dataset = Dataset("/data/09_data_aware/events/09d")
 
 
 def _fetch_events(start_date, end_date, output_path):
-    # if Path(output_path).exists():
-    #     raise AirflowSkipException()
-    # else:
-    Path(output_path).parent.mkdir(exist_ok=True, parents=True)
-    events = pd.read_json(
-        f"http://events-api:8081/events/range?start_date={start_date}&end_date={end_date}"
-    )
-    events.to_json(output_path, orient="records", lines=True)
+    if Path(output_path).exists():
+        raise AirflowSkipException()
+    else:
+        Path(output_path).parent.mkdir(exist_ok=True, parents=True)
+        events = pd.read_json(
+            f"http://events-api:8081/events/range?start_date={start_date}&end_date={end_date}"
+        )
+        events.to_json(output_path, orient="records", lines=True)
 
 
 with DAG(

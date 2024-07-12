@@ -22,6 +22,7 @@ def _calculate_stats(input_path, output_path):
     Path(output_path).parent.mkdir(exist_ok=True)
     stats.to_csv(output_path, index=False)
 
+
 public_holidays = EventsTimetable(
     event_dates=[
         pendulum.datetime(2024, 1, 1),
@@ -36,14 +37,6 @@ with DAG(
     schedule=public_holidays,
     start_date=pendulum.datetime(year=2024, month=1, day=1),
 ):
-    def _print_context(**context):
-        print(f'Start: {context["data_interval_start"]}, End: {context["data_interval_end"]}, Logical: {context["logical_date"]}')
-
-    print_context = PythonOperator(
-        task_id="print_context",
-        python_callable=_print_context,
-    )
-
     fetch_events = BashOperator(
         task_id="fetch_events",
         bash_command=(
@@ -62,4 +55,4 @@ with DAG(
         },
     )
 
-    print_context >> fetch_events >> calculate_stats
+    fetch_events >> calculate_stats
