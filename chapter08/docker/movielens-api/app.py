@@ -10,15 +10,20 @@ DEFAULT_ITEMS_PER_PAGE = 100
 
 
 def _read_ratings(file_path):
-    ratings = pd.read_csv(file_path)
 
-    # Subsample dataset.
-    ratings = ratings.sample(n=100000, random_state=0)
-
-    # Sort by ts, user, movie for convenience.
-    ratings = ratings.sort_values(by=["timestamp", "userId", "movieId"])
-
-    return ratings
+    try:
+        ratings = pd.read_csv(file_path)
+        if ratings.empty:
+            raise ValueError("The ratings DataFrame is empty.")
+        return (
+            ratings
+            .sample(n=100000, random_state=0)
+            .sort_values(by=["timestamp", "userId", "movieId"])
+        )
+    except FileNotFoundError:
+        raise FileNotFoundError(f"The file {file_path} does not exist.")
+    except Exception as e:
+        raise e
 
 
 app = Flask(__name__)
