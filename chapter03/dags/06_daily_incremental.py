@@ -32,7 +32,7 @@ with DAG(
         task_id="fetch_events",
         bash_command=(
             "mkdir -p /data/06_daily_incremental/events && "
-            "curl -o /data/06_daily_incremental/events/{{ logical_date | ds}}.json "
+            "curl -o /data/06_daily_incremental/events/{{ data_interval_start | ds}}.json "
             "'http://events-api:8081/events/range?start_date={{ data_interval_start | ds }}&end_date={{ data_interval_end | ds }}'"
         ),
     )
@@ -41,8 +41,8 @@ with DAG(
         task_id="calculate_stats",
         python_callable=_calculate_stats,
         op_kwargs={
-            "input_path": "/data/06_daily_incremental/events/{{ logical_date | ds}}.json",
-            "output_path": "/data/06_daily_incremental/stats/{{ logical_date | ds}}.csv",
+            "input_path": "/data/06_daily_incremental/events/{{ data_interval_start | ds}}.json",
+            "output_path": "/data/06_daily_incremental/stats/{{ data_interval_start | ds}}.csv",
         },
     )
 

@@ -41,7 +41,7 @@ with DAG(
         task_id="fetch_events",
         bash_command=(
             "mkdir -p /data/08_timetable/events && "
-            "curl -o /data/08_timetable/events/{{ logical_date | ds }}.json "
+            "curl -o /data/08_timetable/events/{{ data_interval_start | ds }}.json "
             "'http://events-api:8081/events/range?start_date={{ macros.ds_add(data_interval_start | ds, -1) }}&end_date={{ data_interval_end | ds }}'"
         ),
     )

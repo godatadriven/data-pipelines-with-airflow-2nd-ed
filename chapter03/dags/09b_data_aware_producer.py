@@ -8,7 +8,7 @@ from airflow.operators.python import PythonOperator
 import pendulum
 
 
-events_dataset = Dataset("/data/09_data_aware/events", extra={"date": "{{ logical_date }}"})
+events_dataset = Dataset("/data/09_data_aware/events")
 
 
 def _fetch_events(start_date, end_date, output_path):
@@ -34,7 +34,7 @@ with DAG(
         op_kwargs={
             "start_date": "{{ data_interval_start | ds }}",
             "end_date": "{{ data_interval_end | ds }}",
-            "output_path": "/data/09_data_aware/events/{{ logical_date | ds }}.json",
+            "output_path": "/data/09_data_aware/events/{{ data_interval_start | ds }}.json",
         },
         outlets=[events_dataset]
     )

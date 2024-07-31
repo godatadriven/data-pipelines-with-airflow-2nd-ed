@@ -34,7 +34,7 @@ with DAG(
         op_kwargs={
             "start_date": "{{ data_interval_start | ds }}",
             "end_date": "{{ data_interval_end | ds }}",
-            "output_path": "/data/09_data_aware/events/09d/{{ logical_date | ds }}.json",
+            "output_path": "/data/09_data_aware/events/09d/{{ data_interval_start | ds }}.json",
         },
         outlets=[events_dataset]
     )

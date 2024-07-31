@@ -33,7 +33,7 @@ with DAG(
         task_id="fetch_events",
         bash_command=(
             "mkdir -p /data/07_no_catchup/events && "
-            "curl -o /data/07_no_catchup/events/{{ logical_date | ds}}.json "
+            "curl -o /data/07_no_catchup/events/{{ data_interval_start | ds}}.json "
             "'http://events-api:8081/events/range?start_date={{ data_interval_start | ds }}&end_date={{ data_interval_end | ds }}'"
         ),
     )
@@ -42,8 +42,8 @@ with DAG(
         task_id="calculate_stats",
         python_callable=_calculate_stats,
         op_kwargs={
-            "input_path": "/data/07_no_catchup/events/{{ logical_date | ds}}.json",
-            "output_path": "/data/07_no_catchup/stats/{{ logical_date | ds}}.csv",
+            "input_path": "/data/07_no_catchup/events/{{ data_interval_start | ds}}.json",
+            "output_path": "/data/07_no_catchup/stats/{{ data_interval_start | ds}}.csv",
         },
     )
 
