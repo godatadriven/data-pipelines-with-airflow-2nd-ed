@@ -27,3 +27,4 @@ with DAG(
     )
 
     wait_for_ratings >> fetch_ratings
+
