@@ -5,8 +5,12 @@ x-airflow-common:
     AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
     AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
     # Dag specific connection setup
+    AWS_REGION: ${AWS_REGION}
+    MNIST_BUCKET: ${MNIST_BUCKET}
+    SAGEMAKER_EXEC_ROLE_ARN: ${SAGEMAKER_EXEC_ROLE_ARN}
     AIRFLOW_CONN_INSIDE_AIRBNB: postgres://insideairbnb:insideairbnb@insideairbnb:5432/insideairbnb
     AIRFLOW_CONN_LOCALS3: s3://secretaccess:secretkey@?endpoint_url=http%3A%2F%2Flocals3%3A9000
+    AIRFLOW_CONN_AWS_DEFAULT: aws://${AWS_ACCESS_KEY_ID}:${ENCODED_AWS_SECRET_ACCESS_KEY}@/?region_name=${AWS_REGION}
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
 
@@ -42,9 +46,10 @@ services:
       - postgres-data-db-volume:/var/lib/postgresql/data
 
   locals3:
-    image: minio/minio:RELEASE.2023-12-23T07-19-11Z
+    image: minio/minio:RELEASE.2024-06-22T05-26-45Z
     ports:
       - "9000:9000"
+      - "35299:35299"
     environment:
       - MINIO_ACCESS_KEY=secretaccess
       - MINIO_SECRET_KEY=secretkey
@@ -58,7 +63,7 @@ services:
       retries: 3
 
   locals3_init:
-    image: minio/mc:RELEASE.2023-12-23T08-47-21Z
+    image: minio/mc:RELEASE.2024-06-20T14-50-54Z
     depends_on:
       - locals3
     entrypoint: >
