@@ -29,6 +29,7 @@ public_holidays = EventsTimetable(
         pendulum.datetime(2024, 3, 31),
         pendulum.datetime(2024, 5, 2),
     ],
+    restrict_to_events=True
 )
 
 
