@@ -32,8 +32,8 @@ with DAG(
         task_id="fetch_events",
         bash_command=(
             "mkdir -p /data/02_daily_schedule && "
-            "curl -o /data/02_daily_schedule/events.json"
-            " http://events-api:8081/events/latest"
+            "curl -o /data/02_daily_schedule/events.json "
+            "http://events-api:8081/events/latest"
         ),
     )
 

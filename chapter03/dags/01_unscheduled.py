@@ -4,7 +4,6 @@ import pandas as pd
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-import pendulum
 
 
 def _calculate_stats(input_path, output_path):
@@ -29,8 +28,8 @@ with DAG(
         task_id="fetch_events",
         bash_command=(
             "mkdir -p /data/01_unscheduled && "
-            "curl -o /data/01_unscheduled/events.json"
-            " http://events-api:8081/events/latest"
+            "curl -o /data/01_unscheduled/events.json "
+            "http://events-api:8081/events/latest"
         ),
     )
 
