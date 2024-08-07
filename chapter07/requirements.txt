@@ -1,5 +1,5 @@
-apache-airflow
-minio
-pandas
-apache-airflow-providers-amazon
-sagemaker
+apache-airflow==2.9.2
+minio==7.2.7
+pandas==2.2.2
+apache-airflow-providers-amazon==8.25.0
+sagemaker==2.224.4
