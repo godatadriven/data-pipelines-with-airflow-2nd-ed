@@ -5,7 +5,7 @@ RUN pip install -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
 
 COPY app.py /
 
-EXPOSE 5000
+EXPOSE 8081
 
-ENTRYPOINT ["python"]
-CMD ["/app.py"]
+ENTRYPOINT ["uvicorn"]
+CMD ["--host", "0.0.0.0", "--port", "8081", "app:app"]
