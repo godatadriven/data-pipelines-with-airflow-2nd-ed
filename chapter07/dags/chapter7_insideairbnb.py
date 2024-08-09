@@ -8,7 +8,7 @@ dag = DAG(
     dag_id="chapter7_insideairbnb",
     start_date=datetime(2023, 6, 1),
     end_date=datetime(2024, 4, 1),
-    schedule_interval="@monthly",
+    schedule="@monthly",
 )
 
 download_from_postgres = PostgresToS3Operator(
