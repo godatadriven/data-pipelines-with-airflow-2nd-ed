@@ -10,10 +10,10 @@ from custom.hooks import MovielensHook
 with DAG(
     dag_id="02_hook",
     description="Fetches ratings from the Movielens API using a custom hook.",
-    start_date=dt.datetime(2019, 1, 1),
-    end_date=dt.datetime(2019, 1, 10),
-    schedule_interval="@daily",
-) as dag:
+    start_date=dt.datetime(2023, 1, 1),
+    end_date=dt.datetime(2023, 1, 10),
+    schedule="@daily",
+):
 
     def _fetch_ratings(conn_id, templates_dict, batch_size=1000, **_):
         logger = logging.getLogger(__name__)
@@ -41,8 +41,8 @@ with DAG(
         python_callable=_fetch_ratings,
         op_kwargs={"conn_id": "movielens"},
         templates_dict={
-            "start_date": "{{ds}}",
-            "end_date": "{{next_ds}}",
-            "output_path": "/data/custom_hook/{{ds}}.json",
+            "start_date": "{{data_interval_start | ds}}",
+            "end_date": "{{data_interval_end | ds}}",
+            "output_path": "/data/custom_hook/{{data_interval_start | ds}}.json",
         },
     )

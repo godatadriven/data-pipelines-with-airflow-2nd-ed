@@ -11,8 +11,8 @@ logging.basicConfig(format="[%(asctime)-15s] %(levelname)s - %(message)s", level
 
 
 @click.command()
-@click.option("--start_date", default="2019-01-01", type=click.DateTime())
-@click.option("--end_date", default="2020-01-01", type=click.DateTime())
+@click.option("--start_date", default="2023-01-01", type=click.DateTime())
+@click.option("--end_date", default="2023-12-31", type=click.DateTime())
 @click.option("--output_path", required=True)
 def main(start_date, end_date, output_path):
     """Script for fetching movielens ratings within a given date range."""
@@ -23,6 +23,7 @@ def main(start_date, end_date, output_path):
     # Subset to expected range.
     logging.info(f"Filtering for dates {start_date} - {end_date}...")
     ts_parsed = pd.to_datetime(ratings["timestamp"], unit="s")
+    
     ratings = ratings.loc[(ts_parsed >= start_date) & (ts_parsed < end_date)]
 
     logging.info(f"Writing ratings to '{output_path}'...")
@@ -32,7 +33,7 @@ def main(start_date, end_date, output_path):
 def fetch_ratings():
     """Fetches ratings from the given URL."""
 
-    url = "http://files.grouplens.org/datasets/movielens/ml-25m.zip"
+    url = "http://files.grouplens.org/datasets/movielens/ml-latest.zip"
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir, "download.zip")
@@ -42,8 +43,8 @@ def fetch_ratings():
         with zipfile.ZipFile(tmp_path) as zip_:
             logging.info(f"Downloaded zip file with contents: {zip_.namelist()}")
 
-            logging.info("Reading ml-25m/ratings.csv from zip file")
-            with zip_.open("ml-25m/ratings.csv") as file_:
+            logging.info("Reading ml-latest/ratings.csv from zip file")
+            with zip_.open("ml-latest/ratings.csv") as file_:
                 ratings = pd.read_csv(file_)
 
     return ratings

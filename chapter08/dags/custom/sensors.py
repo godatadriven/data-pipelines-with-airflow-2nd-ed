@@ -20,7 +20,7 @@ class MovielensRatingsSensor(BaseSensorOperator):
     template_fields = ("_start_date", "_end_date")
 
     @apply_defaults
-    def __init__(self, conn_id, start_date="{{ds}}", end_date="{{next_ds}}", **kwargs):
+    def __init__(self, conn_id, start_date="{{data_interval_start | ds}}}", end_date="{{data_interval_end | ds}}}", **kwargs):
         super().__init__(**kwargs)
         self._conn_id = conn_id
         self._start_date = start_date
