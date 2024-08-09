@@ -23,6 +23,8 @@ export AWS_ACCESS_KEY_ID=
 export AWS_SECRET_ACCESS_KEY=
 export AWS_REGION=
 export AWS_DEFAULT_REGION=
+# When SECRET KEY contains forward slash it needs to be urlencoded
+export ENCODED_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY//\//%2F}
 ```
 
 ## Usage
