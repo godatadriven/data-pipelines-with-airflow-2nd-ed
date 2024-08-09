@@ -15,8 +15,8 @@ Besides this, we also include an example DAG that demonstrates a recommender sys
 You can run the wttr example using:
 
 ```
-docker build -t manning-airflow/ch10-wttr-example images/wttr-example
-docker run manning-airflow/ch10-wttr-example Amsterdam
+docker build -t manning-airflow/wttr-example
+docker run manning-airflow/wttr-example Amsterdam
 ```
 
 This should kick off the process of building the wttr image and running a container using this image.
