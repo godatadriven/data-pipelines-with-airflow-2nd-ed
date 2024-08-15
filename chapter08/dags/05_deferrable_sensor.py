@@ -2,69 +2,8 @@ import datetime as dt
 
 from airflow import DAG
 from custom.operators import MovielensFetchRatingsOperator
-# from custom.deferrable_sensors import AwaitMovielensRatingsSensor
 
-
-
-import asyncio
-from typing import Any
-
-from airflow.sensors.base import BaseSensorOperator
-from airflow.triggers.base import BaseTrigger
-from airflow.utils.context import Context
-from airflow.models import BaseOperator
-
-
-from airflow.utils.decorators import apply_defaults
-
-from custom.hooks import MovielensHook
-from custom.triggers import MovielensRatingsTrigger
-
-class AwaitMovielensRatingsSensor(BaseSensorOperator):
-    """
-    Deferable sensor that waits until an the movie ratings become available.
-    """
-
-    template_fields = ("_start_date", "_end_date")
-
-    @apply_defaults
-    def __init__(self,
-                 conn_id, start_date="{{data_interval_start | ds}}",
-                 end_date="{{data_interval_end | ds}}",
-                 sleep_interval: int = 30,
-                 **kwargs
-            ):
-        super().__init__(**kwargs)
-        self._sleep_interval = sleep_interval
-        self._conn_id = conn_id
-        self._start_date = start_date
-        self._end_date = end_date
-
-
-    def execute(self, context: Context) -> None:
-        print('adentro execute')
-        self.defer(
-            trigger=MovielensRatingsTrigger(
-                conn_id=self._conn_id,
-                sleep_interval=self._sleep_interval,
-                start_date=self._start_date,
-                end_date=self._end_date,
-            ),
-            method_name='execute_completed'
-        )
-        print('adentro execute termino')
-
-
-    def execute_completed(
-        self,
-        context: Context,
-        event: dict[str, Any] | None = None,
-    ) -> None:
-        print(context)
-        # TODO: Fix templating (from context or operator?)
-        print(f"Movie Ratings are Available! for {{data_interval_start | ds}}-{{data_interval_end | ds}}")
-        return True # TODO: How do we handle failure (e.g. timeout?) In the trigger?
-
+from custom.deferrable_sensors import AwaitMovielensRatingsSensor
 
 with DAG(
     dag_id="05_deferrable_sensor",

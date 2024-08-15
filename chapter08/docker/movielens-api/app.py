@@ -96,5 +96,4 @@ def _date_to_timestamp(date_str):
 
 
 if __name__ == "__main__":
-    # TODO: Configure via env variable? Same range as Airflow webserver by default?
     app.run(host="0.0.0.0", port=8081)
