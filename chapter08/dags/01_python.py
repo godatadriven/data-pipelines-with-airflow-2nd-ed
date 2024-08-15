@@ -1,4 +1,4 @@
-import datetime as dt
+from datetime import datetime, timedelta
 import json
 import logging
 import os
@@ -69,8 +69,8 @@ def _get_with_pagination(session, url, params, batch_size=100):
 with DAG(
     dag_id="01_python",
     description="Fetches ratings from the Movielens API using the Python Operator.",
-    start_date=dt.datetime(2023, 1, 1),
-    end_date=dt.datetime(2023, 1, 10),
+    start_date=datetime(2023, 1, 1),
+    end_date=datetime(2023, 1, 10),
     schedule="@daily",
 ):
 

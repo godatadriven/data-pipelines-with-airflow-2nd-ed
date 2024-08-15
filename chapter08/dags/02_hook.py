@@ -1,4 +1,4 @@
-import datetime as dt
+from datetime import datetime, timedelta
 import json
 import logging
 import os
@@ -10,8 +10,8 @@ from custom.hooks import MovielensHook
 with DAG(
     dag_id="02_hook",
     description="Fetches ratings from the Movielens API using a custom hook.",
-    start_date=dt.datetime(2023, 1, 1),
-    end_date=dt.datetime(2023, 1, 10),
+    start_date=datetime(2023, 1, 1),
+    end_date=datetime(2023, 1, 10),
     schedule="@daily",
 ):
 

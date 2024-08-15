@@ -1,4 +1,4 @@
-import datetime as dt
+from datetime import datetime, timedelta
 
 from airflow import DAG
 from custom.operators import MovielensFetchRatingsOperator
@@ -6,8 +6,8 @@ from custom.operators import MovielensFetchRatingsOperator
 with DAG(
     dag_id="03_operator",
     description="Fetches ratings from the Movielens API using a custom operator.",
-    start_date=dt.datetime(2023, 1, 1),
-    end_date=dt.datetime(2023, 1, 10),
+    start_date=datetime(2023, 1, 1),
+    end_date=datetime(2023, 1, 10),
     schedule="@daily",
 ):
     MovielensFetchRatingsOperator(

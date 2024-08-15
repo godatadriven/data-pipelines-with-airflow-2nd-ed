@@ -30,7 +30,7 @@ class AwaitMovielensRatingsSensor(BaseSensorOperator):
         self._conn_id = conn_id
         self._start_date = start_date
         self._end_date = end_date
-
+        self._timeout = kwargs.get('timeout')
 
     def execute(self, context: Context) -> None:
 
@@ -41,7 +41,8 @@ class AwaitMovielensRatingsSensor(BaseSensorOperator):
                 start_date=self._start_date,
                 end_date=self._end_date,
             ),
-            method_name='execute_completed'
+            method_name='execute_completed',
+            timeout = self._timeout
         )
 
     def execute_completed(
@@ -50,7 +51,6 @@ class AwaitMovielensRatingsSensor(BaseSensorOperator):
         event: dict[str, Any] | None = None,
     ) -> None:
         print(f"Movie Ratings are Available! for {self._start_date}-{self._end_date}") 
-        # TODO: How do we handle failure (e.g. timeout?) In the trigger?
         return True
 
 
@@ -88,7 +88,6 @@ class MovielensRatingsTrigger(BaseTrigger):
             fetch_records = True
             while fetch_records:
                 try:
-                    # TODO: Also implement async get_ratings?
                     next(hook.get_ratings(start_date=self._start_date, end_date=self._end_date, batch_size=1))
                     # If no StopIteration is raised, the request returned at least one record.
                     # This means that there are records for the given period, which we indicate
