@@ -5,7 +5,7 @@ import os
 import pytest
 from airflow.dag_processing.processor import DagFileProcessor
 
-DAG_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "dags/**.py")
+DAG_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "dags/02_bash_operator_no_command.py")
 DAG_FILES = glob.glob(DAG_PATH)
 
 
@@ -17,3 +17,5 @@ def test_dag_integrity(dag_file, caplog):
     for record in caplog.records:
         if record.levelname == "ERROR":
             raise record.exc_info[1]
+        elif "assumed to contain no DAGs" in record.message:
+            assert False, f"No DAGs found in {dag_file}"
