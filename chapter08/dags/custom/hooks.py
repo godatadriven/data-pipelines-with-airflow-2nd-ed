@@ -20,7 +20,7 @@ class MovielensHook(BaseHook):
     """
 
     DEFAULT_SCHEMA = "http"
-    DEFAULT_PORT = 5001  # TODO: Ismael fix.
+    DEFAULT_PORT = 8081
 
     def __init__(self, conn_id, retry=3):
         super().__init__()

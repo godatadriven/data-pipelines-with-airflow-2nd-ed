@@ -43,14 +43,14 @@ class AwaitMovielensRatingsSensor(BaseSensorOperator):
             ),
             method_name='execute_completed'
         )
-                
 
     def execute_completed(
         self,
         context: Context,
         event: dict[str, Any] | None = None,
     ) -> None:
-        print(f"Movie Ratings are Available! for {{data_interval_start | ds}}-{{data_interval_end | ds}}") 
+        print(f"Movie Ratings are Available! for {self._start_date}-{self._end_date}") 
+        # TODO: How do we handle failure (e.g. timeout?) In the trigger?
         return True
 
 
@@ -68,7 +68,8 @@ class MovielensRatingsTrigger(BaseTrigger):
         self._start_date = start_date
         self._end_date = end_date
 
-
+    #TODO: Btw, now in the deserialize method we hardcoded the path to the module + class
+    #Probably better to make the module reference dynamic using __ name __ or something similar
     def serialize(self):
         return ("custom.deferrable_sensors.MovielensRatingsTrigger", {
                 "sleep_interval": self._sleep_interval,
@@ -77,23 +78,23 @@ class MovielensRatingsTrigger(BaseTrigger):
                 "end_date": self._end_date,
             }
         )
-    #TODO: Btw, now in the deserialize method we hardcoded the path to the module + class
-    #Probably better to make the module reference dynamic using __ name __ or something similar
+  
 
     async def run(self):
         # Get an asynchronous version of our database backend. Note that this assumes that
         # the corresponding library (e.g. asyncpg) is installed in the triggerer env.
 
         with MovielensHook(self._conn_id) as hook:
-            while True:
+            fetch_records = True
+            while fetch_records:
                 try:
+                    # TODO: Also implement async get_ratings?
                     next(hook.get_ratings(start_date=self._start_date, end_date=self._end_date, batch_size=1))
                     # If no StopIteration is raised, the request returned at least one record.
                     # This means that there are records for the given period, which we indicate
                     # to Airflow by returning True.
                     self.log.info(f"Found ratings for {self._start_date} to {self._end_date}, continuing!")
-                    yield TriggerEvent(str(uuid.uuid4()))
-      
+                    fetch_records = False
                 except StopIteration:
                     self.log.info(
                         f"Didn't find any ratings for {self._start_date} " f"to {self._end_date}, waiting..."
@@ -106,6 +107,8 @@ class MovielensRatingsTrigger(BaseTrigger):
                     # Make sure we always close our hook's session.
                     hook.close()
         
+        yield TriggerEvent(str(uuid.uuid4()))
+
        
 
 
