@@ -20,7 +20,7 @@ class MovielensHook(BaseHook):
     """
 
     DEFAULT_SCHEMA = "http"
-    DEFAULT_PORT = 5000
+    DEFAULT_PORT = 8081
 
     def __init__(self, conn_id, retry=3):
         super().__init__(source=None)
