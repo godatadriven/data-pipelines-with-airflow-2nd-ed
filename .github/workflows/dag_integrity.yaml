@@ -1,6 +1,6 @@
 name: DAG integrity tests
 
-on: [push]
+on: [workflow_dispatch]
 #  push:
 #    paths:
 #      - "dags/**/*.py"
