@@ -16,7 +16,7 @@ with DAG(
         conn_id="movielens",
         start_date="{{data_interval_start | ds}}",
         end_date="{{data_interval_end | ds}}",
-        timeout= timedelta(seconds=560,
+        timeout= timedelta(seconds=60),
     )
 
     fetch_ratings = MovielensFetchRatingsOperator(

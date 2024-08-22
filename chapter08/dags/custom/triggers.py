@@ -45,7 +45,8 @@ class MovielensRatingsSensorAsync(BaseSensorOperator):
             timeout = self._timeout
         )
 
-    def execute_completed(self,context: Context) -> bool:
+    def execute_completed(self,context: Context, event: dict[str, Any] | None = None ) -> bool:
+
         print(f"Movie Ratings are Available! for {self._start_date}-{self._end_date}") 
         return True
 
