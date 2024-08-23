@@ -5,9 +5,10 @@ from pathlib import Path
 
 import pytest
 from airflow.models import DAG, Connection
+from chapter09.custom.hooks import MovielensHook
+# from custom.hooks import MovielensHook
 from airflowbook.operators.movielens_operator import (
     MovielensDownloadOperator,
-    MovielensHook,
     MovielensToPostgresOperator,
     PostgresHook,
 )
@@ -17,7 +18,9 @@ from pytest_mock import MockFixture
 
 @pytest.fixture(scope="module")
 def postgres_credentials():
-    PostgresCredentials = namedtuple("PostgresCredentials", ["username", "password"])
+    PostgresCredentials = namedtuple(
+        "PostgresCredentials", ["username", "password"]
+    )
     return PostgresCredentials("testuser", "testpass")
 
 
@@ -41,11 +44,16 @@ def test_movielens_operator(tmp_path: Path, mocker: MockFixture):
     mocker.patch.object(
         MovielensHook,
         "get_connection",
-        return_value=Connection(conn_id="test", login="airflow", password="airflow"),
+        return_value=Connection(
+            conn_id="test", login="airflow", password="airflow"
+        ),
     )
     dag = DAG(
         "test_dag",
-        default_args={"owner": "airflow", "start_date": datetime.datetime(2019, 1, 1)},
+        default_args={
+            "owner": "airflow",
+            "start_date": datetime.datetime(2019, 1, 1),
+        },
         schedule_interval="@daily",
     )
 
@@ -66,11 +74,15 @@ def test_movielens_operator(tmp_path: Path, mocker: MockFixture):
     )
 
 
-def test_movielens_to_postgres_operator(mocker: MockFixture, test_dag: DAG, postgres, postgres_credentials):
+def test_movielens_to_postgres_operator(
+    mocker: MockFixture, test_dag: DAG, postgres, postgres_credentials
+):
     mocker.patch.object(
         MovielensHook,
         "get_connection",
-        return_value=Connection(conn_id="test", login="airflow", password="airflow"),
+        return_value=Connection(
+            conn_id="test", login="airflow", password="airflow"
+        ),
     )
     mocker.patch.object(
         PostgresHook,
@@ -109,7 +121,9 @@ def test_movielens_to_postgres_operator(mocker: MockFixture, test_dag: DAG, post
     assert row_count > 0
 
 
-postgres_container = container(image="{postgres_image.id}", ports={"5432/tcp": None})
+postgres_container = container(
+    image="{postgres_image.id}", ports={"5432/tcp": None}
+)
 
 
 def test_call_fixture(postgres_container):

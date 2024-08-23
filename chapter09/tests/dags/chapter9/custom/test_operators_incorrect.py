@@ -8,7 +8,9 @@ def test_movielenspopularityoperator(mocker: MockFixture):
     mock_get = mocker.patch.object(
         BaseHook,
         "get_connection",
-        return_value=Connection(conn_id="test", login="airflow", password="airflow"),
+        return_value=Connection(
+            conn_id="test", login="airflow", password="airflow"
+        ),
     )
     task = MovielensPopularityOperator(
         task_id="test_id",

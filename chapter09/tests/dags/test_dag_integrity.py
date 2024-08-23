@@ -1,11 +1,14 @@
 """Test integrity of DAGs."""
+
 import glob
 import os
 
 import pytest
 from airflow.dag_processing.processor import DagFileProcessor
 
-DAG_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "dags/02_bash_operator_no_command.py")
+DAG_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "..", "dags/02_bash_operator_no_command.py"
+)
 DAG_FILES = glob.glob(DAG_PATH)
 
 

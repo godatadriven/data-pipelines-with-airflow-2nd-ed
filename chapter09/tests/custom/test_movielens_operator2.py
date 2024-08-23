@@ -2,7 +2,11 @@ import os
 
 import pytest
 from airflow.models import Connection
-from airflowbook.operators.movielens_operator import MovielensHook, MovielensToPostgresOperator, PostgresHook
+from airflowbook.operators.movielens_operator import (
+    MovielensHook,
+    MovielensToPostgresOperator,
+    PostgresHook,
+)
 from pytest_docker_tools import container, fetch
 
 postgres_image = fetch(repository="postgres:11.1-alpine")
@@ -22,7 +26,9 @@ def test_movielens_to_postgres_operator(mocker, test_dag, postgres):
     mocker.patch.object(
         MovielensHook,
         "get_connection",
-        return_value=Connection(conn_id="test", login="airflow", password="airflow"),
+        return_value=Connection(
+            conn_id="test", login="airflow", password="airflow"
+        ),
     )
     mocker.patch.object(
         PostgresHook,

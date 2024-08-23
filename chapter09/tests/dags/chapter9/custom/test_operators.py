@@ -1,13 +1,18 @@
 from airflow.models import Connection
 from airflow.operators.bash import BashOperator
-from airflowbook.operators.movielens_operator import MovielensHook, MovielensPopularityOperator
+from airflowbook.operators.movielens_operator import (
+    MovielensHook,
+    MovielensPopularityOperator,
+)
 
 
 def test_movielenspopularityoperator(mocker):
     mock_get = mocker.patch.object(
         MovielensHook,
         "get_connection",
-        return_value=Connection(conn_id="test", login="airflow", password="airflow"),
+        return_value=Connection(
+            conn_id="test", login="airflow", password="airflow"
+        ),
     )
     task = MovielensPopularityOperator(
         task_id="test_id",
@@ -23,6 +28,8 @@ def test_movielenspopularityoperator(mocker):
 
 
 def test_example():
-    task = BashOperator(task_id="test", bash_command="echo 'hello!'", xcom_push=True)
+    task = BashOperator(
+        task_id="test", bash_command="echo 'hello!'", xcom_push=True
+    )
     result = task.execute(context={})
     assert result == "hello!"
