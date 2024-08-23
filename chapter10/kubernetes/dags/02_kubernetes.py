@@ -20,16 +20,7 @@ with DAG(
 
     fetch_ratings = KubernetesPodOperator(
         task_id="fetch_ratings",
-        # Airflow 2.0.0a2 has a bug that results in the pod operator not applying
-        # the image pull policy. By default, the k8s SDK uses a policy of always
-        # pulling the image when using the latest tag, but only pulling an image if
-        # it's not present (what we want) when using a different tag. For now, we
-        # use this behaviour to get our desired image policy behaviour.
-        #
-        # TODO: Remove this workaround when the bug is fixed.
-        #       See https://github.com/apache/airflow/issues/11998.
-        #
-        image="manning-airflow/movielens-fetch:k8s",
+        image="registry:5000/manning-airflow/movielens-fetch:k8s",
         cmds=["fetch-ratings"],
         arguments=[
             "--start_date",
@@ -47,17 +38,17 @@ with DAG(
         ],
         namespace="airflow",
         name="fetch-ratings",
-        cluster_context="docker-desktop",
+        config_file="/opt/airflow/kubeconfig.yaml",
         in_cluster=False,
         volumes=[volume],
         volume_mounts=[volume_mount],
-        image_pull_policy="Never",
+        image_pull_policy="IfNotPresent",
         is_delete_operator_pod=True,
     )
 
     rank_movies = KubernetesPodOperator(
         task_id="rank_movies",
-        image="manning-airflow/movielens-rank:k8s",
+        image="registry:5000/manning-airflow/movielens-rank:k8s",
         cmds=["rank-movies"],
         arguments=[
             "--input_path",
@@ -67,11 +58,11 @@ with DAG(
         ],
         namespace="airflow",
         name="rank-movies",
-        cluster_context="docker-desktop",
+        config_file="/opt/airflow/kubeconfig.yaml",
         in_cluster=False,
         volumes=[volume],
         volume_mounts=[volume_mount],
-        image_pull_policy="Never",
+        image_pull_policy="IfNotPresent",
         is_delete_operator_pod=True,
     )
 
