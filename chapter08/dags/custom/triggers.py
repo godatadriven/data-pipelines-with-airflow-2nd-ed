@@ -10,7 +10,7 @@ from airflow.utils.decorators import apply_defaults
 from custom.hooks import MovielensHook
 import uuid
 
-class MovielensRatingsSensorAsync(BaseSensorOperator):
+class MovielensSensorAsync(BaseSensorOperator):
     """
     Deferable sensor that waits until an XCom becomes available.
     """
@@ -41,17 +41,17 @@ class MovielensRatingsSensorAsync(BaseSensorOperator):
                 start_date=self._start_date,
                 end_date=self._end_date,
             ),
-            method_name='execute_completed',
+            method_name='execute_complete',
             timeout = self._timeout
         )
 
-    def execute_completed(self,context: Context, event: dict[str, Any] | None = None ) -> bool:
+    def execute_complete(self,context: Context, event: dict[str, Any] | None = None ) -> bool:
 
         print(f"Movie Ratings are Available! for {self._start_date}-{self._end_date}") 
         return True
 
 
-class MovielensRatingsTrigger(BaseTrigger):
+class MovielensTrigger(BaseTrigger):
     def __init__(self,          
                  conn_id, 
                  start_date, 
@@ -75,7 +75,6 @@ class MovielensRatingsTrigger(BaseTrigger):
             }
         )
   
-
     async def run(self):
         # Get an asynchronous version of our database backend. Note that this assumes that
         # the corresponding library (e.g. asyncpg) is installed in the triggerer env.

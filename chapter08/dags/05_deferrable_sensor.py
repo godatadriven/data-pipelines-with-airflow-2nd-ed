@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from airflow import DAG
 
-from custom.operators import MovielensFetchRatingsOperator
-from custom.triggers import MovielensRatingsSensorAsync
+from custom.operators import MovielensFetchOperator
+from custom.triggers import MovielensSensorAsync
 
 with DAG(
     dag_id="05_deferrable_sensor",
@@ -11,7 +11,7 @@ with DAG(
     end_date=datetime(2023, 1, 10),
     schedule="@daily",
 ):
-    wait_for_ratings = MovielensRatingsSensorAsync(
+    wait_for_ratings = MovielensSensorAsync(
         task_id="wait_for_ratings",
         conn_id="movielens",
         start_date="{{data_interval_start | ds}}",
