@@ -11,7 +11,7 @@ from custom.ranking import rank_movies_by_rating
 
 MOVIELENS_HOST = os.environ.get("MOVIELENS_HOST", "movielens")
 MOVIELENS_SCHEMA = os.environ.get("MOVIELENS_SCHEMA", "http")
-MOVIELENS_PORT = os.environ.get("MOVIELENS_PORT", "5000")
+MOVIELENS_PORT = os.environ.get("MOVIELENS_PORT", "8081")
 
 MOVIELENS_USER = os.environ["MOVIELENS_USER"]
 MOVIELENS_PASSWORD = os.environ["MOVIELENS_PASSWORD"]

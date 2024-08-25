@@ -35,7 +35,7 @@ class MovielensSensorAsync(BaseSensorOperator):
     def execute(self, context: Context) -> None:
 
         self.defer(
-            trigger=MovielensRatingsTrigger(
+            trigger=MovielensTrigger(
                 conn_id=self._conn_id,
                 sleep_interval=self._sleep_interval,
                 start_date=self._start_date,
@@ -67,7 +67,7 @@ class MovielensTrigger(BaseTrigger):
 
 
     def serialize(self):
-        return ("custom.triggers.MovielensRatingsTrigger", {
+        return ("custom.triggers.MovielensTrigger", {
                 "sleep_interval": self._sleep_interval,
                 "conn_id": self._conn_id,
                 "start_date": self._start_date,

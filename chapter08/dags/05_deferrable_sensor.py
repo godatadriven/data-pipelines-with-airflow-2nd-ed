@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from airflow import DAG
 
-from custom.operators import MovielensFetchOperator
+from custom.operators import MovielensFetchRatingsOperator
 from custom.triggers import MovielensSensorAsync
 
 with DAG(
