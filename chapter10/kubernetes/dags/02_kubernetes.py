@@ -1,5 +1,5 @@
-import datetime as dt
 import os
+from datetime import datetime
 
 from airflow import DAG
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
@@ -8,9 +8,9 @@ from kubernetes.client import models as k8s
 with DAG(
     dag_id="02_kubernetes",
     description="Fetches ratings from the Movielens API using kubernetes.",
-    start_date=dt.datetime(2019, 1, 1),
-    end_date=dt.datetime(2019, 1, 3),
-    schedule_interval="@daily",
+    start_date=datetime(2019, 1, 1),
+    end_date=datetime(2019, 1, 3),
+    schedule="@daily",
     default_args={"depends_on_past": True},
 ) as dag:
     volume_claim = k8s.V1PersistentVolumeClaimVolumeSource(claim_name="data-volume")
@@ -24,11 +24,11 @@ with DAG(
         cmds=["fetch-ratings"],
         arguments=[
             "--start_date",
-            "{{ds}}",
+            "{{data_interval_start | ds}}",
             "--end_date",
-            "{{next_ds}}",
+            "{{data_interval_end | ds}}",
             "--output_path",
-            "/data/ratings/{{ds}}.json",
+            "/data/ratings/{{data_interval_start | ds}}.json",
             "--user",
             os.environ["MOVIELENS_USER"],
             "--password",
@@ -52,9 +52,9 @@ with DAG(
         cmds=["rank-movies"],
         arguments=[
             "--input_path",
-            "/data/ratings/{{ds}}.json",
+            "/data/ratings/{{data_interval_start | ds}}.json",
             "--output_path",
-            "/data/rankings/{{ds}}.csv",
+            "/data/rankings/{{data_interval_start | ds}}.csv",
         ],
         namespace="airflow",
         name="rank-movies",

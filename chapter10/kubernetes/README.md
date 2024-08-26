@@ -15,7 +15,7 @@ For your convenience we have set one up inside docker-compose so the way to get 
 ```
 # First build the used images and make them available for the k8s service
 ./setup_local_image_registry.sh
-docker-compose up -d
+docker compose up -d
 ```
 
 In a separate terminal you can try the `kubectl cluster-info` command mentioned in the book to see if it connects to your k8s cluster correctly. If you want to run it from your own machine make sure you have the KUBECONFIG env var set correctly (see .env)

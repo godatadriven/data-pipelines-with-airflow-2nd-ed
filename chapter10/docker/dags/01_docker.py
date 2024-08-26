@@ -1,5 +1,5 @@
-import datetime as dt
 import os
+from datetime import datetime
 
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
@@ -8,9 +8,9 @@ from docker.types import Mount
 with DAG(
     dag_id="01_docker",
     description="Fetches ratings from the Movielens API using Docker.",
-    start_date=dt.datetime(2019, 1, 1),
-    end_date=dt.datetime(2019, 1, 3),
-    schedule_interval="@daily",
+    start_date=datetime(2019, 1, 1),
+    end_date=datetime(2019, 1, 3),
+    schedule="@daily",
 ):
     fetch_ratings = DockerOperator(
         task_id="fetch_ratings",
@@ -22,7 +22,7 @@ with DAG(
             "--end_date",
             "{{data_interval_end | ds}}",
             "--output_path",
-            "/data/ratings/{{logical_date | ds}}.json",
+            "/data/ratings/{{data_interval_start | ds}}.json",
             "--user",
             os.environ["MOVIELENS_USER"],
             "--password",
@@ -41,9 +41,9 @@ with DAG(
         command=[
             "rank-movies",
             "--input_path",
-            "/data/ratings/{{logical_date | ds}}.json",
+            "/data/ratings/{{data_interval_start | ds}}.json",
             "--output_path",
-            "/data/rankings/{{logical_date | ds}}.csv",
+            "/data/rankings/{{data_interval_start | ds}}.csv",
         ],
         network_mode="docker_default",
         mounts=[Mount(source="airflow-data-volume", target="/data", type="volume")],
