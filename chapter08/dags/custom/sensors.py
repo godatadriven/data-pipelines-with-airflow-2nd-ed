@@ -2,6 +2,7 @@
 
 from airflow.sensors.base import BaseSensorOperator
 from airflow.utils.decorators import apply_defaults
+
 from custom.hooks import MovielensHook
 
 
