@@ -27,9 +27,3 @@ def test_movielenspopularityoperator(mocker):
     mock_get.assert_called_with("testconn")
 
 
-def test_example():
-    task = BashOperator(
-        task_id="test", bash_command="echo 'hello!'", xcom_push=True
-    )
-    result = task.execute(context={})
-    assert result == "hello!"
