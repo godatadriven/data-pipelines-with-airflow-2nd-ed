@@ -1,0 +1,163 @@
+x-airflow-common:
+  &airflow-common
+  environment:
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
+    # Dag specific connection setup
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+    AIRFLOW__CORE__FERNET_KEY: hCRoPUYBO27QiEg1MRu5hSjLG7yNd8y8XKlm-8kRlkQ=
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
+    AIRFLOW_CONN_S3: aws://http://AKIAIOSFODNN7EXAMPLE:wJalrXUtnFEMI%2FK7MDENG%2FbPxRfiCYEXAMPLEKEY@minio%3A9000/?endpoint_url=http%3A%2F%2Fminio%3A9000
+    AIRFLOW_CONN_CITIBIKE: http://citibike:cycling@citibike_api:5000
+    AIRFLOW_CONN_TAXI: http://taxi_fileserver
+    AIRFLOW_CONN_RESULT_DB: postgresql://nyc:tr4N5p0RT4TI0N@result_db:5432/nyctransportation
+  volumes:
+    - ./src:/opt/airflow/nyctransport/src
+    - ./setup.py:/opt/airflow/nyctransport/setup.py
+    - build:/opt/airflow/nyctransport/build
+
+services:
+  airflow-webserver:
+    <<: *airflow-common
+
+  airflow-scheduler:
+    <<: *airflow-common
+
+  airflow-worker:
+    <<: *airflow-common
+
+  airflow-triggerer:
+    <<: *airflow-common
+
+  airflow-init:
+    <<: *airflow-common
+
+  airflow-cli:
+    <<: *airflow-common
+
+  airflow-python-build:
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.9.2}
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    # yamllint disable rule:line-length
+    command:
+      - -c
+      - |
+        if [[ -z "${AIRFLOW_UID}" ]]; then
+          echo
+          echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
+          echo "If you are on Linux, you SHOULD follow the instructions below to set "
+          echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
+          echo "For other operating systems you can get rid of the warning with manually created .env file:"
+          echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
+          echo
+        fi
+        chown -R "${AIRFLOW_UID}:0" /opt/airflow/nyctransport/build
+        exec /entrypoint airflow version
+    # yamllint enable rule:line-length
+    user: "0:0"
+
+  taxi_fileserver:
+    build:
+      context: ./services/taxi_fileserver
+    environment:
+      - POSTGRES_HOST=taxi_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=taxi
+      - POSTGRES_PASSWORD=ridetlc
+      - POSTGRES_DATABASE=tlctriprecords
+      - DATA_YEAR=2023
+    depends_on:
+      - taxi_db
+    ports:
+      - "8081:80"
+
+  taxi_db:
+    build:
+      context: ./services/taxi_db
+      args:
+        DATA_YEAR: 2023
+    ports:
+      - "5433:5432"
+
+  citibike_api:
+    build:
+      context: ./services/citibike_api
+    environment:
+      - POSTGRES_HOST=citibike_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=citi
+      - POSTGRES_PASSWORD=cycling
+      - POSTGRES_DATABASE=citibike
+      - DATA_YEAR=2023
+    depends_on:
+      - citibike_db
+    ports:
+      - "8082:5000"
+
+  citibike_db:
+    build:
+      context: ./services/citibike_db
+      args:
+        DATA_YEAR: 2023
+    ports:
+      - "5434:5432"
+
+  minio:
+    image: minio/minio:RELEASE.2024-06-22T05-26-45Z
+    ports:
+      - "9000:9000"
+      - "35299:35299"
+    environment:
+      - MINIO_ROOT_USER=AKIAIOSFODNN7EXAMPLE
+      - MINIO_ROOT_PASSWORD=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+    command: "server /data"
+    volumes:
+      - locals3-data-volume:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio_init:
+    image: minio/mc:RELEASE.2024-06-20T14-50-54Z
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc config host add minio http://minio:9000 AKIAIOSFODNN7EXAMPLE wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY); do echo 'MinIO not up and running yet...' && sleep 1; done;
+      echo 'MinIO is available.';
+      /usr/bin/mc mb minio/datalake;
+      exit 0;
+      "
+
+  result_db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=nyc
+      - POSTGRES_PASSWORD=tr4N5p0RT4TI0N
+      - POSTGRES_DB=nyctransportation
+    volumes:
+    - ./services/result_db/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    - result-db-volume:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+
+  nyc_transportation_api:
+    build:
+      context: ./services/nyc_transportation_api
+    environment:
+      - POSTGRES_HOST=result_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=nyc
+      - POSTGRES_PASSWORD=tr4N5p0RT4TI0N
+      - POSTGRES_DATABASE=nyctransportation
+    ports:
+      - "8083:5000"
+
+volumes:
+  locals3-data-volume:
+  result-db-volume:
+  build:
