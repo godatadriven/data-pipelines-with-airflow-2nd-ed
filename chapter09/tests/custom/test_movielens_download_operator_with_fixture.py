@@ -7,17 +7,6 @@ from chapter09.custom.movielens_download_operator import MovielensDownloadOperat
 from chapter09.custom.movielens_hook import MovielensHook
 
 
-@pytest.fixture
-def test_dag():
-    return DAG(
-        "test_dag",
-        default_args={
-            "owner": "airflow",
-            "start_date": datetime.datetime(2024, 1, 1),
-        },
-        schedule ="@daily",
-    )
-
 def test_movielens_operator(tmp_path, mocker, test_dag):
     mocker.patch.object(
         MovielensHook,

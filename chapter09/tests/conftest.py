@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+import uuid
 from airflow.models import DAG, BaseOperator
 
 pytest_plugins = ["helpers_namespace"]
@@ -9,12 +10,12 @@ pytest_plugins = ["helpers_namespace"]
 @pytest.fixture
 def test_dag():
     return DAG(
-        "test_dag",
+        f"test_dag_{uuid.uuid4()}",
         default_args={
             "owner": "airflow",
-            "start_date": datetime.datetime(2015, 1, 1),
+            "start_date": datetime.datetime(2024, 1, 1),
         },
-        schedule_interval="@daily",
+        schedule="@daily",
     )
 
 
