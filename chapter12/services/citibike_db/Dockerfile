@@ -1,5 +1,7 @@
 FROM postgres:16-alpine AS builder
 
+ARG DATA_YEAR=2023
+ENV DATA_YEAR=${DATA_YEAR}
 ENV POSTGRES_HOST_AUTH_METHOD=trust
 COPY postgres-init.sh /docker-entrypoint-initdb.d/postgres-init.sh
 RUN apk update && \

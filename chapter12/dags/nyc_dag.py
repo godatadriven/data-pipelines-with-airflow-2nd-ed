@@ -91,7 +91,7 @@ with DAG(
 
     def transform_citi_bike_data(df):
         # Map citi bike lat,lon coordinates to taxi zone ids
-        taxi_zones = geopandas.read_file("https://s3.amazonaws.com/nyc-tlc/misc/taxi_zones.zip").to_crs(
+        taxi_zones = geopandas.read_file("https://d37ci6vzurychx.cloudfront.net/misc/taxi_zones.zip").to_crs(
             "EPSG:4326"
         )
         start_gdf = geopandas.GeoDataFrame(
@@ -104,10 +104,10 @@ with DAG(
             crs="EPSG:4326",
             geometry=geopandas.points_from_xy(df["end_station_longitude"], df["end_station_latitude"]),
         )
-        df_with_zones = geopandas.sjoin(start_gdf, taxi_zones, how="left", op="within").rename(
+        df_with_zones = geopandas.sjoin(start_gdf, taxi_zones, how="left").rename(
             columns={"LocationID": "start_location_id"}
         )
-        end_zones = geopandas.sjoin(end_gdf, taxi_zones, how="left", op="within")
+        end_zones = geopandas.sjoin(end_gdf, taxi_zones, how="left")
         df_with_zones["end_location_id"] = end_zones["LocationID"]
         return df_with_zones[
             [
