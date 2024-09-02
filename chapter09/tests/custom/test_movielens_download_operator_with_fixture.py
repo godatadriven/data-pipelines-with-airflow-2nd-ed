@@ -20,7 +20,7 @@ def test_movielens_operator(tmp_path, mocker, test_dag):
     mocker.patch.object(
         MovielensHook,
         "get_ratings",
-        return_value=[{"movieId": 1, "rating": 5}, {"movieId": 2, "rating": 4}]
+        return_value=[{"movieId": 1, "rating": 5, "userId": 123, "timestamp": 1725299750}, {"movieId": 2, "rating": 4, "userId": 456, "timestamp": 1525299750 }]
     )
 
     task = MovielensDownloadOperator(

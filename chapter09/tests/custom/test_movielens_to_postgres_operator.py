@@ -39,7 +39,7 @@ def test_movielens_to_postgres_operator(mocker, postgres, test_dag):
     mocker.patch.object(
         MovielensHook,
         "get_ratings",
-        return_value=[{"movieId": 1, "rating": 5}, {"movieId": 2, "rating": 4}]
+        return_value=[{"movieId": 1, "rating": 5, "userId": 123, "timestamp": 1725299750}, {"movieId": 2, "rating": 4, "userId": 456, "timestamp": 1525299750 }]
     )
     mocker.patch.object(
         PostgresHook,
@@ -53,15 +53,6 @@ def test_movielens_to_postgres_operator(mocker, postgres, test_dag):
             port=postgres.ports["5432/tcp"][0]
         ),
     )
-    # test_dag2 = DAG(
-    #     "test_dag3",
-    #     default_args={
-    #         "owner": "airflow",
-    #         "start_date": datetime.datetime(2024, 1, 1),
-    #     },
-    #     schedule="@daily",
-    # )
-    #
     task = MovielensToPostgresOperator(
         task_id="test",
         movielens_conn_id="test",
@@ -69,7 +60,7 @@ def test_movielens_to_postgres_operator(mocker, postgres, test_dag):
         end_date="{{ data_interval_end | ds}}",
         postgres_conn_id="postgres",
         insert_query=(
-            "INSERT INTO movielens (movieId,rating,scrapeTime) "
+            "INSERT INTO movielens (movieId,rating,ratingTimestamp,userId,scrapeTime) "
             "VALUES ({0}, '{{ macros.datetime.now() }}')"
         ),
         dag=test_dag,
