@@ -19,11 +19,11 @@ psql -v ON_ERROR_STOP=1 tlctriprecords <<-EOSQL
 EOSQL
 
 # Load data into postgres
-for i in {01..12}
+for month in {01..12}
 do
 psql -v ON_ERROR_STOP=1 tlctriprecords <<-EOSQL
     COPY triprecords(pickup_datetime,dropoff_datetime,trip_distance,pickup_locationid,dropoff_locationid)
-    FROM '/csvdata/yellowtripdata_${DATA_YEAR}-${i}.csv' DELIMITER ',' CSV HEADER;
+    FROM '/csvdata/yellowtripdata_${DATA_YEAR}-${month}.csv' DELIMITER ',' CSV HEADER;
 EOSQL
 done
 

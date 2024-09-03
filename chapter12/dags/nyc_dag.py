@@ -21,7 +21,7 @@ with DAG(
     catchup=False,
 ):
 
-    def _download_citi_bike_data(ts_nodash, **_):
+    def _download_citi_bike_data(data_interval_start, **_):
         citibike_conn = BaseHook.get_connection(conn_id="citibike")
 
         url = f"http://{citibike_conn.host}:{citibike_conn.port}/recent/minute/15"
@@ -31,7 +31,7 @@ with DAG(
         s3_hook = S3Hook(aws_conn_id="s3")
         s3_hook.load_string(
             string_data=json.dumps(data),
-            key=f"raw/citibike/{ts_nodash}.json",
+            key=f"raw/citibike/{data_interval_start.strftime("%Y%m%dT%H%M%S")}.json",
             bucket_name="datalake",
         )
 
@@ -140,13 +140,13 @@ with DAG(
         input_callable_kwargs={
             "pandas_read_callable": pd.read_json,
             "bucket": "datalake",
-            "paths": "raw/citibike/{{ ts_nodash }}.json",
+            "paths": "raw/citibike/{{ data_interval_start | ts_nodash }}.json",
         },
         transform_callable=transform_citi_bike_data,
         output_callable=write_minio_object,
         output_callable_kwargs={
             "bucket": "datalake",
-            "path": "processed/citibike/{{ ts_nodash }}.parquet",
+            "path": "processed/citibike/{{ data_interval_start | ts_nodash }}.parquet",
             "pandas_write_callable": pd.DataFrame.to_parquet,
             "pandas_write_callable_kwargs": {"engine": "auto"},
         },
@@ -179,7 +179,7 @@ with DAG(
         output_callable=write_minio_object,
         output_callable_kwargs={
             "bucket": "datalake",
-            "path": "processed/taxi/{{ ts_nodash }}.parquet",
+            "path": "processed/taxi/{{ data_interval_start | ts_nodash }}.parquet",
             "pandas_write_callable": pd.DataFrame.to_parquet,
             "pandas_write_callable_kwargs": {"engine": "auto"},
         },
@@ -189,7 +189,7 @@ with DAG(
         task_id="taxi_to_db",
         minio_conn_id="s3",
         minio_bucket="datalake",
-        minio_key="processed/taxi/{{ ts_nodash }}.parquet",
+        minio_key="processed/taxi/{{ data_interval_start | ts_nodash }}.parquet",
         pandas_read_callable=pd.read_parquet,
         postgres_conn_id="result_db",
         postgres_table="taxi_rides",
@@ -200,7 +200,7 @@ with DAG(
         task_id="citi_bike_to_db",
         minio_conn_id="s3",
         minio_bucket="datalake",
-        minio_key="processed/citibike/{{ ts_nodash }}.parquet",
+        minio_key="processed/citibike/{{ data_interval_start | ts_nodash }}.parquet",
         pandas_read_callable=pd.read_parquet,
         postgres_conn_id="result_db",
         postgres_table="citi_bike_rides",
