@@ -3,6 +3,7 @@ import os
 
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
+
 from custom.hooks import MovielensHook
 
 
@@ -36,8 +37,8 @@ class MovielensFetchRatingsOperator(BaseOperator):
         self,
         conn_id,
         output_path,
-        start_date="{{ds}}",
-        end_date="{{next_ds}}",
+        start_date="{{data_interval_start | ds}}}",
+        end_date="{{data_interval_end | ds}}}",
         batch_size=1000,
         **kwargs,
     ):

@@ -54,13 +54,11 @@ services:
 
   movielens:
     build: docker/movielens-api
-    image: manning-airflow/movielens-api
     ports:
-      - "5000:5000"
+      - "8081:8081"
     environment:
       API_USER: airflow
       API_PASSWORD: airflow
 
 volumes:
   airflow-data-volume:
-
