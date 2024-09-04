@@ -4,6 +4,7 @@ from airflow.models import Connection
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from pytest_docker_tools import fetch, container
 
+from chapter09.dags.dagtestdag import dagtestdag
 from chapter09.custom.movielens_hook import MovielensHook
 from chapter09.custom.movielens_to_postgres_operator import MovielensToPostgresOperator
 
@@ -23,7 +24,7 @@ postgres = container(
 )
 
 
-def test_movielens_to_postgres_operator(mocker, postgres, test_dag):
+def test_movielens_to_postgres_operator(mocker, postgres):
     mocker.patch.object(
         MovielensHook,
         "get_connection",
@@ -50,26 +51,11 @@ def test_movielens_to_postgres_operator(mocker, postgres, test_dag):
             port=postgres.ports["5432/tcp"][0]
         ),
     )
-    task = MovielensToPostgresOperator(
-        task_id="test",
-        movielens_conn_id="test",
-        start_date="{{ data_interval_start | ds }}",
-        end_date="{{ data_interval_end | ds}}",
-        postgres_conn_id="postgres",
-        insert_query=(
-            "INSERT INTO movielens (movieId,rating,ratingTimestamp,userId,scrapeTime) "
-            "VALUES ({0}, '{{ macros.datetime.now() }}')"
-        ),
-        dag=test_dag,
-    )
     pg_hook = PostgresHook()
     row_count = pg_hook.get_first("SELECT COUNT(*) FROM movielens")[0]
     assert row_count == 0
 
-    task.run(
-        start_date=test_dag.default_args["start_date"],
-        end_date=test_dag.default_args["start_date"],
-    )
+    dagtestdag.test()
 
     row_count = pg_hook.get_first("SELECT COUNT(*) FROM movielens")[0]
     assert row_count > 0

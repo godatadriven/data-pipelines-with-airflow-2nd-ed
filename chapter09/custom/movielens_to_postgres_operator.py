@@ -33,7 +33,6 @@ class MovielensToPostgresOperator(BaseOperator):
         postgres_hook = PostgresHook(
             postgres_conn_id=self._postgres_conn_id
         )
-        print("HI")
         insert_queries = [
             self._insert_query.format(",".join([str(_[1]) for _ in sorted(rating.items())]))
             for rating in ratings
