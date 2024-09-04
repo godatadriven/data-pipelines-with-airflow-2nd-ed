@@ -8,8 +8,8 @@ from kubernetes.client import models as k8s
 with DAG(
     dag_id="02_kubernetes",
     description="Fetches ratings from the Movielens API using kubernetes.",
-    start_date=datetime(2019, 1, 1),
-    end_date=datetime(2019, 1, 3),
+    start_date=datetime(2023, 1, 1),
+    end_date=datetime(2023, 1, 3),
     schedule="@daily",
     default_args={"depends_on_past": True},
 ) as dag:

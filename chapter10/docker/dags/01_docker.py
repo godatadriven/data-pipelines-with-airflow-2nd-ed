@@ -8,8 +8,8 @@ from docker.types import Mount
 with DAG(
     dag_id="01_docker",
     description="Fetches ratings from the Movielens API using Docker.",
-    start_date=datetime(2019, 1, 1),
-    end_date=datetime(2019, 1, 3),
+    start_date=datetime(2023, 1, 1),
+    end_date=datetime(2023, 1, 3),
     schedule="@daily",
 ):
     fetch_ratings = DockerOperator(
