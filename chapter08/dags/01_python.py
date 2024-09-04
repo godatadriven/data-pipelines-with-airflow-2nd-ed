@@ -1,4 +1,4 @@
-import datetime as dt
+from datetime import datetime
 import json
 import logging
 import os
@@ -11,7 +11,7 @@ from custom.ranking import rank_movies_by_rating
 
 MOVIELENS_HOST = os.environ.get("MOVIELENS_HOST", "movielens")
 MOVIELENS_SCHEMA = os.environ.get("MOVIELENS_SCHEMA", "http")
-MOVIELENS_PORT = os.environ.get("MOVIELENS_PORT", "5000")
+MOVIELENS_PORT = os.environ.get("MOVIELENS_PORT", "8081")
 
 MOVIELENS_USER = os.environ["MOVIELENS_USER"]
 MOVIELENS_PASSWORD = os.environ["MOVIELENS_PASSWORD"]
@@ -69,10 +69,10 @@ def _get_with_pagination(session, url, params, batch_size=100):
 with DAG(
     dag_id="01_python",
     description="Fetches ratings from the Movielens API using the Python Operator.",
-    start_date=dt.datetime(2019, 1, 1),
-    end_date=dt.datetime(2019, 1, 10),
-    schedule_interval="@daily",
-) as dag:
+    start_date=datetime(2023, 1, 1),
+    end_date=datetime(2023, 1, 10),
+    schedule="@daily",
+):
 
     def _fetch_ratings(templates_dict, batch_size=1000, **_):
         logger = logging.getLogger(__name__)
@@ -98,9 +98,9 @@ with DAG(
         task_id="fetch_ratings",
         python_callable=_fetch_ratings,
         templates_dict={
-            "start_date": "{{ds}}",
-            "end_date": "{{next_ds}}",
-            "output_path": "/data/python/ratings/{{ds}}.json",
+            "start_date": "{{ data_interval_start | ds}}",
+            "end_date": "{{ data_interval_end | ds}}",
+            "output_path": "/data/python/ratings/{{ data_interval_start | ds}}.json",
         },
     )
 
@@ -121,8 +121,8 @@ with DAG(
         task_id="rank_movies",
         python_callable=_rank_movies,
         templates_dict={
-            "input_path": "/data/python/ratings/{{ds}}.json",
-            "output_path": "/data/python/rankings/{{ds}}.csv",
+            "input_path": "/data/python/ratings/{{ data_interval_start | ds}}.json",
+            "output_path": "/data/python/rankings/{{ data_interval_start | ds}}.csv",
         },
     )
 

@@ -1,21 +1,20 @@
 import gzip
 import io
-import pickle
-import os
 import json
+import os
+import pickle
 
 import airflow.utils.dates
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.providers.amazon.aws.operators.s3 import S3CopyObjectOperator
-from airflow.providers.amazon.aws.operators.sagemaker import SageMakerEndpointOperator,SageMakerTrainingOperator
-from airflow.providers.amazon.aws.operators.s3 import S3CreateBucketOperator
-
-
-from sagemaker.amazon.common import write_numpy_to_dense_tensor
+from airflow.providers.amazon.aws.operators.s3 import S3CopyObjectOperator, S3CreateBucketOperator
+from airflow.providers.amazon.aws.operators.sagemaker import (
+    SageMakerEndpointOperator,
+    SageMakerTrainingOperator,
+)
 from sagemaker import image_uris
+from sagemaker.amazon.common import write_numpy_to_dense_tensor
 
 BUCKET_NAME=os.environ.get('MNIST_BUCKET')
 REGION_NAME=os.environ.get('AWS_REGION')
@@ -115,7 +114,7 @@ with DAG(
     sagemaker_train_model = SageMakerTrainingOperator(            #G
         task_id="sagemaker_train_model",
         config={                                                  #H
-            "TrainingJobName": "mnistclassifier-{{ execution_date.strftime('%Y-%m-%d-%H-%M-%S') }}",
+            "TrainingJobName": "mnistclassifier-{{ logical_date | ts_nodash }}",
             "AlgorithmSpecification": {
                 "TrainingImage": image_uris.retrieve(framework='kmeans',region=REGION_NAME),
                 "TrainingInputMode": "File",
@@ -152,29 +151,29 @@ with DAG(
         wait_for_completion=True,
         config={
             "Model": {
-                "ModelName": "mnistclassifier-{{ execution_date.strftime('%Y-%m-%d-%H-%M-%S') }}",
+                "ModelName": "mnistclassifier-{{ logical_date | ts_nodash }}",
                 "PrimaryContainer": {
                     "Image": image_uris.retrieve(framework='kmeans',region=REGION_NAME),
                     "ModelDataUrl": (
                         f"s3://{BUCKET_NAME}/mnistclassifier-output/"
-                        "mnistclassifier-{{ execution_date.strftime('%Y-%m-%d-%H-%M-%S') }}/"
+                        "mnistclassifier-{{ logical_date | ts_nodash }}/"
                         "output/model.tar.gz"
                     ), # this will link the model and the training job
                 },
                 "ExecutionRoleArn": SAGEMAKER_ROLE,
             },
             "EndpointConfig": {
-                "EndpointConfigName": "mnistclassifier-{{ execution_date.strftime('%Y-%m-%d-%H-%M-%S') }}",
+                "EndpointConfigName": "mnistclassifier-{{ logical_date | ts_nodash }}",
                 "ProductionVariants": [
                 {
                     "InitialInstanceCount": 1,
                     "InstanceType": "ml.t2.medium",
-                    "ModelName": "mnistclassifier-{{ execution_date.strftime('%Y-%m-%d-%H-%M-%S') }}",
+                    "ModelName": "mnistclassifier-{{ logical_date | ts_nodash }}",
                     "VariantName": "AllTraffic",
                 }],
             },
             "Endpoint": {
-                "EndpointConfigName": "mnistclassifier-{{ execution_date.strftime('%Y-%m-%d-%H-%M-%S') }}",
+                "EndpointConfigName": "mnistclassifier-{{ logical_date | ts_nodash }}",
                 "EndpointName": "mnistclassifier",
             },
         },
