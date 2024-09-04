@@ -53,7 +53,7 @@ services:
     user: "0:0"
 
   movielens:
-    image: manning-airflow/movielens-api
+    build: docker/movielens-api
     ports:
       - "8081:8081"
     environment:
