@@ -8,7 +8,7 @@ x-airflow-common:
     AIRFLOW_CONN_MOVIELENS: http://airflow:airflow@movielens
     MOVIELENS_USER: airflow
     MOVIELENS_PASSWORD: airflow
-    MOVIELENS_HOST: http://movielens.airflow.svc.cluster.local:5555
+    MOVIELENS_HOST: http://movielens.airflow.svc.cluster.local:8081
   volumes:
   - .k3s/kubeconfig.yaml:/opt/airflow/kubeconfig.yaml
 
@@ -59,12 +59,10 @@ services:
     # This is just so that we get the kubeconfig file out
     - .k3s:/output
     - .registryconfig/registries.yaml:/etc/rancher/k3s/registries.yaml
-
     ports:
     - 6443:6443  # Kubernetes API Server
     - 80:80      # Ingress controller port 80
     - 443:443    # Ingress controller port 443
-    # - 5555:5555  # Movielens service to API UI
 
   k3s-agent:
     image: "rancher/k3s:${K3S_VERSION:-latest}"
@@ -82,8 +80,6 @@ services:
     - K3S_NODE_NAME=k3s-agent
     - K3S_URL=https://k3s-server:6443
     - K3S_TOKEN=26576147927211
-    # ports:
-    # - 5556:5555  # Movielens service to API UI if loadbalancer is on agent server
     volumes:
     - .registryconfig/registries.yaml:/etc/rancher/k3s/registries.yaml
 
@@ -94,7 +90,7 @@ services:
     environment:
     - KUBECONFIG=/input/kubeconfig.yaml
     ports:
-    - 5557:5557  # Movielens service to API UI if portforward is on cli server
+    - 8081:8081  # Movielens service to API UI if portforward is on cli server
     volumes:
     - .k3s:/input
     - ./resources:/resources

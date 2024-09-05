@@ -12,6 +12,7 @@ with DAG(
     end_date=datetime(2023, 1, 3),
     schedule="@daily",
     default_args={"depends_on_past": True},
+    max_active_runs=1,
 ) as dag:
     volume_claim = k8s.V1PersistentVolumeClaimVolumeSource(claim_name="data-volume")
     volume = k8s.V1Volume(name="data-volume", persistent_volume_claim=volume_claim)

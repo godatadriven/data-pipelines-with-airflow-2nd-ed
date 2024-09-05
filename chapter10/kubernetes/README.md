@@ -36,7 +36,7 @@ kubectl -n airflow apply -f /resources/api.yml
 You can test if the API is running properly using:
 
 ```
-kubectl -n airflow port-forward --address 0.0.0.0 svc/movielens 5557:5555
+kubectl -n airflow port-forward --address 0.0.0.0 svc/movielens 8081:8081
 ```
 
 and opening http://localhost:5557 in the browser (this should show a hello world page from the API).
