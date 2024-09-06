@@ -42,4 +42,4 @@ jobs:
 
       - name: Test DAG integrity
         run: pytest tests/
-        working-directory: chapter09/dags
+        working-directory: chapter09/

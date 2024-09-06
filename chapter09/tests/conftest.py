@@ -17,13 +17,3 @@ def test_dag():
         },
         schedule="@daily",
     )
-
-
-@pytest.helpers.register
-def run_airflow_task(task: BaseOperator, dag: DAG):
-    dag.clear()
-    task.run(
-        start_date=dag.default_args["start_date"],
-        end_date=dag.default_args["start_date"],
-        ignore_ti_state=True,
-    )
