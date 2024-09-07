@@ -2,6 +2,14 @@
 
 Code accompanying Chapter 9 of the book 'Data pipelines with Apache Airflow'.
 
+## Note
+During the work for this chapter, a bug in Airflow forced a downgrade of the Postgres provider. The bug is described [here](https://github.com/apache/airflow/issues/41373).
+The workaround was to pin the Postgres provider to version 5.0.0:
+```
+apache-airflow-providers-postgres==5.0.0
+```
+
+
 ## Contents
 
 This code example contains the following DAGs:
