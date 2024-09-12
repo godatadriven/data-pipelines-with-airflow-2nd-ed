@@ -1,7 +1,7 @@
 from airflow.models import BaseOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
-from chapter09.custom.movielens_hook import MovielensHook
+from .movielens_hook import MovielensHook
 
 
 class MovielensToPostgresOperator(BaseOperator):

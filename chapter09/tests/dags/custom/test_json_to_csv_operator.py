@@ -2,7 +2,7 @@ import csv
 import json
 from pathlib import Path
 
-from chapter09.custom.json_to_csv_operator import JsonToCsvOperator
+from chapter09.dags.custom.json_to_csv_operator import JsonToCsvOperator
 
 
 def test_json_to_csv_operator(tmp_path: Path):
