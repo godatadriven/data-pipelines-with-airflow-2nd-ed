@@ -1,2 +1,3 @@
-duplicate_task_ids.py
-dag_cycle.py
+01_dag_cycle.py
+02_bash_operator_no_command.py
+03_duplicate_task_ids.py
