@@ -21,9 +21,10 @@ This code example contains the following DAGs:
 - 05_testme.py
 - 06_dagtestdag.py
 
-The first 4 are intended to fail and serve to show the DAG Integrity Tests.
+The first 4 are intended to fail and serve to show the DAG Integrity Tests. Because they are intended to fail, they have been explicitly added to the 
+`.airflowignore` file to avoid errors showing up in the UI.
 
-The `custom` directory contains a custom Hook and a number of operators, that were introduced in chapter 8. We use these 
+The `dags/custom` directory contains a custom Hook and a number of operators, that were introduced in chapter 8. We use these 
 to show how to write tests for your (custom) operators. Tests can be found in the corresponding `tests` directory.
 
 ## Usage
@@ -31,7 +32,7 @@ to show how to write tests for your (custom) operators. Tests can be found in th
 To get started with the code examples, start Airflow in docker using the following command:
 
 ```
-docker-compose up -d --build
+docker-compose up
 ```
 
 Wait for a few seconds and you should be able to access the examples at http://localhost:8080/.
@@ -41,3 +42,18 @@ To stop running the examples, run the following command:
 ```
 docker-compose down -v
 ```
+
+For running the tests themselves, we recommend using a local Python environment. This is because some of the tests depend on Docker to run services in, e.g. Postgres.
+To avoid issues with Docker-in-Docker, using a virtual environment is the best way to go. To set this up:
+
+```bash
+python -m venv my-venv
+source my-venv/bin/activate
+pip install -r requirements.txt
+```
+
+You should now be able to run the tests, e.g.
+```bash
+pytest tests/
+```
+Please note that Docker is a requirement for running all tests. The tests  that use Docker (test_dagtestdag and test_movielens_to_postgres_operator) can exhibit flaky behaviour, so they have been marked with `@flaky`. This setup was confirmed to work with Python 3.12.4

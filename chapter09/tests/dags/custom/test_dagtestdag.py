@@ -2,6 +2,7 @@ import os
 
 from airflow.models import Connection
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from flaky import flaky
 from pytest_docker_tools import fetch, container
 
 from chapter09.dags.dagtestdag import dagtestdag
@@ -22,7 +23,7 @@ postgres = container(
     },
 )
 
-
+@flaky
 def test_movielens_to_postgres_operator(mocker, postgres):
     mocker.patch.object(
         MovielensHook,
