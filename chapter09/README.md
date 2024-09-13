@@ -18,10 +18,9 @@ This code example contains the following DAGs:
 - 02_bash_operator_no_command.py
 - 03_duplicate_task_ids.py
 - 04_nodags.py
-- 05_testme.py
-- 06_dagtestdag.py
+- dagtestdag.py (Not numbered as this causes issues when importing the module in pytest...)
 
-The first 4 are intended to fail and serve to show the DAG Integrity Tests. Because they are intended to fail, they have been explicitly added to the 
+These DAGs are not intended to run in the UI (some even fail deliberately) and are there to show how to use tests. Because they are not intended, they have been explicitly added to the 
 `.airflowignore` file to avoid errors showing up in the UI.
 
 The `dags/custom` directory contains a custom Hook and a number of operators, that were introduced in chapter 8. We use these 
