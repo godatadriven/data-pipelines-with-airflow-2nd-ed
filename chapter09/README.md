@@ -49,7 +49,9 @@ To avoid issues with Docker-in-Docker, using a virtual environment is the best w
 python -m venv my-venv
 source my-venv/bin/activate
 pip install -r requirements.txt
+airflow db init
 ```
+The last line is needed to initialize a local Airflow database (which is needed for some of the tests). By default this will be a sqlite database in the default `AIRFLOW_HOME` path. If you want something else, the configuration is left to you.
 
 You should now be able to run the tests, e.g.
 ```bash
