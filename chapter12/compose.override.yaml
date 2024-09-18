@@ -69,7 +69,8 @@ services:
       - POSTGRES_DATABASE=tlctriprecords
       - DATA_YEAR=2023
     depends_on:
-      - taxi_db
+      taxi_db:
+        condition: service_healthy
     ports:
       - "8081:80"
 
@@ -80,6 +81,11 @@ services:
         DATA_YEAR: 2023
     ports:
       - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taxi -d tlctriprecords"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   citibike_api:
     build:
@@ -92,7 +98,8 @@ services:
       - POSTGRES_DATABASE=citibike
       - DATA_YEAR=2023
     depends_on:
-      - citibike_db
+      citibike_db:
+        condition: service_healthy
     ports:
       - "8082:5000"
 
@@ -103,6 +110,11 @@ services:
         DATA_YEAR: 2023
     ports:
       - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U citi -d citibike"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   minio:
     image: minio/minio:RELEASE.2024-06-22T05-26-45Z
@@ -144,6 +156,11 @@ services:
     - result-db-volume:/var/lib/postgresql/data
     ports:
       - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   nyc_transportation_api:
     build:
@@ -154,6 +171,9 @@ services:
       - POSTGRES_USERNAME=nyc
       - POSTGRES_PASSWORD=tr4N5p0RT4TI0N
       - POSTGRES_DATABASE=nyctransportation
+    depends_on:
+      result_db:
+        condition: service_healthy
     ports:
       - "8083:5000"
 

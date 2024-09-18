@@ -17,6 +17,6 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /etc/periodic/15min/get_last_hour && \
     chmod +x /usr/local/bin/get_last_hour_reboot && \
     chmod +x /entrypoint.sh && \
-    echo "@reboot /usr/local/bin/get_last_hour_reboot" >> /etc/crontabs/root
+    echo "@reboot /usr/local/bin/get_last_hour_reboot > /var/log/prepare-data.log 2>&1" >> /etc/crontabs/root
 
 ENTRYPOINT ["/entrypoint.sh"]
