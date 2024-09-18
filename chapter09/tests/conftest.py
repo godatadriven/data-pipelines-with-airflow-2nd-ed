@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 import uuid
-from airflow.models import DAG, BaseOperator
+from airflow.models import DAG
 
 pytest_plugins = ["helpers_namespace"]
 
