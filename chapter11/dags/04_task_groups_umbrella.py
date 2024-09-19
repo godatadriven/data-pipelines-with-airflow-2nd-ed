@@ -1,6 +1,6 @@
 import pendulum
 from airflow import DAG
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import BranchPythonOperator, PythonOperator
 from airflow.utils.task_group import TaskGroup
 
@@ -33,9 +33,9 @@ def _clean_sales_new(**context):
 with DAG(
     dag_id="04_task_groups_umbrella",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule_interval="@daily",
+    schedule="@daily",
 ) as dag:
-    start = DummyOperator(task_id="start")
+    start = EmptyOperator(task_id="start")
 
     with TaskGroup("fetch_sales"):
         pick_erp_system = BranchPythonOperator(task_id="pick_erp_system", python_callable=_pick_erp_system)
@@ -46,15 +46,15 @@ with DAG(
         fetch_sales_new = PythonOperator(task_id="fetch_sales_new", python_callable=_fetch_sales_new)
         clean_sales_new = PythonOperator(task_id="clean_sales_new", python_callable=_clean_sales_new)
 
-        join_erp_branch = DummyOperator(task_id="join_erp_branch", trigger_rule="none_failed")
+        join_erp_branch = EmptyOperator(task_id="join_erp_branch", trigger_rule="none_failed")
 
     with TaskGroup("fetch_weather"):
-        fetch_weather = DummyOperator(task_id="fetch_weather")
-        clean_weather = DummyOperator(task_id="clean_weather")
+        fetch_weather = EmptyOperator(task_id="fetch_weather")
+        clean_weather = EmptyOperator(task_id="clean_weather")
 
-    join_datasets = DummyOperator(task_id="join_datasets")
-    train_model = DummyOperator(task_id="train_model")
-    deploy_model = DummyOperator(task_id="deploy_model")
+    join_datasets = EmptyOperator(task_id="join_datasets")
+    train_model = EmptyOperator(task_id="train_model")
+    deploy_model = EmptyOperator(task_id="deploy_model")
 
     start >> [pick_erp_system, fetch_weather]
     pick_erp_system >> [fetch_sales_old, fetch_sales_new]
