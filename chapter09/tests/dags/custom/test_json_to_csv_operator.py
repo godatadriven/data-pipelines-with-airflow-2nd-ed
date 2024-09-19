@@ -2,7 +2,7 @@ import csv
 import json
 from pathlib import Path
 
-from airflowbook.operators.json_to_csv_operator import JsonToCsvOperator
+from chapter09.dags.custom.json_to_csv_operator import JsonToCsvOperator
 
 
 def test_json_to_csv_operator(tmp_path: Path):
@@ -21,7 +21,9 @@ def test_json_to_csv_operator(tmp_path: Path):
         f.write(json.dumps(input_data))
 
     # Run task
-    operator = JsonToCsvOperator(task_id="test", input_path=input_path, output_path=output_path)
+    operator = JsonToCsvOperator(
+        task_id="test", input_path=input_path, output_path=output_path
+    )
     operator.execute(context={})
 
     # Read result
