@@ -8,7 +8,7 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
     AIRFLOW__CORE__FERNET_KEY: hCRoPUYBO27QiEg1MRu5hSjLG7yNd8y8XKlm-8kRlkQ=
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
-    AIRFLOW_CONN_S3: aws://http://AKIAIOSFODNN7EXAMPLE:wJalrXUtnFEMI%2FK7MDENG%2FbPxRfiCYEXAMPLEKEY@minio%3A9000/?endpoint_url=http%3A%2F%2Fminio%3A9000
+    AIRFLOW_CONN_S3: aws://AKIAIOSFODNN7EXAMPLE:wJalrXUtnFEMI%2FK7MDENG%2FbPxRfiCYEXAMPLEKEY@/?endpoint_url=http%3A%2F%2Fminio%3A9000
     AIRFLOW_CONN_CITIBIKE: http://citibike:cycling@citibike_api:5000
     AIRFLOW_CONN_TAXI: http://taxi_fileserver
     AIRFLOW_CONN_RESULT_DB: postgresql://nyc:tr4N5p0RT4TI0N@result_db:5432/nyctransportation
