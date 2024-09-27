@@ -30,16 +30,16 @@ to show how to write tests for your (custom) operators. Tests can be found in th
 
 To get started with the code examples, start Airflow in docker using the following command:
 
-```
-docker-compose up
+```bash
+docker compose up
 ```
 
 Wait for a few seconds and you should be able to access the examples at http://localhost:8080/.
 
 To stop running the examples, run the following command:
 
-```
-docker-compose down -v
+```bash
+docker compose down -v
 ```
 
 For running the tests themselves, we recommend using a local Python environment. This is because some of the tests depend on Docker to run services in, e.g. Postgres.
