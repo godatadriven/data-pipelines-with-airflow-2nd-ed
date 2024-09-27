@@ -15,10 +15,10 @@ docker run \
 --rm \
 --name airflow \
 --entrypoint=/bin/bash \
-apache/airflow:2.8.2-python3.8 \
+apache/airflow:2.10.2-python3.12 \
 -c '( \
 airflow db migrate && \
-airflow users create --username admin --password admin --firstname Anonymous --lastname Admin --role Admin --email admin@example.org \
+airflow users create --username airflow --password airflow --firstname Anonymous --lastname Airflow --role Admin --email airflow@example.org \
 ); \
 airflow webserver & \
 airflow scheduler \
