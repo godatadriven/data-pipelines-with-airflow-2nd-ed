@@ -1,5 +1,5 @@
 # Tell docker which image to use as base.
-FROM python:3.8-slim
+FROM python:3.12-slim
 
 # Copy requirements file and run pip to install requirements.
 COPY requirements.txt /tmp/requirements.txt
