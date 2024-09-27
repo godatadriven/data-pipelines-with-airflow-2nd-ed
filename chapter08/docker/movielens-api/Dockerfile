@@ -1,10 +1,12 @@
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 COPY requirements.txt /tmp/requirements.txt
+RUN apt-get update && apt-get install unzip && rm -rf /var/lib/apt/lists/*
 RUN pip install -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
 
-COPY app.py fetch_ratings.py /
-RUN python /fetch_ratings.py --output_path /ratings.csv
+COPY app.py ml-2023-ratings.zip /
+
+RUN unzip ml-2023-ratings.zip && rm -f ml-2023-ratings.zip && mv /2023-ratings.csv /ratings.csv
 
 EXPOSE 8081
 
