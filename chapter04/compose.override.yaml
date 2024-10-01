@@ -34,5 +34,10 @@ services:
       - POSTGRES_DB=airflow
     ports:
       - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
     volumes:
       - ./scripts/create_table.sql:/docker-entrypoint-initdb.d/create_table.sql
