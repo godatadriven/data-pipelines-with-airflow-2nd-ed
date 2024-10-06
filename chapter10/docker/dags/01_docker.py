@@ -1,27 +1,28 @@
-import datetime as dt
 import os
+from datetime import datetime
 
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
+from docker.types import Mount
 
 with DAG(
     dag_id="01_docker",
     description="Fetches ratings from the Movielens API using Docker.",
-    start_date=dt.datetime(2019, 1, 1),
-    end_date=dt.datetime(2019, 1, 3),
-    schedule_interval="@daily",
-) as dag:
+    start_date=datetime(2023, 1, 1),
+    end_date=datetime(2023, 1, 3),
+    schedule="@daily",
+):
     fetch_ratings = DockerOperator(
         task_id="fetch_ratings",
         image="manning-airflow/movielens-fetch",
         command=[
             "fetch-ratings",
             "--start_date",
-            "{{ds}}",
+            "{{data_interval_start | ds}}",
             "--end_date",
-            "{{next_ds}}",
+            "{{data_interval_end | ds}}",
             "--output_path",
-            "/data/ratings/{{ds}}.json",
+            "/data/ratings/{{data_interval_start | ds}}.json",
             "--user",
             os.environ["MOVIELENS_USER"],
             "--password",
@@ -29,9 +30,9 @@ with DAG(
             "--host",
             os.environ["MOVIELENS_HOST"],
         ],
-        network_mode="airflow",
+        network_mode="docker_default",
         # Note: this host path is on the HOST, not in the Airflow docker container.
-        volumes=["/tmp/airflow/data:/data"],
+        mounts=[Mount(source="airflow-data-volume", target="/data", type="volume")],
     )
 
     rank_movies = DockerOperator(
@@ -40,11 +41,12 @@ with DAG(
         command=[
             "rank-movies",
             "--input_path",
-            "/data/ratings/{{ds}}.json",
+            "/data/ratings/{{data_interval_start | ds}}.json",
             "--output_path",
-            "/data/rankings/{{ds}}.csv",
+            "/data/rankings/{{data_interval_start | ds}}.csv",
         ],
-        volumes=["/tmp/airflow/data:/data"],
+        network_mode="docker_default",
+        mounts=[Mount(source="airflow-data-volume", target="/data", type="volume")],
     )
 
     fetch_ratings >> rank_movies

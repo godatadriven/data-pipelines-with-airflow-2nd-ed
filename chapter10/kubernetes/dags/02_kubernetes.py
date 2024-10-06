@@ -1,5 +1,5 @@
-import datetime as dt
 import os
+from datetime import datetime
 
 from airflow import DAG
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
@@ -8,10 +8,11 @@ from kubernetes.client import models as k8s
 with DAG(
     dag_id="02_kubernetes",
     description="Fetches ratings from the Movielens API using kubernetes.",
-    start_date=dt.datetime(2019, 1, 1),
-    end_date=dt.datetime(2019, 1, 3),
-    schedule_interval="@daily",
+    start_date=datetime(2023, 1, 1),
+    end_date=datetime(2023, 1, 3),
+    schedule="@daily",
     default_args={"depends_on_past": True},
+    max_active_runs=1,
 ) as dag:
     volume_claim = k8s.V1PersistentVolumeClaimVolumeSource(claim_name="data-volume")
     volume = k8s.V1Volume(name="data-volume", persistent_volume_claim=volume_claim)
@@ -20,24 +21,15 @@ with DAG(
 
     fetch_ratings = KubernetesPodOperator(
         task_id="fetch_ratings",
-        # Airflow 2.0.0a2 has a bug that results in the pod operator not applying
-        # the image pull policy. By default, the k8s SDK uses a policy of always
-        # pulling the image when using the latest tag, but only pulling an image if
-        # it's not present (what we want) when using a different tag. For now, we
-        # use this behaviour to get our desired image policy behaviour.
-        #
-        # TODO: Remove this workaround when the bug is fixed.
-        #       See https://github.com/apache/airflow/issues/11998.
-        #
-        image="manning-airflow/movielens-fetch:k8s",
+        image="registry:5000/manning-airflow/movielens-fetch:k8s",
         cmds=["fetch-ratings"],
         arguments=[
             "--start_date",
-            "{{ds}}",
+            "{{data_interval_start | ds}}",
             "--end_date",
-            "{{next_ds}}",
+            "{{data_interval_end | ds}}",
             "--output_path",
-            "/data/ratings/{{ds}}.json",
+            "/data/ratings/{{data_interval_start | ds}}.json",
             "--user",
             os.environ["MOVIELENS_USER"],
             "--password",
@@ -47,31 +39,31 @@ with DAG(
         ],
         namespace="airflow",
         name="fetch-ratings",
-        cluster_context="docker-desktop",
+        config_file="/opt/airflow/kubeconfig.yaml",
         in_cluster=False,
         volumes=[volume],
         volume_mounts=[volume_mount],
-        image_pull_policy="Never",
+        image_pull_policy="IfNotPresent",
         is_delete_operator_pod=True,
     )
 
     rank_movies = KubernetesPodOperator(
         task_id="rank_movies",
-        image="manning-airflow/movielens-rank:k8s",
+        image="registry:5000/manning-airflow/movielens-rank:k8s",
         cmds=["rank-movies"],
         arguments=[
             "--input_path",
-            "/data/ratings/{{ds}}.json",
+            "/data/ratings/{{data_interval_start | ds}}.json",
             "--output_path",
-            "/data/rankings/{{ds}}.csv",
+            "/data/rankings/{{data_interval_start | ds}}.csv",
         ],
         namespace="airflow",
         name="rank-movies",
-        cluster_context="docker-desktop",
+        config_file="/opt/airflow/kubeconfig.yaml",
         in_cluster=False,
         volumes=[volume],
         volume_mounts=[volume_mount],
-        image_pull_policy="Never",
+        image_pull_policy="IfNotPresent",
         is_delete_operator_pod=True,
     )
 

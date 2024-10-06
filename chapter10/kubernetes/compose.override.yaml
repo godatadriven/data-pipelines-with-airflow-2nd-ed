@@ -1,0 +1,108 @@
+x-airflow-common:
+  &airflow-common
+  environment:
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 60
+    # Movielens settings.
+    AIRFLOW_CONN_MOVIELENS: http://airflow:airflow@movielens
+    MOVIELENS_USER: airflow
+    MOVIELENS_PASSWORD: airflow
+    MOVIELENS_HOST: http://movielens.airflow.svc.cluster.local:8081
+  volumes:
+  - .k3s/kubeconfig.yaml:/opt/airflow/kubeconfig.yaml
+
+services:
+  airflow-webserver:
+    <<: *airflow-common
+
+  airflow-scheduler:
+    <<: *airflow-common
+
+  airflow-worker:
+    <<: *airflow-common
+
+  airflow-triggerer:
+    <<: *airflow-common
+
+  airflow-init:
+    <<: *airflow-common
+
+  airflow-cli:
+    <<: *airflow-common
+
+  k3s-server:
+    image: "rancher/k3s:${K3S_VERSION:-latest}"
+    command:
+    - server
+    - "--tls-san"
+    - "k3s-server"
+    - "--bind-address"
+    - "k3s-server"
+    tmpfs:
+    - /run
+    - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    restart: always
+    environment:
+    - K3S_NODE_NAME=k3s-server
+    - K3S_TOKEN=26576147927211
+    - K3S_KUBECONFIG_OUTPUT=/output/kubeconfig.yaml
+    - K3S_KUBECONFIG_MODE=666
+    volumes:
+    - k3s-server:/var/lib/rancher/k3s
+    # This is just so that we get the kubeconfig file out
+    - .k3s:/output
+    - .registryconfig/registries.yaml:/etc/rancher/k3s/registries.yaml
+    ports:
+    - 6443:6443  # Kubernetes API Server
+    - 80:80      # Ingress controller port 80
+    - 443:443    # Ingress controller port 443
+
+  k3s-agent:
+    image: "rancher/k3s:${K3S_VERSION:-latest}"
+    tmpfs:
+    - /run
+    - /var/run
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+    privileged: true
+    restart: always
+    environment:
+    - K3S_NODE_NAME=k3s-agent
+    - K3S_URL=https://k3s-server:6443
+    - K3S_TOKEN=26576147927211
+    volumes:
+    - .registryconfig/registries.yaml:/etc/rancher/k3s/registries.yaml
+
+  k3s-cli:
+    image: alpine/k8s:1.29.2
+    tty: true
+    privileged: true
+    environment:
+    - KUBECONFIG=/input/kubeconfig.yaml
+    ports:
+    - 8081:8081  # Movielens service to API UI if portforward is on cli server
+    volumes:
+    - .k3s:/input
+    - ./resources:/resources
+
+
+  registry:
+    image: registry:2
+    ports:
+      - 3632:5000
+    volumes:
+      - ./docker-registry-persistence:/var/lib/registry
+
+
+volumes:
+  k3s-server:
