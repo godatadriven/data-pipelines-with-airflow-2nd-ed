@@ -2,8 +2,9 @@ import logging
 from typing import Callable, Dict
 
 import pandas as pd
-from airflow.hooks.base_hook import BaseHook
+from airflow.hooks.base import BaseHook
 from airflow.models import BaseOperator
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.utils.decorators import apply_defaults
 from minio import Minio
 from sqlalchemy import create_engine
@@ -40,9 +41,9 @@ class MinioPandasToPostgres(BaseOperator):
     def execute(self, context):
         conn = BaseHook.get_connection(conn_id=self._minio_conn_id)
         minio_client = Minio(
-            conn.extra_dejson["host"].split("://")[1],
-            access_key=conn.extra_dejson["aws_access_key_id"],
-            secret_key=conn.extra_dejson["aws_secret_access_key"],
+            conn.extra_dejson["endpoint_url"].split("://")[1],
+            access_key=conn.login,
+            secret_key=conn.password,
             secure=False,
         )
 
@@ -52,14 +53,14 @@ class MinioPandasToPostgres(BaseOperator):
             obj = self._pre_read_transform(obj)
 
         df = self._pandas_read_callable(obj, **self._read_callable_kwargs)
-        df["airflow_execution_date"] = pd.Timestamp(context["execution_date"].timestamp(), unit="s")
+        df["airflow_execution_date"] = pd.Timestamp(context["data_interval_start"].timestamp(), unit="s")
         logging.info("Read DataFrame with shape: %s.", df.shape)
 
-        engine = create_engine(BaseHook.get_connection(self._postgres_conn_id).get_uri())
+        engine = create_engine(PostgresHook(postgres_conn_id=self._postgres_conn_id).get_uri())
         with engine.begin() as conn:
             conn.execute(
                 f"DELETE FROM {self._postgres_table} "
-                f"WHERE airflow_execution_date='{context['execution_date']}';"
+                f"WHERE airflow_execution_date='{context['data_interval_start']}';"
             )
             df.to_sql(self._postgres_table, con=conn, index=False, if_exists="append")
 
