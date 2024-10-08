@@ -153,19 +153,16 @@ with DAG(
     )
 
     def transform_taxi_data(df):
-        df[["pickup_datetime", "dropoff_datetime"]] = df[["pickup_datetime", "dropoff_datetime"]].apply(
-            pd.to_datetime
+        return ( 
+            df
+            .assign(
+                starttime=lambda df: pd.to_datetime(df.pickup_datetime),
+                stoptime=lambda df: pd.to_datetime(df.dropoff_datetime),
+                tripduration=lambda df: (df.stoptime - df.starttime).dt.total_seconds().astype(int),
+            )
+            .rename(columns={"pickup_locationid": "start_location_id","dropoff_locationid": "end_location_id"})
+            .drop(columns=["trip_distance", "pickup_datetime", "dropoff_datetime"])
         )
-        df["tripduration"] = (df["dropoff_datetime"] - df["pickup_datetime"]).dt.total_seconds().astype(int)
-        df = df.rename(
-            columns={
-                "pickup_datetime": "starttime",
-                "pickup_locationid": "start_location_id",
-                "dropoff_datetime": "stoptime",
-                "dropoff_locationid": "end_location_id",
-            }
-        ).drop(columns=["trip_distance"])
-        return df
 
     process_taxi_data = PandasOperator(
         task_id="process_taxi_data",
