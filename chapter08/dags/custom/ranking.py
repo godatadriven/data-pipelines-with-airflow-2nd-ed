@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def rank_movies_by_rating(ratings, min_ratings=2):
+def rank_movies_by_rating(ratings:pd.DataFrame, min_ratings:int=2):
     ranking = (
         ratings.groupby("movieId")
         .agg(
