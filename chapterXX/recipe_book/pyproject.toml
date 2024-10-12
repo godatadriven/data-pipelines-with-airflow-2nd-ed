@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "recipe_book"
+version = "0.1.0"
+description = ""
+authors = ["Ismael Cabral <ismael.cabral@xebia.com>"]
+readme = "README.md"
+packages = [
+    { include = "recipe_book", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+bs4 = "^0.0.1"
+pandas = "^2.1.3"
+langchain = "^0.0.338"
+lxml = "^4.9.3"
+pyarrow = "^14.0.1"
+openai = "^1.3.5"
+tiktoken = "^0.5.1"
+pypdf = "^3.17.1"
+weaviate-client = "^4.4.2"
+azure-search-documents = "^11.5.1"
+typer = "^0.12.5"
+
+
+[tool.poetry.group.dev.dependencies]
+apache-airflow = "^2.7.3"
+pre-commit = "^3.5.0"
+apache-airflow-providers-weaviate = "^2.1.0"
+apache-airflow-providers-docker = "^3.9.1"
+ipykernel = "^6.26.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.ruff]
+line-length = 120
+
+
+[tool.isort]
+line_length = 120
+profile = "black"
+
+
+[tool.poetry.scripts]
+recipe_book = 'recipe_book.cli:app'
