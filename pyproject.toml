@@ -24,6 +24,11 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 line-length = 110
 
+[tool.ruff.lint]
+select = ["E", "F", "W", "Q", "I", "E225"]
+ignore = []
+extend-select = ["E225"]
+
 [tool.black.format]
 line-length = 110
 
