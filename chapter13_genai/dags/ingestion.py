@@ -9,7 +9,7 @@ from airflow.decorators import task
 from airflow.models.baseoperator import chain
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
-from airflow.providers.weaviate.operators.weaviate import WeaviateHook, WeaviateIngestOperator
+# from airflow.providers.weaviate.operators.weaviate import WeaviateHook, WeaviateIngestOperator
 from airflow.providers.docker.operators.docker import DockerOperator
 
 DOCKER_URL =  "tcp://docker-socket-proxy:2375"
@@ -31,16 +31,16 @@ with DAG(
 ):
 
     fetch_dataset = DockerOperator(
-    task_id="fetch_dataset",
-    docker_url=DOCKER_URL,
-    image="icabral/s3transfer:latest",
-    # command=[
-    #     "fetch",
-    #     "s3://data/{{ds}}/train",
-    #     "s3://data/{{ds}}/test",
-    # ],
-    # network_mode="s3-transfer-service",
-    # environment=environment
+        task_id="fetch_dataset",
+        docker_url=DOCKER_URL,
+        image="recipe_book:latest",
+        command=[
+            "transfer",
+            "s3://data/{{data_interval_start | ds}}/train",
+            "s3://data/{{data_interval_start | ds}}/test",
+        ],
+        # network_mode="s3-transfer-service",
+        # environment=environment
     )
 
     @task.branch
@@ -79,14 +79,14 @@ with DAG(
 
     # print_dict = PythonOperator(task_id="print_dict", python_callable=print_dict, trigger_rule="none_failed")
 
-    a = pd.read_parquet("./dags/astro_blog.parquet").to_dict(orient="records")[:3]
+    # a = pd.read_parquet("./dags/astro_blog.parquet").to_dict(orient="records")[:3]
 
-    import_data = WeaviateIngestOperator(
-        task_id="import_data",
-        conn_id=weaviate_conn_id,
-        class_name=CLASS_NAME,
-        input_json=a,
-        trigger_rule="none_failed",
-    )
+    # import_data = WeaviateIngestOperator(
+    #     task_id="import_data",
+    #     conn_id=weaviate_conn_id,
+    #     class_name=CLASS_NAME,
+    #     input_json=a,
+    #     trigger_rule="none_failed",
+    # )
 
-    fetch_dataset >> check_for_class() >> [create_class(), class_exists] >>  import_data
+    fetch_dataset >> check_for_class() >> [create_class(), class_exists] #>>  import_data

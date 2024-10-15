@@ -5,6 +5,27 @@ import fsspec
 
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
+
+
+
+def load_file( dataset_path: str):
+    fs, base_path = fsspec.core.url_to_fs(dataset_path)
+
+    return cls(
+        images=_load_array(fs, base_path + "/images.npy"),
+        labels=_load_array(fs, base_path + "/labels.npy"),
+    )
+
+def save(self, output_path: str):
+    fs, base_path = fsspec.core.url_to_fs(output_path)
+
+    fs.makedirs(base_path, exist_ok=True)
+
+    _write_array(fs, base_path + "/images.npy", self.images)
+    _write_array(fs, base_path + "/labels.npy", self.labels)
+
+
 
 
 @dataclass
@@ -43,10 +64,16 @@ def fetch_datasets() -> Tuple[Dataset, Dataset]:
     return train_dataset, test_dataset
 
 
-def _load_array(fs, path) -> npt.NDArray[np.uint8]:
-    with fs.open(path, "rb") as file_:
-        return np.load(file_)
+def load_file(filename:str, path:str) -> pd.DataFrame:
+    
+    print(path)
+    
+    fs, base_path = fsspec.core.url_to_fs(path)
 
+    print(base_path, path)
+
+    with fs.open(f"{base_path}.{filename}", "rb") as file_:
+        return pd.read_parquet(file_)
 
 def _write_array(fs: fsspec.AbstractFileSystem, path: str, array: npt.NDArray[np.uint8]):
     with fs.open(path, "wb") as file_:
