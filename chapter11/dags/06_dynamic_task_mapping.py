@@ -1,20 +1,25 @@
 import pendulum
 import requests
 from airflow import DAG
-from airflow.decorators import task
+from airflow.operators.python import PythonOperator
 
 
-@task
-def fetch_ratings():
+def _fetch_ratings():
     "Retrieve the latest ratings from the movie reviews API. The number of reviews varies per request"
     data = requests.get("http://movie-reviews:8081/reviews/latest")
-    return data.json()
+    return [[x] for x in data.json()]
 
 
-@task
-def parse_rating(rating):
+def _print_rating(rating):
     print(f"New rating for Movie: {rating["movie"]}. Rating: {rating["rating"]}")
 
 
 with DAG(dag_id="06_dynamic_task_mapping",start_date=pendulum.today("UTC").add(days=-5), schedule="@daily") as dag:
-    parse_rating.expand(rating=fetch_ratings())
+    fetch_ratings = PythonOperator(
+        task_id="fetch_ratings",
+        python_callable=_fetch_ratings
+    )
+
+    print_rating = PythonOperator.partial(task_id="print_rating", python_callable=_print_rating).expand(op_args=fetch_ratings.output)
+
+    fetch_ratings >> print_rating
