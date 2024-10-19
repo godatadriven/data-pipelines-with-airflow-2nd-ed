@@ -1,56 +1,50 @@
-import dotenv
 import typer
+import dotenv
 
-from .evaluate import evaluate_model
-from .fetch import load_file, Dataset
-from .train import train_model
-import pandas as pd
-import fsspec
-import numpy as np
+from .preprocess import concatenate_content, split_content
+from .utils import (
+    list_files_from_fs, 
+    save_df_in_minio, 
+    upload_file_to_minio,
+    load_parquet_from_minio,
+)
+
+
 dotenv.load_dotenv()
-
 app = typer.Typer()
 
 
 @app.command()
-def transfer(filename:str, source_path: str, dest_path: str):
+def upload(source_path: str, dest_path: str):
 
+    files_to_upload = list_files_from_fs(source_path)
 
-
-    print(filename,source_path)    
-    df = load_file(filename, source_path)
-
-    print(df)
-
-
-@app.command()
-def upload():
-    import os
-
-    # To set/define environment variables
-    os.environ['AWS_ENDPOINT_URL_S3'] = "http://localhost:9000"
-    os.environ['AWS_ACCESS_KEY_ID'] =  "F4l5pE2uGsOPDEXAMPLE"
-    os.environ['AWS_SECRET_ACCESS_KEY'] =  "K3OIYP1dPPvuIhybk1Tk3UfEEblUvtZetEXAMPLE"
-
-    output_path =  "s3://data/2024-10-14/train"
-    fs, base_path = fsspec.core.url_to_fs(output_path)
-
-    fs.makedirs(base_path, exist_ok=True)
-    
-    with fs.open( base_path + "/images.npy", "wb") as file_:
-        pd.save(file_, np.array([]))
-
-@app.command()
-def train(train_dataset_path: str, epochs: int = 5):
-    dataset = Dataset.load(train_dataset_path)
-    result = train_model(dataset, epochs=epochs)
-    print(result.mlflow_run_id)
+    for file in files_to_upload:
+        upload_file_to_minio(file, dest_path)
 
 
 @app.command()
-def evaluate(test_dataset_path: str, mlflow_run_id: str):
-    dataset = Dataset.load(test_dataset_path)
-    evaluate_model(test_dataset=dataset, mlflow_run_id=mlflow_run_id)
+def preprocess(path: str) -> None:
+
+    files_to_process = list_files_from_fs(f"{path}/raw")
+
+    df = concatenate_content(files_to_process, path)
+ 
+    save_df_in_minio(df, path, "preprocessed")
+
+
+@app.command()
+def split(path: str) -> None:
+
+    sep = ["\n\n", "\n", " ", ""]
+
+    df = (
+        load_parquet_from_minio( "preprocessed", path)
+        .pipe(split_content, chunk_size=500, chunk_overlap=100, separators=sep)
+    )
+
+    save_df_in_minio(df, path , "splitted")
+
 
 
 if __name__ == "__main__":

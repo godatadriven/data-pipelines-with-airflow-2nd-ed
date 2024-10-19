@@ -14,6 +14,12 @@ from airflow.providers.docker.operators.docker import DockerOperator
 
 DOCKER_URL =  "tcp://docker-socket-proxy:2375"
 
+ENVIRONMENT = {
+    "AWS_ENDPOINT_URL_S3": "{{ conn.minio.extra_dejson.get('endpoint_url') }}",
+    "AWS_ACCESS_KEY_ID": "{{ conn.minio.login }}",
+    "AWS_SECRET_ACCESS_KEY": "{{ conn.minio.password }}"
+}
+
 
 weaviate_conn_id = "weaviate_default"
 class_object_data = json.loads(Path("./dags/schema.json").read_text())["classes"][0]
@@ -27,55 +33,82 @@ class_object_data["vectorizer"] = VECTORIZER
 with DAG(
     dag_id="ingestion",
     schedule="@daily",
-    start_date=datetime.today() - timedelta(days=3),
+    start_date=datetime(2024, 10, 14),
+    end_date=datetime(2024, 10, 16),
 ):
 
-    fetch_dataset = DockerOperator(
-        task_id="fetch_dataset",
+    # Check network with docker network ls        
+    # name of the source folder + _default
+    upload = DockerOperator(
+        task_id="upload_recipes_to_minio",
         docker_url=DOCKER_URL,
         image="recipe_book:latest",
         command=[
-            "transfer",
-            "s3://data/{{data_interval_start | ds}}/train",
-            "s3://data/{{data_interval_start | ds}}/test",
+            "upload",
+            "/app/sample_recipes/{{data_interval_start | ds}}",
+            "s3://data/{{data_interval_start | ds}}/raw",
         ],
-        # network_mode="s3-transfer-service",
-        # environment=environment
+        network_mode="chapter13_genai_default",
+        environment=ENVIRONMENT
     )
 
-    @task.branch
-    def check_for_class() -> bool:
-        "Check if the provided class already exists and decide on the next step."
-        hook = WeaviateHook(weaviate_conn_id)
-        client = hook.get_client()
+    preprocess = DockerOperator(
+        task_id="preprocess_recipes",
+        docker_url=DOCKER_URL,
+        image="recipe_book:latest",
+        command=[
+            "preprocess",
+            "s3://data/{{data_interval_start | ds}}",
+        ],
+        network_mode="chapter13_genai_default",
+        environment=ENVIRONMENT
+    )
 
-        if not client.schema.get()["classes"]:
-            print("No classes found in this weaviate instance.")
-            return "create_class"
+    split = DockerOperator(
+        task_id="split_recipes_into_chunks",
+        docker_url=DOCKER_URL,
+        image="recipe_book:latest",
+        command=[
+            "split",
+            "s3://data/{{data_interval_start | ds}}",
+        ],
+        network_mode="chapter13_genai_default",
+        environment=ENVIRONMENT
+    )
 
-        existing_classes_names_with_vectorizer = [x["class"] for x in client.schema.get()["classes"]]
+    # @task.branch
+    # def check_for_class() -> bool:
+    #     "Check if the provided class already exists and decide on the next step."
+    #     hook = WeaviateHook(weaviate_conn_id)
+    #     client = hook.get_client()
 
-        print(f"Existing classes: {existing_classes_names_with_vectorizer}")
+    #     if not client.schema.get()["classes"]:
+    #         print("No classes found in this weaviate instance.")
+    #         return "create_class"
 
-        if CLASS_NAME in existing_classes_names_with_vectorizer:
-            print(f"Schema for class {CLASS_NAME} exists.")
-            return "class_exists"
-        else:
-            print(f"Class {CLASS_NAME} does not exist yet.")
-            return "create_class"
+    #     existing_classes_names_with_vectorizer = [x["class"] for x in client.schema.get()["classes"]]
 
-    @task
-    def create_class():
-        "Create a class with the provided name and vectorizer."
-        weaviate_hook = WeaviateHook(weaviate_conn_id)
+    #     print(f"Existing classes: {existing_classes_names_with_vectorizer}")
 
-        class_obj = {
-            "class": CLASS_NAME,
-            "vectorizer": VECTORIZER,
-        }
-        weaviate_hook.create_class(class_obj)
+    #     if CLASS_NAME in existing_classes_names_with_vectorizer:
+    #         print(f"Schema for class {CLASS_NAME} exists.")
+    #         return "class_exists"
+    #     else:
+    #         print(f"Class {CLASS_NAME} does not exist yet.")
+    #         return "create_class"
 
-    class_exists = EmptyOperator(task_id="class_exists")
+    # @task
+    # def create_class():
+    #     "Create a class with the provided name and vectorizer."
+    #     weaviate_hook = WeaviateHook(weaviate_conn_id)
+
+    #     class_obj = {
+    #         "class": CLASS_NAME,
+    #         "vectorizer": VECTORIZER,
+    #     }
+    #     weaviate_hook.create_class(class_obj)
+
+    # class_exists = EmptyOperator(task_id="class_exists")
 
     # print_dict = PythonOperator(task_id="print_dict", python_callable=print_dict, trigger_rule="none_failed")
 
@@ -89,4 +122,7 @@ with DAG(
     #     trigger_rule="none_failed",
     # )
 
-    fetch_dataset >> check_for_class() >> [create_class(), class_exists] #>>  import_data
+    (
+        upload >> preprocess >> split
+        #  >> check_for_class() >> [create_class(), class_exists] #>>  import_data
+    )

@@ -1,28 +1,34 @@
-FROM python:3.12-slim
+FROM python:3.12-slim AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONFAULTHANDLER=1
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PIP_NO_CACHE_DIR=off
-ENV PIP_DISABLE_PIP_VERSION_CHECK=on
-ENV APP_DIR="/app"
-ENV POETRY_VERSION=1.8.3
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+RUN pip install poetry==1.8.4
 
-WORKDIR $APP_DIR
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
 
-RUN pip install "poetry==$POETRY_VERSION"
+WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
+RUN touch README.md
 
-# Install dependencies
-RUN poetry config virtualenvs.create false 
-RUN poetry install --no-root --no-dev  
+RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --without dev --no-root
 
-COPY . .
+COPY src ./src
+COPY sample_recipes ./sample_recipes
 
-# Install the package
 RUN poetry install --only-root
 
-# ENTRYPOINT [ "recipe_book" ]
+FROM python:3.12-slim AS runtime
+
+ENV VIRTUAL_ENV=/app/.venv \
+    APP_SRC=/app/src \
+    APP_DATA=/app/sample_recipes \
+    PATH="/app/.venv/bin:$PATH"
+
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY --from=builder ${APP_SRC} ${APP_SRC}
+COPY --from=builder ${APP_DATA} ${APP_DATA}
+
+ENTRYPOINT ["recipe_book"]
+
