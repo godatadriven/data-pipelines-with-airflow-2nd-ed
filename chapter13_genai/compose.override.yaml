@@ -54,21 +54,21 @@ services:
     # yamllint enable rule:line-length
     user: "0:0"
 
-  # weaviate:
-  #   image: semitechnologies/weaviate:1.26.6
-  #   restart: on-failure:0
-  #   ports:
-  #    - "8082:8080"     # REST calls
-  #    - "50051:50051"   # gRPC calls
-  #   environment:
-  #     QUERY_DEFAULTS_LIMIT: 20
-  #     AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
-  #     DEFAULT_VECTORIZER_MODULE: 'text2vec-openai'
-  #     PERSISTENCE_DATA_PATH: "./data"
-  #     ENABLE_MODULES: 'text2vec-openai, backup-filesystem, qna-openai, generative-openai, text2vec-cohere, reranker-cohere'
-  #     CLUSTER_HOSTNAME: 'node1'
-  #     BACKUP_FILESYSTEM_PATH: '/var/lib/weaviate/backup'
-  #     AZURE_APIKEY: "${AZURE_OPEN_API_KEY}"
+  weaviate:
+    image: semitechnologies/weaviate:1.26.7
+    restart: on-failure:0
+    ports:
+     - "8083:8080"     # REST calls
+     - "50051:50051"   # gRPC calls
+    environment:
+      QUERY_DEFAULTS_LIMIT: 20
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-openai'
+      PERSISTENCE_DATA_PATH: "./data"
+      ENABLE_MODULES: 'text2vec-openai, generative-openai'
+      CLUSTER_HOSTNAME: 'node1'
+      BACKUP_FILESYSTEM_PATH: '/var/lib/weaviate/backup'
+      AZURE_APIKEY: "${AZURE_OPEN_API_KEY}"
 
   docker-socket-proxy:
     image: alpine/socat
