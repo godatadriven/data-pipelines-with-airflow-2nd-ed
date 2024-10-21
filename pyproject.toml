@@ -16,6 +16,7 @@ python-dotenv = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.27.1"
+weaviate-client = "^4.9.0"
 
 [build-system]
 requires = ["poetry-core"]

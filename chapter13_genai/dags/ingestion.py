@@ -3,6 +3,7 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from custom.hooks import WeaviateHook
 import pandas as pd
 from airflow import DAG
 from airflow.decorators import task
@@ -17,11 +18,14 @@ DOCKER_URL =  "tcp://docker-socket-proxy:2375"
 ENVIRONMENT = {
     "AWS_ENDPOINT_URL_S3": "{{ conn.minio.extra_dejson.get('endpoint_url') }}",
     "AWS_ACCESS_KEY_ID": "{{ conn.minio.login }}",
-    "AWS_SECRET_ACCESS_KEY": "{{ conn.minio.password }}"
+    "AWS_SECRET_ACCESS_KEY": "{{ conn.minio.password }}",
+    "AZURE_OPEN_API_KEY": "",
+    "AZURE_OPEN_AI_ORGANIZATION":"",
+    "AZURE_OPEN_AI_BASE_URL":"{{ conn.weaviate_default.host }}",
 }
 
 
-weaviate_conn_id = "weaviate_default"
+WEAVIATE_CONN_ID = "weaviate_default"
 class_object_data = json.loads(Path("./dags/schema.json").read_text())["classes"][0]
 CLASS_NAME = "Ismael2"
 VECTORIZER = "text2vec-transformers"
@@ -76,39 +80,31 @@ with DAG(
         environment=ENVIRONMENT
     )
 
-    # @task.branch
-    # def check_for_class() -> bool:
-    #     "Check if the provided class already exists and decide on the next step."
-    #     hook = WeaviateHook(weaviate_conn_id)
-    #     client = hook.get_client()
+    @task
+    def create_class() -> bool:
+ 
+        hook = WeaviateHook(WEAVIATE_CONN_ID)
+        client = hook.get_conn()
 
-    #     if not client.schema.get()["classes"]:
-    #         print("No classes found in this weaviate instance.")
-    #         return "create_class"
+        # if not client.schema.get()["classes"]:
+        #     print("No classes found in this weaviate instance.")
+        #     return "create_class"
 
-    #     existing_classes_names_with_vectorizer = [x["class"] for x in client.schema.get()["classes"]]
+        # existing_classes_names = [x["class"] for x in client.schema.get()["classes"]]
 
-    #     print(f"Existing classes: {existing_classes_names_with_vectorizer}")
+        # print(f"Existing classes: {existing_classes_names}")
 
-    #     if CLASS_NAME in existing_classes_names_with_vectorizer:
-    #         print(f"Schema for class {CLASS_NAME} exists.")
-    #         return "class_exists"
-    #     else:
-    #         print(f"Class {CLASS_NAME} does not exist yet.")
-    #         return "create_class"
+        # if CLASS_NAME in existing_classes_names:
+        #     print(f"Schema for class {CLASS_NAME} exists.")
+        #     return "class_exists"
+        # else:
+        #     print(f"Class {CLASS_NAME} does not exist yet.")
+        #     class_obj = {"class": CLASS_NAME,"vectorizer": VECTORIZER}
+        #     hook.create_class(class_obj)
 
-    # @task
-    # def create_class():
-    #     "Create a class with the provided name and vectorizer."
-    #     weaviate_hook = WeaviateHook(weaviate_conn_id)
 
-    #     class_obj = {
-    #         "class": CLASS_NAME,
-    #         "vectorizer": VECTORIZER,
-    #     }
-    #     weaviate_hook.create_class(class_obj)
 
-    # class_exists = EmptyOperator(task_id="class_exists")
+
 
     # print_dict = PythonOperator(task_id="print_dict", python_callable=print_dict, trigger_rule="none_failed")
 
@@ -116,13 +112,13 @@ with DAG(
 
     # import_data = WeaviateIngestOperator(
     #     task_id="import_data",
-    #     conn_id=weaviate_conn_id,
+    #     conn_id=WEAVIATE_CONN_ID,
     #     class_name=CLASS_NAME,
     #     input_json=a,
     #     trigger_rule="none_failed",
     # )
 
     (
-        upload >> preprocess >> split
-        #  >> check_for_class() >> [create_class(), class_exists] #>>  import_data
+        upload >> preprocess >> split >> create_class()
+         #>>  import_data
     )

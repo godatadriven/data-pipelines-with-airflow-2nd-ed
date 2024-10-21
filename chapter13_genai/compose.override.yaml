@@ -5,8 +5,8 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
     AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
-    AIRFLOW_CONN_WEAVIATE_DEFAULT: '{"conn_type": "weaviate", "host": "http://weaviate:8080"}'
     AIRFLOW_CONN_MINIO: aws://${MINIO_ID}:${MINIO_KEY_ENCODED}@?endpoint_url=http%3A%2F%2Fminio%3A${MINIO_API_PORT}
+    AIRFLOW_CONN_WEAVIATE_DEFAULT: '{ "conn_type": "weaviate", "host": "weaviate", "port": "${WEAVIATE_HOST_PORT_REST}", "extra": {"additional_headers" : { "X-Openai-Api-Key": "${AZURE_OPEN_API_KEY}", "X-Openai-Organization": "${AZURE_OPEN_AI_ORGANIZATION}", "X-Openai-Base-Url": "${AZURE_OPEN_AI_BASE_URL}"}, "grpc_host": "weaviate", "grpc_port": "${WEAVIATE_HOST_PORT_GRPC}"}}'
 
   volumes:
     - airflow-data-volume:/data
@@ -55,20 +55,30 @@ services:
     user: "0:0"
 
   weaviate:
-    image: semitechnologies/weaviate:1.26.7
+    image: cr.weaviate.io/semitechnologies/weaviate:1.27.0
     restart: on-failure:0
     ports:
-     - "8083:8080"     # REST calls
-     - "50051:50051"   # gRPC calls
+     - ${WEAVIATE_HOST_PORT_REST}:${WEAVIATE_HOST_PORT_REST}
+     - ${WEAVIATE_HOST_PORT_GRPC}:${WEAVIATE_HOST_PORT_GRPC}
     environment:
-      QUERY_DEFAULTS_LIMIT: 20
+      QUERY_DEFAULTS_LIMIT: 25
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
       DEFAULT_VECTORIZER_MODULE: 'text2vec-openai'
-      PERSISTENCE_DATA_PATH: "./data"
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
       ENABLE_MODULES: 'text2vec-openai, generative-openai'
       CLUSTER_HOSTNAME: 'node1'
       BACKUP_FILESYSTEM_PATH: '/var/lib/weaviate/backup'
-      AZURE_APIKEY: "${AZURE_OPEN_API_KEY}"
+      ENABLE_API_BASED_MODULES: 'true'
+    command:
+    - --host
+    - 0.0.0.0
+    - --port
+    - ${WEAVIATE_HOST_PORT_REST}
+    - --scheme
+    - http
+    volumes:
+    - weaviate_data:/var/lib/weaviate
+
 
   docker-socket-proxy:
     image: alpine/socat
@@ -120,3 +130,5 @@ volumes:
   minio_data:
     driver: local
   minio:
+  weaviate_data:
+    driver: local
