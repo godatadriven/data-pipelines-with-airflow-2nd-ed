@@ -50,8 +50,7 @@ class WeaviateHook(BaseHook):
         conn = Connection.get_connection_from_secrets(conn_id)
         log.info("Retrieving connection '%s'", conn.conn_id)
         return conn
-
-
+    
     def get_conn(self) -> WeaviateClient:
         conn = self.get_connection(self.conn_id)
         extras = conn.extra_dejson
@@ -63,7 +62,7 @@ class WeaviateHook(BaseHook):
             http_port=conn.port,
             http_secure=http_secure,
             grpc_host=extras.pop("grpc_host",""),
-            grpc_port=extras.pop("grpc_port",80),
+            grpc_port=extras.pop("grpc_port",50051),
             grpc_secure=grpc_secure,
             headers=extras.pop("additional_headers", {}),
             auth_credentials=self._extract_auth_credentials(conn),

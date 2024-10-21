@@ -1,16 +1,12 @@
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
-from custom.hooks import WeaviateHook
-import pandas as pd
+from custom.operators import CreateWeaviateCollectionOperator
 from airflow import DAG
 from airflow.decorators import task
 from airflow.models.baseoperator import chain
-from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import PythonOperator
-# from airflow.providers.weaviate.operators.weaviate import WeaviateHook, WeaviateIngestOperator
 from airflow.providers.docker.operators.docker import DockerOperator
 
 DOCKER_URL =  "tcp://docker-socket-proxy:2375"
@@ -80,29 +76,11 @@ with DAG(
         environment=ENVIRONMENT
     )
 
-    @task
-    def create_class() -> bool:
- 
-        hook = WeaviateHook(WEAVIATE_CONN_ID)
-        client = hook.get_conn()
-
-        # if not client.schema.get()["classes"]:
-        #     print("No classes found in this weaviate instance.")
-        #     return "create_class"
-
-        # existing_classes_names = [x["class"] for x in client.schema.get()["classes"]]
-
-        # print(f"Existing classes: {existing_classes_names}")
-
-        # if CLASS_NAME in existing_classes_names:
-        #     print(f"Schema for class {CLASS_NAME} exists.")
-        #     return "class_exists"
-        # else:
-        #     print(f"Class {CLASS_NAME} does not exist yet.")
-        #     class_obj = {"class": CLASS_NAME,"vectorizer": VECTORIZER}
-        #     hook.create_class(class_obj)
-
-
+    create_class = CreateWeaviateCollectionOperator(
+        task_id="create_class",
+        conn_id=WEAVIATE_CONN_ID,
+        collection_name="recipes",
+    )
 
 
 
@@ -119,6 +97,6 @@ with DAG(
     # )
 
     (
-        upload >> preprocess >> split >> create_class()
+        upload >> preprocess >> split >> create_class
          #>>  import_data
     )
