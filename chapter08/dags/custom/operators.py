@@ -3,6 +3,7 @@ import os
 
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
+from airflow.utils.context import Context
 
 from custom.hooks import MovielensHook
 
@@ -35,10 +36,10 @@ class MovielensFetchRatingsOperator(BaseOperator):
     @apply_defaults
     def __init__(
         self,
-        conn_id,
-        output_path,
-        start_date="{{data_interval_start | ds}}}",
-        end_date="{{data_interval_end | ds}}}",
+        conn_id:str,
+        output_path:str,
+        start_date:str="{{data_interval_start | ds}}}",
+        end_date:str="{{data_interval_end | ds}}}",
         batch_size=1000,
         **kwargs,
     ):
@@ -51,7 +52,7 @@ class MovielensFetchRatingsOperator(BaseOperator):
         self._batch_size = batch_size
 
     # pylint: disable=unused-argument,missing-docstring
-    def execute(self, context):
+    def execute(self, context:Context):
         hook = MovielensHook(self._conn_id)
 
         try:

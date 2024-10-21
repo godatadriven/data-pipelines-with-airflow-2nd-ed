@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any
 
-from airflow.sensors.base import BaseSensorOperator
+from airflow.models import BaseOperator
 from airflow.triggers.base import BaseTrigger, TriggerEvent
 from airflow.utils.context import Context
 
@@ -10,18 +10,18 @@ from airflow.utils.decorators import apply_defaults
 from custom.hooks import MovielensHook
 import uuid
 
-class MovielensSensorAsync(BaseSensorOperator):
+class MovielensSensorAsync(BaseOperator):
     """
     Deferable sensor that waits until an XCom becomes available.
     """
 
     template_fields = ("_start_date", "_end_date")
 
-
     @apply_defaults
     def __init__(self,  
-                 conn_id, start_date=f"{{data_interval_start | ds}}", 
-                 end_date=f"{{data_interval_end | ds}}",
+                 conn_id:str, 
+                 start_date:str="{{data_interval_start | ds}}", 
+                 end_date:str="{{data_interval_end | ds}}",
                  sleep_interval: int = 30, 
                  **kwargs
             ):
@@ -30,7 +30,7 @@ class MovielensSensorAsync(BaseSensorOperator):
         self._conn_id = conn_id
         self._start_date = start_date
         self._end_date = end_date
-        self._timeout = kwargs.get('timeout')
+        self._timeout = kwargs.get('execution_timeout')
 
     def execute(self, context: Context) -> None:
 
@@ -45,10 +45,11 @@ class MovielensSensorAsync(BaseSensorOperator):
             timeout = self._timeout
         )
 
-    def execute_complete(self,context: Context, event: dict[str, Any] | None = None ) -> bool:
+    def execute_complete(self,context: Context, event: dict[str, Any] | None = None ) -> None:
+        self.log.info(
+                f"Movie Ratings are Available! for {self._start_date}-{self._end_date}"
+            )
 
-        print(f"Movie Ratings are Available! for {self._start_date}-{self._end_date}") 
-        return True
 
 
 class MovielensTrigger(BaseTrigger):
