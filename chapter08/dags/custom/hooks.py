@@ -1,6 +1,7 @@
 import requests
 from airflow.hooks.base import BaseHook
 from dataclasses import dataclass
+from typing import Any, Dict, Generator
 
 @dataclass
 class Connection:
@@ -91,7 +92,7 @@ class MovielensHook(BaseHook):
         """Fetches a list of users."""
         raise NotImplementedError()
 
-    def get_ratings(self, start_date:str=None, end_date:str=None, batch_size:int=100):
+    def get_ratings(self, start_date:str=None, end_date:str=None, batch_size:int=100) -> Generator[Dict[str, Any], None, None]:
         """
         Fetches ratings between the given start/end date.
 
@@ -114,7 +115,7 @@ class MovielensHook(BaseHook):
             batch_size=batch_size,
         )
 
-    def _get_with_pagination(self, endpoint:str, params:dict, batch_size:int=100):
+    def _get_with_pagination(self, endpoint:str, params:dict, batch_size:int=100) -> Generator[Dict[str, Any], None, None]:
         """
         Fetches records using a get request with given url/params,
         taking pagination into account.
@@ -129,7 +130,7 @@ class MovielensHook(BaseHook):
             response = connection.session.get(url, params={**params, **{"offset": offset, "limit": batch_size}})
             response.raise_for_status()
             response_json = response.json()
-
+            
             yield from response_json["result"]
 
             offset += batch_size
