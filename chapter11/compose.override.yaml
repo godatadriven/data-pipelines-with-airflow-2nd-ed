@@ -27,7 +27,7 @@ services:
     <<: *airflow-common
 
   airflow-data:
-    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.9.2}
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.2}
     <<: *airflow-common
     entrypoint: /bin/bash
     # yamllint disable rule:line-length

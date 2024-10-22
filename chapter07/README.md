@@ -11,7 +11,7 @@ This code example contains the following DAGs:
 
 ## Preparation
 
-For the 01_aws_hadwritten_digits_classifier the follwoing needs to be prepared:
+For the 01_aws_hadwritten_digits_classifier the following needs to be prepared:
 
 - Get a AWS ACCES KEY and a AWS SECRET and make sure these are available in the shell where the code is executed
 - Create A Sagemaker Execution Role see: https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html. The ARN needs to be made available to the shell.
@@ -31,16 +31,16 @@ export ENCODED_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY//\//%2F}
 
 To get started with the code examples, start Airflow in docker using the following command:
 
-```
-docker-compose up -d --build
+```bash
+docker compose up -d --build
 ```
 
 Wait for a few seconds and you should be able to access the examples at http://localhost:8080/.
 
 To stop running the examples, run the following command:
 
-```
-docker-compose down -v
+```bash
+docker compose down -v
 ```
 
 ## Testing the mnist classifier
@@ -74,5 +74,5 @@ export AWS_SECRET_ACCESS_KEY=
 export AWS_REGION=
 export AWS_DEFAULT_REGION=
 
-airflow tasks test 01_aws_handwritten_digits_classifier dcreate_mnist_bucket 2024-01-01
+airflow tasks test 01_aws_handwritten_digits_classifier create_mnist_bucket 2024-01-01
 ```
