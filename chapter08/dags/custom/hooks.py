@@ -28,12 +28,6 @@ class MovielensHook(BaseHook):
     DEFAULT_SCHEMA = "http"
     DEFAULT_PORT = 8081
 
-    
-    @dataclass
-    class Connection:
-        session: requests.Session
-        base_url: str
-        
     def __init__(self, conn_id:str, retry=3):
         super().__init__()
         self._conn_id = conn_id
