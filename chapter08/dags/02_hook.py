@@ -15,7 +15,7 @@ with DAG(
     schedule="@daily",
 ):
 
-    def _fetch_ratings(conn_id, templates_dict, batch_size=1000, **_):
+    def _fetch_ratings(conn_id:str, templates_dict:dict, batch_size:int=1000, **_):
         logger = logging.getLogger(__name__)
 
         start_date = templates_dict["start_date"]
