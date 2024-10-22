@@ -48,7 +48,7 @@ def get_recent_rides(period: str, amount: int):
     year_offset = date.today().year - int(os.environ["DATA_YEAR"])
     cursor.execute(
         f"""SELECT
-tripduration,
+CAST(EXTRACT(EPOCH FROM (stoptime - starttime)) AS INTEGER) AS tripduration,
 starttime + INTERVAL '{year_offset} YEARS' AS starttime,
 stoptime + INTERVAL '{year_offset} YEARS' AS stoptime,
 start_station_id,

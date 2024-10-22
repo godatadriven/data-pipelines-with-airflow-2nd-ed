@@ -15,4 +15,4 @@ EOSQL
 
 echo "Deleting files older than 1 hour..."
 # 59 because the last minute is inclusive
-find /data -mmin +59 -print -delete
+find /data/*.* -mmin +59 -print -delete
