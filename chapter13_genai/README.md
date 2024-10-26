@@ -5,6 +5,9 @@ Run Instructions
 
 # Run Instructions
 
+0) Get into the project directory
+    `cd chapter13_genai`
+
 1) Run `airflow-init` to start the Airflow server
     
     `docker comopose up airflow-init`
@@ -29,3 +32,19 @@ Run Instructions
     `docker-compose up --build`
 
 6) Run the DAG in Airflow
+
+
+TODOS:
+
+- [ ] Fix split
+- [ ] Implement separator logic
+- [ ] Implement embedding operator
+- [ ] .env remake 
+- [ ] simplify .env
+
+
+- Select relevant presentations from Airflow Summit 2024
+- Make summaries of the presentations
+- Make RAG architecture Diagram
+
+

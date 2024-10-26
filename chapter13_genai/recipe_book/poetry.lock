@@ -5349,13 +5349,13 @@ files = [
 
 [[package]]
 name = "weaviate-client"
-version = "4.8.1"
+version = "4.9.0"
 description = "A python native Weaviate client"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "weaviate_client-4.8.1-py3-none-any.whl", hash = "sha256:c16453ebfd9bd4045675f8e50841d1af21aa9af1332f379d0418c4531c03bd44"},
-    {file = "weaviate_client-4.8.1.tar.gz", hash = "sha256:2756996a2205bb991f258c064fc502011fc78a40e8786cb072208b1d3d7c9932"},
+    {file = "weaviate_client-4.9.0-py3-none-any.whl", hash = "sha256:922a3a83c6946b6ea017d495af5980e90089f97004be4025a3d250a6c40ffaab"},
+    {file = "weaviate_client-4.9.0.tar.gz", hash = "sha256:87b2995fd403f6106bd4cc8a9baa77280bdb95617ed6b9a60b0b34b5faeda999"},
 ]
 
 [package.dependencies]
@@ -5627,4 +5627,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "e4772bf55f04d12118ade30587ced569f73eba34e3bbe1b0a798c86af19ac366"
+content-hash = "89eedf99e6867a7514b84d22e2a22538099eb4290cbba11cfd1744c3b5001eb7"
