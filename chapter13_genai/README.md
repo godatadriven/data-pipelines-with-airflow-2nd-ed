@@ -35,15 +35,8 @@ Run Instructions
 
 
 TODOS:
+- [ ] Implement delete / replace logic
 
-- [ ] Fix split
-- [ ] Implement separator logic
-- [ ] Implement embedding operator
-- [ ] .env remake 
-- [ ] simplify .env
-
-
-- Select relevant presentations from Airflow Summit 2024
 - Make summaries of the presentations
 - Make RAG architecture Diagram
 

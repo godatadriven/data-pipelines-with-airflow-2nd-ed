@@ -4,7 +4,7 @@ import weaviate
 import os
 import json
 
-from .preprocess import concatenate_content, split_content
+from .preprocess import append_content, clean
 from .utils import (
     list_files_from_fs, 
     save_df_in_minio, 
@@ -13,6 +13,7 @@ from .utils import (
 )
 
 import logging
+from weaviate.util import generate_uuid5
 
 
 dotenv.load_dotenv()
@@ -34,28 +35,24 @@ def preprocess(path: str) -> None:
 
     files_to_process = list_files_from_fs(f"{path}/raw")
 
-    df = concatenate_content(files_to_process, path)
+    df = (
+        append_content(files_to_process, path)
+        .pipe(clean, content_col="chunk")
+        .assign( 
+            document_sha = lambda df: [generate_uuid5(file) for file in df.filename],
+            chunk_sha = lambda df: [generate_uuid5(file) for file in df.chunk],
+        )
+        .reset_index(drop=True)
+        .loc[:, ["filename", "document_sha", "chunk_sha", "chunk"]]
+    )
  
     save_df_in_minio(df, path, "preprocessed")
 
 
 @app.command()
-def split(path: str) -> None:
-
-    sep = ["\n\n", "\n", " ", ""]
-
-    df = (
-        load_parquet_from_minio( "preprocessed", path)
-        .pipe(split_content, chunk_size=500, chunk_overlap=100, separators=sep)
-    )
-
-    save_df_in_minio(df, path , "splitted")
-
-
-@app.command()
 def save(collection_name:str, path: str) -> None:
 
-    client =  weaviate.connect_to_custom(
+    client = weaviate.connect_to_custom(
             http_host='weaviate',
             http_port=os.getenv("WEAVIATE_HOST_PORT_REST"),
             http_secure=False,
@@ -68,7 +65,7 @@ def save(collection_name:str, path: str) -> None:
         )
     
     source_objects = json.loads( 
-        load_parquet_from_minio( "splitted", path)
+        load_parquet_from_minio( "preprocessed", path)
         .to_json(orient="records")
     ) 
     
@@ -82,9 +79,6 @@ def save(collection_name:str, path: str) -> None:
                 uuid=object["chunk_sha"],
             )
 
-    print(collection.batch.failed_objects)
-    print( client.batch.failed_objects)
-    print("-----------------------------------------------------")
-
+    client.close()
 if __name__ == "__main__":
     app()

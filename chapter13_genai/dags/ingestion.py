@@ -1,12 +1,9 @@
-import json
 import os
 from datetime import datetime
 from pathlib import Path
 
 from custom.operators import WeaviateCreateCollectionOperator
 from airflow import DAG
-from airflow.decorators import task
-from airflow.models.baseoperator import chain
 from airflow.providers.docker.operators.docker import DockerOperator
 
 DOCKER_URL =  "tcp://docker-socket-proxy:2375"
@@ -29,7 +26,6 @@ with DAG(
     start_date=datetime(2024, 10, 14),
     end_date=datetime(2024, 10, 16),
 ):
-
     # Check network with docker network ls        
     # name of the source folder + _default
     upload = DockerOperator(
@@ -57,18 +53,6 @@ with DAG(
         environment=ENVIRONMENT
     )
 
-    split = DockerOperator(
-        task_id="split_recipes_into_chunks",
-        docker_url=DOCKER_URL,
-        image="recipe_book:latest",
-        command=[
-            "split",
-            "s3://data/{{data_interval_start | ds}}",
-        ],
-        network_mode="chapter13_genai_default",
-        environment=ENVIRONMENT
-    )
-
     create_collection = WeaviateCreateCollectionOperator(
         task_id="create_collection",
         conn_id=WEAVIATE_CONN_ID,
@@ -76,7 +60,6 @@ with DAG(
         name_of_configuration="recipe_vectorizer",
         metadata_fields=["filename", "description"],
         embedding_model="text-embedding-3-large",
-        debug=True,
     )
 
     save_in_vectordb = DockerOperator(
@@ -92,8 +75,6 @@ with DAG(
         environment=ENVIRONMENT
     )
 
-
-
     (
-        upload >> preprocess >> split >> create_collection >> save_in_vectordb
+        upload >> preprocess >>  create_collection >> save_in_vectordb
     )

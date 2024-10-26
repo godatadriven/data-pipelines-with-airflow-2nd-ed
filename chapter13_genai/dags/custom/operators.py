@@ -39,7 +39,6 @@ class WeaviateCreateCollectionOperator(BaseOperator):
         name_of_configuration: str,
         metadata_fields :  Optional[List[str]] = None,
         embedding_model: str="text-embedding-3-large",
-        debug: bool =False,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -59,15 +58,9 @@ class WeaviateCreateCollectionOperator(BaseOperator):
 
         existing_collections = [item.lower() for item in list(client.collections.list_all().keys())]
 
-        if self._debug:
-            log.info(f"Deleting {self._collection_name} collection.")
-            client.collections.delete(self._collection_name)
 
-
-        print(self._collection_name.lower(), existing_collections)
         if self._collection_name.lower() in existing_collections:
             log.info(f"Collection {self._collection_name} exists.")
-
 
         else:
             log.info(f"Collection {self._collection_name} does not exist yet.")  
@@ -87,6 +80,7 @@ class WeaviateCreateCollectionOperator(BaseOperator):
                     Property(name="filename", data_type=DataType.TEXT),
                     Property(name="chunk", data_type=DataType.TEXT),
                     Property(name="chunk_sha", data_type=DataType.UUID, skip_vectorization=True),
+                    Property(name="document_sha", data_type=DataType.UUID, skip_vectorization=True)
                 ]
    
             )
