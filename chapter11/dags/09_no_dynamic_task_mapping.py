@@ -6,7 +6,7 @@ from airflow.operators.python import PythonOperator
 
 def _fetch_ratings(ti):
     "Retrieve the latest ratings from the movie reviews API. The number of reviews varies per request"
-    data = requests.get("http://movie-reviews:8081/reviews/latest")
+    data = requests.get("http://movie-reviews-api:8081/reviews/latest")
     ti.xcom_push(key="movie_ratings", value=[[x] for x in data.json()])
 
 

@@ -6,7 +6,7 @@ from airflow.decorators import task
 
 @task
 def fetch_ratings():
-    data = requests.get("http://movie-reviews:8081/reviews/latest")
+    data = requests.get("http://movie-reviews-api:8081/reviews/latest")
     return data.json() #A
 
 

@@ -6,7 +6,7 @@ from airflow.operators.python import PythonOperator
 
 def _fetch_ratings():
     "Retrieve the latest ratings from the movie reviews API. The number of reviews varies per request"
-    data = requests.get("http://movie-reviews:8081/reviews/latest")
+    data = requests.get("http://movie-reviews-api:8081/reviews/latest")
     return [[x] for x in data.json()]
 
 
