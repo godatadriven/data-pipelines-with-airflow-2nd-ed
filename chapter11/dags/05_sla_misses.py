@@ -18,7 +18,7 @@ default_args = {"sla": timedelta(seconds=10)}
 with DAG(
     dag_id="05_sla_misses",
     start_date=pendulum.today("UTC").add(days=-2),
-    schedule_interval="@daily",
+    schedule="@daily",
     default_args=default_args,
     # email=['anonymous@example.com'],
     sla_miss_callback=sla_miss_callback,

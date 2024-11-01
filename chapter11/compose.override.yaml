@@ -49,5 +49,11 @@ services:
     # yamllint enable rule:line-length
     user: "0:0"
 
+  movie-reviews-api:
+    build: ./docker/movie-reviews-api
+    image: manning-airflow/movie-reviews-api
+    ports:
+      - "8081:8081"
+
 volumes:
   airflow-data-volume:

@@ -38,7 +38,7 @@ def generate_tasks(dataset_name, raw_dir, processed_dir, preprocess_script, outp
 with DAG(
     dag_id="03_task_groups",
     start_date=pendulum.today("UTC").add(days=-5),
-    schedule_interval="@daily",
+    schedule="@daily",
 ) as dag:
     for dataset in ["sales", "customers"]:
         with TaskGroup(dataset, tooltip=f"Tasks for processing {dataset}"):
