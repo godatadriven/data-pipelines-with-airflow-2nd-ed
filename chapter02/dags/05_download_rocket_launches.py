@@ -3,7 +3,7 @@ import pathlib
 
 import pendulum
 import requests
-import requests.exceptions as requests_exceptions
+from requests.exceptions import MissingSchema, ConnectionError
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
@@ -25,11 +25,10 @@ def _get_pictures():
                 with open(target_file, "wb") as f:
                     f.write(response.content)
                 print(f"Downloaded {image_url} to {target_file}")
-            except requests_exceptions.MissingSchema:
+            except MissingSchema:
                 print(f"{image_url} appears to be an invalid URL.")
-            except requests_exceptions.ConnectionError:
-                print(f"Could not connect to {image_url}.")
-
+            except ConnectionError:
+                raise ConnectionError(f"Could not connect to {image_url}.")
 
 with DAG(
     dag_id="05_download_rocket_launches",
