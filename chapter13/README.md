@@ -1,17 +1,43 @@
-# Chapter 13
 
-Code accompanying Chapter 13 (Securing Airflow) of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
 
-## Contents
+Run Instructions
 
-This folder holds three example Docker Compose examples:
 
-- `ldap`: Example configuration of the webserver, fetching user credentials from OpenLDAP
-- `rbac`: Example running the RBAC interface
-- `secretsbackend`: Example fetching secrets from HashiCorp Vault
+# Run Instructions
 
-Each folder holds a Docker Compose file which can be started with `docker-compose up -d`.
+0) Get into the project directory
+    `cd chapter13_genai`
 
-## Usage
+1) Run `airflow-init` to start the Airflow server
+    
+    `docker comopose up airflow-init`
 
-Read the `README.md` file in the respective directory.
+2) Run the Docker compose file
+    
+    `docker-compose up`
+
+3) Once MinIO is running, you can access the MinIO web interface at `http://localhost:9000` with the following credentials:
+    
+    - Access Key: `airflow`
+    - Pass: `apacheairflow`
+
+4) Create an access key in MinIO UI and update the .env file in this repo on the following variables:
+    
+    * MINIO_ID
+    * MINIO_KEY
+    * MINIO_KEY_ENCODED
+
+
+5) Stop docker-compose (ctrl+c) and run it again to apply the changes
+    `docker-compose up --build`
+
+6) Run the DAG in Airflow
+
+
+TODOS:
+- [ ] Implement delete / replace logic
+
+- Make summaries of the presentations
+- Make RAG architecture Diagram
+
+

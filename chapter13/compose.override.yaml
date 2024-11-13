@@ -1,0 +1,136 @@
+x-airflow-common:
+  &airflow-common
+  # build: airflow/.
+  environment:
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
+    AIRFLOW_CONN_MINIO: aws://${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}@?endpoint_url=http%3A%2F%2Fminio%3A${MINIO_API_PORT}
+    AIRFLOW_CONN_WEAVIATE_DEFAULT: '{ "conn_type": "weaviate", "host": "weaviate", "port": "${WEAVIATE_HOST_PORT_REST}", "extra": { "grpc_host": "weaviate", "grpc_port": "${WEAVIATE_HOST_PORT_GRPC}","additional_headers" : { "AZURE_OPENAI_API_KEY": "${AZURE_OPENAI_API_KEY}","AZURE_OPENAI_RESOURCE_NAME": "${AZURE_OPENAI_RESOURCE_NAME}","AZURE_OPENAI_ENDPOINT": "${AZURE_OPENAI_ENDPOINT}"}}}'
+
+  volumes:
+    - airflow-data-volume:/data
+    
+services:
+  airflow-webserver:
+    <<: *airflow-common
+
+  airflow-scheduler:
+    <<: *airflow-common
+
+  airflow-worker:
+    <<: *airflow-common
+
+  airflow-triggerer:
+    <<: *airflow-common
+
+  airflow-init:
+    <<: *airflow-common
+
+  airflow-cli:
+    <<: *airflow-common
+
+  airflow-data:
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.9.2}
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    # yamllint disable rule:line-length
+    command:
+      - -c
+      - |
+        if [[ -z "${AIRFLOW_UID}" ]]; then
+          echo
+          echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
+          echo "If you are on Linux, you SHOULD follow the instructions below to set "
+          echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
+          echo "For other operating systems you can get rid of the warning with manually created .env file:"
+          echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
+          echo
+        fi
+        mkdir -p /data/{raw,output,processed}
+        chown -R "${AIRFLOW_UID}:0" /data
+        exec /entrypoint airflow version
+    # yamllint enable rule:line-length
+    user: "0:0"
+
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.27.0
+    restart: on-failure:0
+    ports:
+     - ${WEAVIATE_HOST_PORT_REST}:${WEAVIATE_HOST_PORT_REST}
+     - ${WEAVIATE_HOST_PORT_GRPC}:${WEAVIATE_HOST_PORT_GRPC}
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-openai'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      ENABLE_MODULES: 'text2vec-openai, generative-openai'
+      CLUSTER_HOSTNAME: 'node1'
+      BACKUP_FILESYSTEM_PATH: '/var/lib/weaviate/backup'
+      ENABLE_API_BASED_MODULES: 'true'
+    command:
+    - --host
+    - 0.0.0.0
+    - --port
+    - ${WEAVIATE_HOST_PORT_REST}
+    - --scheme
+    - http
+    volumes:
+    - weaviate_data:/var/lib/weaviate
+
+
+  docker-socket-proxy:
+    image: alpine/socat
+    command: "TCP4-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock"
+    ports:
+      - "2376:2375"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  recipe_book:
+    build: recipe_book/.
+    image: recipe_book:latest
+    environment:
+      - AWS_ENDPOINT_URL_S3="http://localhost:${MINIO_API_PORT}"
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
+  minio:
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    volumes:
+      - minio:/data
+    ports:
+      - "${MINIO_API_PORT}:${MINIO_API_PORT}"
+      - "${MINIO_UI_PORT}:${MINIO_UI_PORT}"
+    command: server /data --address :${MINIO_API_PORT} --console-address ":${MINIO_UI_PORT}"
+    environment:
+      MINIO_ROOT_USER: airflow
+      MINIO_ROOT_PASSWORD: apacheairflow
+
+  minio_init:
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      echo ${AWS_ACCESS_KEY_ID};
+      echo ${AWS_SECRET_ACCESS_KEY};
+      echo ${AZURE_OPENAI_API_KEY};
+      while ! /usr/bin/mc config host add minio http://minio:${MINIO_API_PORT} ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY}; do echo 'MinIO not up and running yet...' && sleep 1; done;
+      echo 'Added mc host config.';
+      /usr/bin/mc mb minio/data || true;
+      exit 0;
+      "
+    restart: "on-failure"
+
+networks:
+  minionetwork:
+    driver: bridge
+
+volumes:
+  airflow-data-volume:
+  minio_data:
+    driver: local
+  minio:
+  weaviate_data:
+    driver: local
