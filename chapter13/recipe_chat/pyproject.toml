@@ -19,6 +19,9 @@ langchain = "^0.3.7"
 weaviate-client = "^4.9.3"
 langchain-openai = "^0.2.6"
 langchain-weaviate = "^0.0.3"
+minio = "^7.2.10"
+fsspec = "^2024.10.0"
+s3fs = "^2024.10.0"
 
 
 [build-system]

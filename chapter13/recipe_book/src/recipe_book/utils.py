@@ -8,7 +8,10 @@ def get_minio_fs(path: str) -> Tuple[fsspec.spec.AbstractFileSystem, str]:
 
 def list_files_from_fs(path: str) -> List[str]:
 
-    fs, base_path = fsspec.core.url_to_fs(path)
+    try:
+        fs, base_path = fsspec.core.url_to_fs(path)
+    except FileNotFoundError:
+        return []
 
     return fs.ls(base_path)
 

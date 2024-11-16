@@ -14,20 +14,22 @@ from .utils import (
 
 import logging
 
-
 dotenv.load_dotenv()
 app = typer.Typer()
 log = logging.getLogger(__name__)
 
 @app.command()
-def upload(source_path: str, dest_path: str):
+def upload(ds: str)-> None:
+
+    source_path = f"/app/sample_recipes/{ds}"
+    dest_path = f"s3://data/{{ds}}/raw"
 
     files_to_upload = list_files_from_fs(source_path)
 
     for file in files_to_upload:
         upload_file_to_minio(file, dest_path)
-
-
+    log.info(f"Uploaded {len(files_to_upload)} new recipes on {ds}")
+    
 @app.command()
 def preprocess(path: str) -> None:
 
@@ -85,8 +87,8 @@ def save(collection_name:str, path: str) -> None:
     failed_objects = collection.batch.failed_objects
 
     if len(failed_objects) > 0:
-        log.error(f"Failed to save {len(failed_objects)} objects.")
         log.error(failed_objects)
+        raise ValueError("Failed to save {len(failed_objects)} objects.")
 
     client.close()
 if __name__ == "__main__":

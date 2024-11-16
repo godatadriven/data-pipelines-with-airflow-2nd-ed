@@ -5,6 +5,7 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
     AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
+    _PIP_ADDITIONAL_REQUIREMENTS : weaviate-client==4.9.0
     AIRFLOW_CONN_MINIO: aws://${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}@?endpoint_url=http%3A%2F%2Fminio%3A${MINIO_API_PORT}
     AIRFLOW_CONN_WEAVIATE_DEFAULT: '{ "conn_type": "weaviate", "host": "weaviate", "port": "${WEAVIATE_HOST_PORT_REST}", "extra": { "grpc_host": "weaviate", "grpc_port": "${WEAVIATE_HOST_PORT_GRPC}","additional_headers" : { "AZURE_OPENAI_API_KEY": "${AZURE_OPENAI_API_KEY}","AZURE_OPENAI_RESOURCE_NAME": "${AZURE_OPENAI_RESOURCE_NAME}","AZURE_OPENAI_ENDPOINT": "${AZURE_OPENAI_ENDPOINT}"}}}'
 
@@ -113,9 +114,6 @@ services:
       - minio
     entrypoint: >
       /bin/sh -c "
-      echo ${AWS_ACCESS_KEY_ID};
-      echo ${AWS_SECRET_ACCESS_KEY};
-      echo ${AZURE_OPENAI_API_KEY};
       while ! /usr/bin/mc config host add minio http://minio:${MINIO_API_PORT} ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY}; do echo 'MinIO not up and running yet...' && sleep 1; done;
       echo 'Added mc host config.';
       /usr/bin/mc mb minio/data || true;

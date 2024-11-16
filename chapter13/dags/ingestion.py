@@ -12,7 +12,7 @@ ENVIRONMENT = {
     "AWS_ENDPOINT_URL_S3": "{{ conn.minio.extra_dejson.get('endpoint_url') }}",
     "AWS_ACCESS_KEY_ID": "{{ conn.minio.login }}",
     "AWS_SECRET_ACCESS_KEY": "{{ conn.minio.password }}",
-    "X-Azure-Api-Key": "{{ conn.weaviate_default.extra_dejson.get('additional_headers').get('AZURE_API_KEY') }}", 
+    "X-Azure-Api-Key": "{{ conn.weaviate_default.extra_dejson.get('additional_headers').get('AZURE_OPENAI_API_KEY') }}", 
     "WEAVIATE_HOST_PORT_REST": "{{ conn.weaviate_default.port }}",
     "WEAVIATE_HOST_PORT_GRPC": "{{ conn.weaviate_default.extra_dejson.get('grpc_port') }}",
 }
@@ -21,27 +21,26 @@ WEAVIATE_CONN_ID = "weaviate_default"
 COLLECTION_NAME = "recipes"
 
 with DAG(
-    dag_id="ingestion",
+    dag_id="vector_ingestion",
     schedule="@daily",
-    start_date=datetime(2024, 10, 14),
-    end_date=datetime(2024, 10, 16),
+    start_date=datetime(2024, 10, 1),
+    end_date=datetime(2024, 10, 8),
 ):
     # Check network with docker network ls        
     # name of the source folder + _default
-    upload = DockerOperator(
+    upload_recipes_to_minio = DockerOperator(
         task_id="upload_recipes_to_minio",
         docker_url=DOCKER_URL,
         image="recipe_book:latest",
         command=[
             "upload",
-            "/app/sample_recipes/{{data_interval_start | ds}}",
-            "s3://data/{{data_interval_start | ds}}/raw",
+            "{{ds}}",
         ],
         network_mode="chapter13_default",
         environment=ENVIRONMENT
     )
 
-    preprocess = DockerOperator(
+    preprocess_recipes = DockerOperator(
         task_id="preprocess_recipes",
         docker_url=DOCKER_URL,
         image="recipe_book:latest",
@@ -54,7 +53,7 @@ with DAG(
     )
 
     
-    split = DockerOperator(
+    split_recipes_into_chunks = DockerOperator(
         task_id="split_recipes_into_chunks",
         docker_url=DOCKER_URL,
         image="recipe_book:latest",
@@ -89,5 +88,5 @@ with DAG(
     )
 
     (
-        upload >> preprocess >> split >>  create_collection >> save_in_vectordb
+        upload_recipes_to_minio >> preprocess_recipes >> split_recipes_into_chunks >>  create_collection >> save_in_vectordb
     )

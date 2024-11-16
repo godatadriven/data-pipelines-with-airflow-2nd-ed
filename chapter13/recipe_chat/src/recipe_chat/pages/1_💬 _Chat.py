@@ -7,35 +7,36 @@ from langchain_openai import AzureOpenAIEmbeddings
 from langchain_weaviate.vectorstores import WeaviateVectorStore
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from recipe_chat.utils import PROMPT
+from pages.utils import PROMPT
 
 import json
 
-AZURE_OPENAI_API_KEY = os.getenv('AZURE_OPENAI_API_KEY')
-AZURE_OPENAI_ENDPOINT = os.getenv('AZURE_OPENAI_ENDPOINT')
-AZURE_OPENAI_API_VERSION = os.getenv('AZURE_OPENAI_API_VERSION')
-AZURE_OPENAI_RESOURCE_NAME = os.getenv('AZURE_OPENAI_RESOURCE_NAME')
+st.set_page_config(page_title="Recipe Chat", page_icon="💬", layout="wide")
+
 COLLECTION_NAME = "recipes"
 
-st.set_page_config(layout="wide")
 
 st.title("Mom's Recipe Chat")
 
 col1,col2 = st.columns([5,3])
 
 
-weaviate_client = weaviate.connect_to_local(
-    port=8083,
-    grpc_port=50051,
-    headers = {
-        "X-Azure-Api-Key": AZURE_OPENAI_API_KEY,
-    },
-)
+weaviate_client = weaviate.connect_to_custom(
+        http_host='weaviate',
+        http_port=os.getenv("WEAVIATE_HOST_PORT_REST"),
+        http_secure=False,
+        grpc_host='weaviate',
+        grpc_port=os.getenv("WEAVIATE_HOST_PORT_GRPC"),
+        grpc_secure=False,
+        headers={
+                "X-Azure-Api-Key": os.getenv("AZURE_OPENAI_API_KEY"),
+        }
+    )
 
 openai_client = AzureChatOpenAI(
     model_name="gpt-4", 
     deployment_name = "gpt-4",
-    api_version=AZURE_OPENAI_API_VERSION,
+    api_version="2024-02-01",
 )
 
 embeddings = AzureOpenAIEmbeddings(model="text-embedding-3-large")
@@ -101,3 +102,4 @@ if question := st.chat_input("What is up?"):
             col2.html(f"<sub><sup>{document.page_content}</sup></sub>")
 
     st.session_state.messages.append({"role": "assistant", "content": response["answer"]})
+
