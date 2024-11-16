@@ -31,10 +31,10 @@ with DAG(
     upload_recipes_to_minio = DockerOperator(
         task_id="upload_recipes_to_minio",
         docker_url=DOCKER_URL,
-        image="recipe_book:latest",
+        image="gastrodb_cli:latest",
         command=[
             "upload",
-            "{{ds}}",
+            "{{data_interval_start | ds}}",
         ],
         network_mode="chapter13_default",
         environment=ENVIRONMENT
@@ -43,7 +43,7 @@ with DAG(
     preprocess_recipes = DockerOperator(
         task_id="preprocess_recipes",
         docker_url=DOCKER_URL,
-        image="recipe_book:latest",
+        image="gastrodb_cli:latest",
         command=[
             "preprocess",
             "s3://data/{{data_interval_start | ds}}",
@@ -56,7 +56,7 @@ with DAG(
     split_recipes_into_chunks = DockerOperator(
         task_id="split_recipes_into_chunks",
         docker_url=DOCKER_URL,
-        image="recipe_book:latest",
+        image="gastrodb_cli:latest",
         command=[
             "split",
             "s3://data/{{data_interval_start | ds}}",
@@ -77,7 +77,7 @@ with DAG(
     save_in_vectordb = DockerOperator(
         task_id="save_recipes_to_weaviate",
         docker_url=DOCKER_URL,
-        image="recipe_book:latest",
+        image="gastrodb_cli:latest",
         command=[
             "save",
             COLLECTION_NAME,
@@ -88,5 +88,9 @@ with DAG(
     )
 
     (
-        upload_recipes_to_minio >> preprocess_recipes >> split_recipes_into_chunks >>  create_collection >> save_in_vectordb
+        upload_recipes_to_minio >> 
+        preprocess_recipes >> 
+        split_recipes_into_chunks >>  
+        create_collection >> 
+        save_in_vectordb
     )

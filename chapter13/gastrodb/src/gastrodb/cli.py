@@ -22,12 +22,13 @@ log = logging.getLogger(__name__)
 def upload(ds: str)-> None:
 
     source_path = f"/app/sample_recipes/{ds}"
-    dest_path = f"s3://data/{{ds}}/raw"
+    dest_path = f"s3://data/{ds}/raw"
 
     files_to_upload = list_files_from_fs(source_path)
 
     for file in files_to_upload:
         upload_file_to_minio(file, dest_path)
+        
     log.info(f"Uploaded {len(files_to_upload)} new recipes on {ds}")
     
 @app.command()
