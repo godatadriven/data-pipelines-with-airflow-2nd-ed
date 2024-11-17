@@ -1,6 +1,9 @@
 import fsspec
 from typing import Tuple, List
 import pandas as pd
+from weaviate import WeaviateClient
+import weaviate
+import os
 
 def get_minio_fs(path: str) -> Tuple[fsspec.spec.AbstractFileSystem, str]:   
 
@@ -39,3 +42,19 @@ def upload_file_to_minio(source_path: str, dest_path: str) -> None:
 
     with open(source_path , 'rb') as f:
         fs.pipe(f"{base_path}/{filename}", f.read())
+
+
+def get_weaviate_client() -> WeaviateClient:
+
+    return weaviate.connect_to_custom(
+            http_host='weaviate',
+            http_port=os.getenv("WEAVIATE_HOST_PORT_REST"),
+            http_secure=False,
+            grpc_host='weaviate',
+            grpc_port=os.getenv("WEAVIATE_HOST_PORT_GRPC"),
+            grpc_secure=False,
+            headers={
+                 "X-Azure-Api-Key": os.getenv("AZURE_OPENAI_API_KEY"),
+            }
+        )
+    

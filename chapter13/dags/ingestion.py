@@ -1,21 +1,25 @@
 from datetime import datetime
 from pathlib import Path
 
-from custom.operators import WeaviateCreateCollectionOperator
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
 
-DOCKER_URL =  "tcp://docker-socket-proxy:2375"
+from dotenv import load_dotenv
+import os
 
 
 ENVIRONMENT = {
     "AWS_ENDPOINT_URL_S3": "{{ conn.minio.extra_dejson.get('endpoint_url') }}",
     "AWS_ACCESS_KEY_ID": "{{ conn.minio.login }}",
     "AWS_SECRET_ACCESS_KEY": "{{ conn.minio.password }}",
-    "X-Azure-Api-Key": "{{ conn.weaviate_default.extra_dejson.get('additional_headers').get('AZURE_OPENAI_API_KEY') }}", 
+    "AZURE_OPENAI_API_KEY": "{{ conn.weaviate_default.extra_dejson.get('additional_headers').get('AZURE_OPENAI_API_KEY') }}", 
+    "AZURE_OPENAI_ENDPOINT": "{{ conn.weaviate_default.extra_dejson.get('additional_headers').get('AZURE_OPENAI_ENDPOINT') }}",
+    "AZURE_OPENAI_RESOURCE_NAME": "{{ conn.weaviate_default.extra_dejson.get('additional_headers').get('AZURE_OPENAI_RESOURCE_NAME') }}",
     "WEAVIATE_HOST_PORT_REST": "{{ conn.weaviate_default.port }}",
     "WEAVIATE_HOST_PORT_GRPC": "{{ conn.weaviate_default.extra_dejson.get('grpc_port') }}",
 }
+
+DOCKER_URL =  "tcp://docker-socket-proxy:2375"
 
 WEAVIATE_CONN_ID = "weaviate_default"
 COLLECTION_NAME = "recipes"
@@ -52,7 +56,6 @@ with DAG(
         environment=ENVIRONMENT
     )
 
-    
     split_recipes_into_chunks = DockerOperator(
         task_id="split_recipes_into_chunks",
         docker_url=DOCKER_URL,
@@ -65,14 +68,19 @@ with DAG(
         environment=ENVIRONMENT
     )
 
-    create_collection = WeaviateCreateCollectionOperator(
+    create_collection = DockerOperator(
         task_id="create_collection",
-        conn_id=WEAVIATE_CONN_ID,
-        collection_name=COLLECTION_NAME,
-        name_of_configuration="recipe_vectorizer",
-        metadata_fields=["filename", "description"],
-        embedding_model="text-embedding-3-large",
+        docker_url=DOCKER_URL,
+        image="gastrodb_cli:latest",
+        command=[
+            "create",
+            COLLECTION_NAME,
+            "text-embedding-3-large",
+        ],
+        network_mode="chapter13_default",
+        environment=ENVIRONMENT,
     )
+
 
     save_in_vectordb = DockerOperator(
         task_id="save_recipes_to_weaviate",
@@ -84,7 +92,7 @@ with DAG(
             "s3://data/{{data_interval_start | ds}}",
         ],
         network_mode="chapter13_default",
-        environment=ENVIRONMENT
+        environment=ENVIRONMENT,
     )
 
     (

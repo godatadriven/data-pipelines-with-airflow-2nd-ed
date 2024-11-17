@@ -10,9 +10,12 @@ from .utils import (
     save_df_in_minio, 
     upload_file_to_minio,
     load_parquet_from_minio,
+    get_weaviate_client
 )
 
+from typing import List, Optional
 import logging
+from weaviate.classes.config import Configure, Property, DataType
 
 dotenv.load_dotenv()
 app = typer.Typer()
@@ -28,9 +31,10 @@ def upload(ds: str)-> None:
 
     for file in files_to_upload:
         upload_file_to_minio(file, dest_path)
-        
+
     log.info(f"Uploaded {len(files_to_upload)} new recipes on {ds}")
-    
+
+
 @app.command()
 def preprocess(path: str) -> None:
 
@@ -56,20 +60,52 @@ def split(path: str) -> None:
 
 
 @app.command()
+def create(
+        collection_name:str,
+        embedding_model:str,    
+    ) -> None:
+
+    client = get_weaviate_client()
+
+    existing_collections = [item.lower() for item in list(client.collections.list_all().keys())]
+
+    if collection_name.lower() in existing_collections:
+        log.info(f"Collection {collection_name} exists.")
+
+    else:
+        log.info(f"Collection {collection_name} does not exist yet...creating it.")  
+        
+        collection = client.collections.create(
+            collection_name,
+            vectorizer_config=[
+                Configure.NamedVectors.text2vec_azure_openai(
+                    name= "recipe_vectorizer",
+                    source_properties=["filename", "description"],
+                    base_url= os.getenv("AZURE_OPENAI_ENDPOINT"),
+                    resource_name= os.getenv("AZURE_OPENAI_RESOURCE_NAME"),
+                    deployment_id=embedding_model,
+                )    
+            ],
+            properties=[
+                Property(name="filename", data_type=DataType.TEXT),
+                Property(name="chunk", data_type=DataType.TEXT),
+                Property(name="chunk_sha", data_type=DataType.UUID, skip_vectorization=True),
+                Property(name="document_sha", data_type=DataType.UUID, skip_vectorization=True)
+            ]
+
+        )
+
+        log.info(f"Collection {collection_name} created.")    
+
+        log.info(collection.config.get().to_dict())
+
+    client.close()
+
+@app.command()
 def save(collection_name:str, path: str) -> None:
 
-    client = weaviate.connect_to_custom(
-            http_host='weaviate',
-            http_port=os.getenv("WEAVIATE_HOST_PORT_REST"),
-            http_secure=False,
-            grpc_host='weaviate',
-            grpc_port=os.getenv("WEAVIATE_HOST_PORT_GRPC"),
-            grpc_secure=False,
-            headers={
-                 "X-Azure-Api-Key": os.getenv("X-Azure-Api-Key"),
-            }
-        )
-    
+    client = get_weaviate_client()
+
     source_objects = json.loads( 
         load_parquet_from_minio( "splitted", path)
         .to_json(orient="records")
@@ -92,5 +128,7 @@ def save(collection_name:str, path: str) -> None:
         raise ValueError("Failed to save {len(failed_objects)} objects.")
 
     client.close()
+
+
 if __name__ == "__main__":
     app()
