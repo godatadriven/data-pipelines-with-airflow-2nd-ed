@@ -7,6 +7,11 @@ from airflow.providers.docker.operators.docker import DockerOperator
 from dotenv import load_dotenv
 import os
 
+import logging
+import sys
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
 
 ENVIRONMENT = {
     "AWS_ENDPOINT_URL_S3": "{{ conn.minio.extra_dejson.get('endpoint_url') }}",
@@ -24,24 +29,25 @@ DOCKER_URL =  "tcp://docker-socket-proxy:2375"
 WEAVIATE_CONN_ID = "weaviate_default"
 COLLECTION_NAME = "recipes"
 
+common_dag_args = {
+    "image":"gastrodb_cli:latest",
+    "docker_url":DOCKER_URL,
+    "network_mode":"chapter13_default",
+    "environment":ENVIRONMENT,
+    "auto_remove":"success",
+    "tty":True,
+}
+
 with DAG(
     dag_id="vector_ingestion",
     schedule="@daily",
     start_date=datetime(2024, 10, 1),
     end_date=datetime(2024, 10, 8),
 ):
-    # Check network with docker network ls        
-    # name of the source folder + _default
     upload_recipes_to_minio = DockerOperator(
         task_id="upload_recipes_to_minio",
-        docker_url=DOCKER_URL,
-        image="gastrodb_cli:latest",
-        command=[
-            "upload",
-            "{{data_interval_start | ds}}",
-        ],
-        network_mode="chapter13_default",
-        environment=ENVIRONMENT
+        command="upload {{data_interval_start | ds}}",
+        **common_dag_args
     )
 
     preprocess_recipes = DockerOperator(
@@ -70,29 +76,38 @@ with DAG(
 
     create_collection = DockerOperator(
         task_id="create_collection",
-        docker_url=DOCKER_URL,
-        image="gastrodb_cli:latest",
-        command=[
-            "create",
-            COLLECTION_NAME,
-            "text-embedding-3-large",
-        ],
-        network_mode="chapter13_default",
-        environment=ENVIRONMENT,
+        command=f"create {COLLECTION_NAME} text-embedding-3-large",
+        **common_dag_args
     )
 
+    compare_db_documents = DockerOperator(
+        task_id="compare_db_documents",
+        command=[
+            "compare",
+            "s3://data/{{data_interval_start | ds}}",
+            COLLECTION_NAME,
+        ],
+        **common_dag_args
+    )
+
+    delete_old_documents = DockerOperator(
+        task_id="delete_old_documents",
+        command=[
+            "delete",
+            "s3://data/{{data_interval_start | ds}}",
+            COLLECTION_NAME,
+        ],
+         **common_dag_args
+    )
 
     save_in_vectordb = DockerOperator(
         task_id="save_recipes_to_weaviate",
-        docker_url=DOCKER_URL,
-        image="gastrodb_cli:latest",
         command=[
             "save",
             COLLECTION_NAME,
             "s3://data/{{data_interval_start | ds}}",
         ],
-        network_mode="chapter13_default",
-        environment=ENVIRONMENT,
+        **common_dag_args
     )
 
     (
@@ -100,5 +115,7 @@ with DAG(
         preprocess_recipes >> 
         split_recipes_into_chunks >>  
         create_collection >> 
+        compare_db_documents >>
+        delete_old_documents >>
         save_in_vectordb
     )

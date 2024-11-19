@@ -44,12 +44,12 @@ def split_content(
         .explode("doc_chunks", ignore_index=True)
         .assign( 
             chunk = lambda df: [ chunk.page_content for chunk in df.doc_chunks],
-            document_sha = lambda df: [generate_uuid5(file) for file in df.filename],
-            chunk_sha = lambda df: [generate_uuid5(file) for file in df.chunk],
+            recipe_uuid = lambda df: [generate_uuid5(file) for file in df.filename],
+            chunk_uuid = lambda df: [generate_uuid5(file) for file in df.chunk],
         )
         .drop(["doc_chunks",content_col], axis=1)
         .reset_index(drop=True)
-        .loc[:, ["filename", "document_sha", "chunk_sha", "chunk"]]
+        .loc[:, ["filename", "recipe_uuid", "chunk_uuid", "chunk"]]
     )
 
     return df

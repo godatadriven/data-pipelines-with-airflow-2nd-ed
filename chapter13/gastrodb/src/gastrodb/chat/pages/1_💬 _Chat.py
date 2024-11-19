@@ -34,8 +34,8 @@ weaviate_client = weaviate.connect_to_custom(
     )
 
 openai_client = AzureChatOpenAI(
-    model_name="gpt-4", 
-    deployment_name = "gpt-4",
+    model_name="gpt-3.5-turbo", 
+    deployment_name = "gpt-3.5-turbo",
     api_version="2024-02-01",
 )
 
@@ -98,7 +98,7 @@ if question := st.chat_input("What is up?"):
 
         for document in st.session_state.context_documents:
             col2.html(f"<sup>{document.metadata['filename']}</sub>")
-            col2.html(f"<sup><sup>{document.metadata['chunk_sha']}</sup></sup>")
+            col2.html(f"<sup><sup>{document.metadata['chunk_uuid']}</sup></sup>")
             col2.html(f"<sub><sup>{document.page_content}</sup></sub>")
 
     st.session_state.messages.append({"role": "assistant", "content": response["answer"]})
