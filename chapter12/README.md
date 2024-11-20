@@ -1,6 +1,6 @@
-# Chapter 14
+# Chapter 12
 
-Code accompanying Chapter 14 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
+Code accompanying Chapter 12 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
 
 Much of this use case was based on the ideas in https://toddwschneider.com/posts/taxi-vs-citi-bike-nyc, where
 the fastest method of transportation (Citi Bikes or Yellow Taxis) between two NYC neighborhoods at given times
@@ -10,15 +10,13 @@ services are created for this purpose:
 1. A service providing Citi Bike rides
 1. A service providing NYC Yellow Taxi rides
 
-An Airflow DAG will periodically scrape these services, wrangle the data, and send the results into a Postgres
-database serving a tiny website, displaying which transportation method is fastest between two NYC
-neighborhoods.
+An Airflow DAG will periodically scrape these services, wrangle the data, and send the results into a Postgres database serving a tiny website, displaying which transportation method is fastest between two NYC neighborhoods.
 
 The real data is only available in batches of months/years. Therefore we provide two APIs to mimic "live"
-systems. The system can be brought online with the `docker-compose.yml` provided with this repository:
+systems. The system can be brought online with the `compose.yaml` provided with this repository:
 
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
 If all processing goes well, the final result is visible on http://localhost:8083.

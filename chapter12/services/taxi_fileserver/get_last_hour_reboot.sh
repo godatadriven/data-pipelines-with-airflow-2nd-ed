@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -ex
+
 year_offset=$(($(date +%Y)-${DATA_YEAR}))
 
 current_epoch=$(date "+%s")

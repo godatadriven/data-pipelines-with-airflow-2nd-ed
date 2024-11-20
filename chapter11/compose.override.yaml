@@ -43,14 +43,15 @@ services:
           echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
           echo
         fi
+        mkdir -p /data/{raw,output,processed}
         chown -R "${AIRFLOW_UID}:0" /data
         exec /entrypoint airflow version
     # yamllint enable rule:line-length
     user: "0:0"
 
-  events-api:
-    build: ./docker/events-api
-    image: manning-airflow/events-api
+  movie-reviews-api:
+    build: ./docker/movie-reviews-api
+    image: manning-airflow/movie-reviews-api
     ports:
       - "8081:8081"
 
