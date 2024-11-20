@@ -34,8 +34,8 @@ weaviate_client = weaviate.connect_to_custom(
     )
 
 openai_client = AzureChatOpenAI(
-    model_name="gpt-3.5-turbo", 
-    deployment_name = "gpt-3.5-turbo",
+    model_name="gpt-4", 
+    deployment_name = "gpt-4",
     api_version="2024-02-01",
 )
 

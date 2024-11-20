@@ -31,4 +31,4 @@ def log_dataframe(log:Logger, df:pd.DataFrame, df_name:str) -> None:
     log.warning("")
     log.warning("")
     log.warning(f"###### {df.shape}{df_name} ##################################")
-    log.warning(df.head(10))
+    log.warning(df)

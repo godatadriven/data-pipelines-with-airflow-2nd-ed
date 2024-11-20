@@ -94,21 +94,22 @@ def compare(path: str, collection_name:str) -> None:
 @app.command()
 def delete(path: str, collection_name:str) -> None:
 
-    recipes_to_update = (
+    df = (
         load_parquet_from_minio( "compared", path)
         .loc[lambda df: df.regime == "update"]
-        .recipe_uuid
-        .unique()
     )
 
-    log.warning(f"{len(recipes_to_update)} recipes to be deleted from {collection_name}")
+    log_dataframe(log, df, "Chunks to be deleted")
 
-    collection = get_weaviate_client().collections.get(name=collection_name)
+    log.warning(f"{len(df)} recipes to be deleted from {collection_name}")
 
-    for recipe_uuid in recipes_to_update:
-
-        collection.data.delete_many(
-            where=Filter.by_property("recipe_uuid").equal(recipe_uuid)
+    if len(df) > 0:
+        (
+            get_weaviate_client()
+            .collections.get(name=collection_name)
+            .data.delete_many(
+                where=Filter.by_id().contains_any(df.chunk_uuid.unique()) 
+            )
         )
 
 
