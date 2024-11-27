@@ -41,6 +41,6 @@ to this API outside Airflow DAGs, you can run:
 curl http://events-api:8081/events/latest
 ```
 if you're inside the Docker-compose environment. If you want to run this from your local system, use:
-```sql
+```bash
 curl http://localhost:8081/events/latest
 ```
