@@ -13,14 +13,14 @@ with DAG(
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="0 0 * * *",
 ):
-    EmptyOperator(task_id="etl")
+    EmptyOperator(task_id="extract")
 
 with DAG(
     dag_id="13_dag_2",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="0 0 * * *",
 ):
-    EmptyOperator(task_id="etl")
+    EmptyOperator(task_id="extract")
 
 
 with DAG(
@@ -28,7 +28,7 @@ with DAG(
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="0 0 * * *",
 ):
-    EmptyOperator(task_id="etl")
+    EmptyOperator(task_id="extract")
 
 with DAG(
     dag_id="13_dag_4",
@@ -37,18 +37,18 @@ with DAG(
 ):
     [
         ExternalTaskSensor(
-            task_id="wait_for_etl_dag1",
+            task_id="wait_for_extract_dag1",
             external_dag_id="13_dag_1",
-            external_task_id="etl",
+            external_task_id="extract",
         ),
         ExternalTaskSensor(
-            task_id="wait_for_etl_dag2",
+            task_id="wait_for_extract_dag2",
             external_dag_id="13_dag_2",
-            external_task_id="etl",
+            external_task_id="extract",
         ),
         ExternalTaskSensor(
-            task_id="wait_for_etl_dag3",
+            task_id="wait_for_extract_dag3",
             external_dag_id="13_dag_3",
-            external_task_id="etl",
+            external_task_id="extract",
         ),
-    ] >> PythonOperator(task_id="report", python_callable=lambda: print("hello"))
+    ] >> PythonOperator(task_id="data_science", python_callable=lambda: print("hello"))

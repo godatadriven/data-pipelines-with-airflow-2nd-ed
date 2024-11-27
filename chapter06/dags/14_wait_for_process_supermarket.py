@@ -21,9 +21,9 @@ with DAG(
     schedule="0 16 * * *",
 ):
     wait = ExternalTaskSensor(
-        task_id="wait_for_process_supermarket",
+        task_id="wait_for_copy_to_raw",
         external_dag_id="14_ingest_supermarket_data",
-        external_task_id="process_supermarket",
+        external_task_id="copy_to_raw",
     )
-    report = EmptyOperator(task_id="report")
+    report = EmptyOperator(task_id="data_science")
     wait >> report
