@@ -17,7 +17,7 @@ ENVIRONMENT = {
     "AWS_ENDPOINT_URL_S3": "{{ conn.minio.extra_dejson.get('endpoint_url') }}",
     "AWS_ACCESS_KEY_ID": "{{ conn.minio.login }}",
     "AWS_SECRET_ACCESS_KEY": "{{ conn.minio.password }}",
-    "AZURE_OPENAI_API_KEY": "{{ conn.weaviate_default.extra_dejson.get('additional_headers').get('AZURE_OPENAI_API_KEY') }}", 
+    "OPENAI_API_KEY": "{{ conn.weaviate_default.extra_dejson.get('additional_headers').get('OPENAI_API_KEY') }}", 
     "AZURE_OPENAI_ENDPOINT": "{{ conn.weaviate_default.extra_dejson.get('additional_headers').get('AZURE_OPENAI_ENDPOINT') }}",
     "AZURE_OPENAI_RESOURCE_NAME": "{{ conn.weaviate_default.extra_dejson.get('additional_headers').get('AZURE_OPENAI_RESOURCE_NAME') }}",
     "WEAVIATE_HOST_PORT_REST": "{{ conn.weaviate_default.port }}",
@@ -28,6 +28,7 @@ DOCKER_URL =  "tcp://docker-socket-proxy:2375"
 
 WEAVIATE_CONN_ID = "weaviate_default"
 COLLECTION_NAME = "recipes"
+CONNEXION_TYPE = "azure"
 
 common_dag_args = {
     "image":"gastrodb_cli:latest",
@@ -76,7 +77,7 @@ with DAG(
 
     create_collection = DockerOperator(
         task_id="create_collection",
-        command=f"create {COLLECTION_NAME} text-embedding-3-large",
+        command=f"create {COLLECTION_NAME} text-embedding-3-large azure",
         **common_dag_args
     )
 
@@ -86,6 +87,7 @@ with DAG(
             "compare",
             "s3://data/{{data_interval_start | ds}}",
             COLLECTION_NAME,
+            "azure",
         ],
         **common_dag_args
     )
@@ -96,6 +98,7 @@ with DAG(
             "delete",
             "s3://data/{{data_interval_start | ds}}",
             COLLECTION_NAME,
+            "azure",
         ],
          **common_dag_args
     )
@@ -106,6 +109,7 @@ with DAG(
             "save",
             COLLECTION_NAME,
             "s3://data/{{data_interval_start | ds}}",
+            "azure",
         ],
         **common_dag_args
     )

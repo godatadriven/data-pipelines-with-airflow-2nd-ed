@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
 
-EXPOSE 8084
+EXPOSE 8085
 
 CMD ["uv", "run", "streamlit", "run", "src/gastrodb/chat/Recipe_tool.py",  "--server.port=8084", "--server.address=0.0.0.0"]
 

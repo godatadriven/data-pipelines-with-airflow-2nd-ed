@@ -6,7 +6,7 @@ x-airflow-common:
     AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
     AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
     AIRFLOW_CONN_MINIO: aws://${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}@?endpoint_url=http%3A%2F%2Fminio%3A${MINIO_API_PORT}
-    AIRFLOW_CONN_WEAVIATE_DEFAULT: '{ "conn_type": "weaviate", "host": "weaviate", "port": "${WEAVIATE_HOST_PORT_REST}", "extra": { "grpc_host": "weaviate", "grpc_port": "${WEAVIATE_HOST_PORT_GRPC}","additional_headers" : { "AZURE_OPENAI_API_KEY": "${AZURE_OPENAI_API_KEY}","AZURE_OPENAI_RESOURCE_NAME": "${AZURE_OPENAI_RESOURCE_NAME}","AZURE_OPENAI_ENDPOINT": "${AZURE_OPENAI_ENDPOINT}"}}}'
+    AIRFLOW_CONN_WEAVIATE_DEFAULT: '{ "conn_type": "weaviate", "host": "weaviate", "port": "${WEAVIATE_HOST_PORT_REST}", "extra": { "grpc_host": "weaviate", "grpc_port": "${WEAVIATE_HOST_PORT_GRPC}","additional_headers" : { "OPENAI_API_KEY": "${OPENAI_API_KEY}","AZURE_OPENAI_RESOURCE_NAME": "${AZURE_OPENAI_RESOURCE_NAME}","AZURE_OPENAI_ENDPOINT": "${AZURE_OPENAI_ENDPOINT}"}}}'
   volumes:
     - airflow-data-volume:/data
     

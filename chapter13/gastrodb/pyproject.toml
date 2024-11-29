@@ -18,6 +18,7 @@ dependencies = [
     "weaviate-client>=4.9.3",
     "langchain-openai>=0.2.8",
     "langchain-weaviate>=0.0.3",
+    "ipykernel>=6.29.5",
 ]
 
 

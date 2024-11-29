@@ -17,7 +17,7 @@ def append_content(files_to_process: List[str], path:str, content_col:str) -> pd
         filename = file.split("/")[-1]
 
         with fs.open(f"{base_path}/{filename}", "rb") as file_:
-            content.append({"filename": filename, content_col: file_.read()})
+            content.append({"recipe_name": filename, content_col: file_.read()})
 
     return pd.DataFrame(content)
 
@@ -44,12 +44,12 @@ def split_content(
         .explode("doc_chunks", ignore_index=True)
         .assign( 
             chunk = lambda df: [ chunk.page_content for chunk in df.doc_chunks],
-            recipe_uuid = lambda df: [generate_uuid5(file) for file in df.filename],
+            recipe_uuid = lambda df: [generate_uuid5(file) for file in df.recipe_name],
             chunk_uuid = lambda df: [generate_uuid5(file) for file in df.chunk],
         )
         .drop(["doc_chunks",content_col], axis=1)
         .reset_index(drop=True)
-        .loc[:, ["filename", "recipe_uuid", "chunk_uuid", "chunk"]]
+        .loc[:, ["recipe_name", "recipe_uuid", "chunk_uuid", "chunk"]]
     )
 
     return df
