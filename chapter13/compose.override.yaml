@@ -96,6 +96,20 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 
+  gastrodb_chat:
+    build: 
+      context: ./gastrodb
+      dockerfile: Dockerfile.chat
+    image: gastrodb_chat:latest
+    environment:
+      - AWS_ENDPOINT_URL_S3="http://localhost:${MINIO_API_PORT}"
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - WEAVIATE_HOST_PORT_REST=${WEAVIATE_HOST_PORT_REST}
+      - WEAVIATE_HOST_PORT_GRPC=${WEAVIATE_HOST_PORT_GRPC}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+
+
   minio:
     image: minio/minio:RELEASE.2024-10-13T13-34-11Z
     volumes:

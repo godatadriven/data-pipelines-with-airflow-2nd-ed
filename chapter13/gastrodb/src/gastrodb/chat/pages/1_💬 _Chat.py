@@ -29,7 +29,7 @@ weaviate_client = weaviate.connect_to_custom(
         grpc_port=os.getenv("WEAVIATE_HOST_PORT_GRPC"),
         grpc_secure=False,
         headers={
-                "X-Azure-Api-Key": os.getenv("AZURE_OPENAI_API_KEY"),
+                "X-Azure-Api-Key": os.getenv("OPENAI_API_KEY"),
         }
     )
 

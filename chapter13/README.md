@@ -51,7 +51,8 @@ Run Instructions
 Todo:
 [] Test OpenAI api mode works 
 [] add json parsing to the recipe in the app
-[] Add app aas
+[] Pass port 8084 to the chat as env var
+[] Pass connection mode as a env var
 
 
 
