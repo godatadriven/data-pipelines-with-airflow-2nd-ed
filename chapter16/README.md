@@ -1,43 +1,43 @@
-# Chapter 16 - Airflow on AWS
+# Chapter 16
 
-Code accompanying Chapter 16 of the book 'Data pipelines with Apache Airflow'.
+Code accompanying Chapter 16 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
 
-## Contents
+The chapter explains the different options of deploying Airflow in Kubernetes. For executing these deployment commands a docker compose based Kubernetes cluster is available in this chapters `docker-compose.yml` provided with this repository. To start this cluster setup the following command can be used:
 
-This code example contains the following files:
-
-```
-├── Makefile                     # Makefile for helping run commands.
-├── dags
-│   ├── 01_aws_usecase.py        # The actual DAG.
-│   └── custom                   # Code supporting the DAG.
-│       ├── __init__.py
-│       ├── operators.py
-│       └── hooks.py
-├── docker
-│   └── airflow-aws              # Custom Airflow image with the required depedencies.
-├── docker-compose.yml           # Docker-compose file for Airflow.
-├── readme.md                    # This file.
-└── resources
-    └── stack.yml                # CloudFormation template for AWS resources required for
+```bash
+docker compose up -d
 ```
 
-## Usage
+!! **This setup requires more resources so it is good to at least give docker 4 CPU and 8GB memory**
 
-To get started with the code example, head over to the CloudFormation section in the AWS Console and use the provided CloudFormation template (*resources/stack.yml*) to create the required AWS resources. See the description in the Chapter for more details how to do so, if you're not yet familiar with the process.
+## More information
 
-Once the CloudFormation stack has been created, rename the file .env.template to .env and enter the details of the created resources. You should be able to get the bucket + crawler names from the CloudFormation stack resources tab. Don't forget to also create an access key/secret for the created user and include this in the .env file too.
+### Kubectl and helm
 
-Once this is all set up, you can start Airflow using:
+To work with the kubernetes cluster a separate container is available to execute `kubectl` and `helm` commands against the cluster
 
-```
-docker-compose up --build
-```
-
-Once you're done, you can tear down Airflow using:
-
-```
-docker compose down -v
+```bash
+docker exec -ti chapter16-k3s-cli-1 /bin/bash
 ```
 
-Don't forget to clean up your AWS resources by deleting the created stack.
+#### K9s or local kubectl as an alternative
+
+You could use [k9s](https://k9scli.io/) or install kubectl locally. To make sure you can connect to the k3s cluster you need to make sure the k3s-server hostname is known locally (add `127.0.0.1 k3s-server` to your hosts file) and you need to use the cluster config (`KUBECONFIG=.k3s/kubeconfig.yaml`)
+
+### Deployment of default airflow in K8S
+
+Inside the k3s-cli container we can deploy airflow with the following commands:
+
+```bash
+/enable-external-dns # make sure the other docker services can be reached from within the k3s cluster
+helm repo add apache-airflow https://airflow.apache.org
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer
+```
+
+to verify the running services/pods we can check with the following command:
+
+```bash
+kubectl --namespace airflow get pods
+```
+
+access the webserver at http://localhost:8080
