@@ -49,8 +49,8 @@ Run Instructions
 
 
 Todo:
-[] Fix json recipe format   
-[] Make chunks per ingredients and description
+[] Test OpenAI api mode works 
+[] add json parsing to the recipe in the app
 [] Add app aas
 
 

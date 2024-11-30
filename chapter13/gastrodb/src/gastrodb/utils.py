@@ -4,6 +4,7 @@ import pandas as pd
 from weaviate import WeaviateClient
 import weaviate
 import os
+import json
 
 from weaviate.classes.config import Configure
 
@@ -33,6 +34,13 @@ def load_parquet_from_minio(filename:str, path:str) -> pd.DataFrame:
 
     with fs.open(f"{base_path}/{filename}.parquet", "rb") as file_:        
         return pd.read_parquet(file_)
+
+def load_json_from_minio(filename:str, path:str) -> pd.DataFrame:
+
+    fs, base_path = get_minio_fs(path)  
+
+    with fs.open(f"{base_path}/{filename}.json", "rb") as file_:        
+        return json.load(file_)
 
 
 def upload_file_to_minio(source_path: str, dest_path: str) -> None:

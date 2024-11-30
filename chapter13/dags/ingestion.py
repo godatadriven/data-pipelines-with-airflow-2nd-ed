@@ -63,18 +63,6 @@ with DAG(
         environment=ENVIRONMENT
     )
 
-    split_recipes_into_chunks = DockerOperator(
-        task_id="split_recipes_into_chunks",
-        docker_url=DOCKER_URL,
-        image="gastrodb_cli:latest",
-        command=[
-            "split",
-            "s3://data/{{data_interval_start | ds}}",
-        ],
-        network_mode="chapter13_default",
-        environment=ENVIRONMENT
-    )
-
     create_collection = DockerOperator(
         task_id="create_collection",
         command=f"create {COLLECTION_NAME} text-embedding-3-large azure",
@@ -117,7 +105,6 @@ with DAG(
     (
         upload_recipes_to_minio >> 
         preprocess_recipes >> 
-        split_recipes_into_chunks >>  
         create_collection >> 
         compare_db_documents >>
         delete_old_documents >>

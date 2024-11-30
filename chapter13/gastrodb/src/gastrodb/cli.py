@@ -2,8 +2,10 @@ import typer
 import dotenv
 import os
 import json
+import pandas as pd
+from weaviate.util import generate_uuid5
 
-from .preprocess import append_content, clean , split_content
+
 from .utils import (
     list_files_from_fs, 
     save_df_in_minio, 
@@ -11,6 +13,7 @@ from .utils import (
     load_parquet_from_minio,
     get_weaviate_client,
     get_vectorizer_config,
+    load_json_from_minio
 )
 
 from gastrodb.logs import (
@@ -45,22 +48,81 @@ def upload(ds: str)-> None:
 
 
 @app.command()
-def preprocess(path: str) -> None:
+def preprocess(path:str) -> None:
 
     files_to_process = list_files_from_fs(f"{path}/raw")
 
+    json_files = [file for file in files_to_process if file.endswith(".json")]
+
+    df = pd.DataFrame(columns=["recipe_name", "chunk"])
+
+    for file in json_files:
+
+        recipe_name = file.replace(".json","").split("/")[-1]
+        data = load_json_from_minio(recipe_name, f"{path}/raw")
+
+        df.loc[len(df)] = {"recipe_name": recipe_name, "chunk": f"{recipe_name} \n Ingredients:{data['ingredients']}"}  
+        df.loc[len(df)] = {"recipe_name": recipe_name, "chunk": f"{recipe_name} \n Instructions:{data['instructions']}"}  
+
+
     df = (
-        append_content(files_to_process, path, content_col="recipe")
-        .pipe(clean, content_col="recipe")
+        df
+        .assign(
+            chunk = lambda df: df.chunk.astype(str).str.strip(),
+            recipe_uuid = lambda df: [generate_uuid5(file) for file in df.recipe_name],
+            chunk_uuid = lambda df: [generate_uuid5(file) for file in df.chunk],
+        )
+        .reset_index(drop=True)
     )
- 
+
     save_df_in_minio(df, path, "preprocessed")
+
+    log_dataframe(log, df, "Processed dataframe")
+
+
+
+@app.command()
+def create(
+        collection_name:str,
+        embedding_model:str,  
+        connection_type:str, 
+    ) -> None:
+
+    client = get_weaviate_client(connection_type)
+
+    collections = list(client.collections.list_all().keys())
+    existing_collections = [item.lower() for item in collections]
+
+    if collection_name.lower() in existing_collections:
+        log.warning(f"Collection {collection_name} exists.")
+        client.close()
+        return
+
+    log.warning(f"Collection {collection_name} does not exist yet...creating it.")  
+    
+    collection = client.collections.create(
+        name = collection_name,
+        vectorizer_config=[get_vectorizer_config(embedding_model, connection_type)],
+        properties=[
+            Property(name="recipe_uuid", data_type=DataType.UUID, skip_vectorization=True),
+            Property(name="recipe_name", data_type=DataType.TEXT),
+            Property(name="chunk_uuid", data_type=DataType.UUID, skip_vectorization=True),
+            Property(name="chunk", data_type=DataType.TEXT),
+        ]
+
+    )
+
+    log.warning(f"Collection {collection_name} created.")    
+    log.warning(collection.config.get().to_dict())
+
+    client.close()
+
 
 @app.command()
 def compare(path: str, collection_name:str, connection_type:str) -> None:
 
     df = (
-        load_parquet_from_minio( "splitted", path)
+        load_parquet_from_minio( "preprocessed", path)
         .assign(regime=None)
         .reset_index(drop=True)
     )
@@ -119,54 +181,6 @@ def delete(path: str, collection_name:str, connection_type:str) -> None:
         client.close()
 
 
-
-@app.command()
-def split(path: str) -> None:
-
-    df = (
-        load_parquet_from_minio( "preprocessed", path)
-        .pipe(split_content, content_col="recipe", chunk_size=300, chunk_overlap=100, separators=[" "])
-    )
-
-    save_df_in_minio(df, path , "splitted")
-
-
-@app.command()
-def create(
-        collection_name:str,
-        embedding_model:str,  
-        connection_type:str, 
-    ) -> None:
-
-    client = get_weaviate_client(connection_type)
-
-    collections = list(client.collections.list_all().keys())
-    existing_collections = [item.lower() for item in collections]
-
-    if collection_name.lower() in existing_collections:
-        log.warning(f"Collection {collection_name} exists.")
-        client.close()
-        return
-
-    log.warning(f"Collection {collection_name} does not exist yet...creating it.")  
-    
-    collection = client.collections.create(
-        name = collection_name,
-        vectorizer_config=[get_vectorizer_config(embedding_model, connection_type)],
-        properties=[
-            Property(name="recipe_uuid", data_type=DataType.UUID, skip_vectorization=True),
-            Property(name="recipe_name", data_type=DataType.TEXT),
-            Property(name="chunk_uuid", data_type=DataType.UUID, skip_vectorization=True),
-            Property(name="chunk", data_type=DataType.TEXT),
-        ]
-
-    )
-
-    log.warning(f"Collection {collection_name} created.")    
-    log.warning(collection.config.get().to_dict())
-
-    client.close()
-
 @app.command()
 def save(collection_name:str, path: str, connection_type:str) -> None:
 
@@ -190,6 +204,8 @@ def save(collection_name:str, path: str, connection_type:str) -> None:
                 properties=object,
                 uuid=object["chunk_uuid"],
             )
+        
+        log.warning(f"Saving {len(source_objects)} objects to {collection_name}")
 
         if failed_objects:
             failed_objects = failed_objects.append(collection.batch.failed_objects)

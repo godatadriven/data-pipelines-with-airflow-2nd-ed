@@ -29,6 +29,7 @@ def log_files_uploaded(log:Logger, files: List[str], dest_path:str) -> None:
 
 def log_dataframe(log:Logger, df:pd.DataFrame, df_name:str) -> None:
     log.warning("")
-    log.warning("")
+    log.warning("Columns", df.columns)
     log.warning(f"###### {df.shape}{df_name} ##################################")
     log.warning(df)
+
