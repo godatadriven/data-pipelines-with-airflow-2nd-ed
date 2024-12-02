@@ -22,13 +22,13 @@ ENVIRONMENT = {
     "AZURE_OPENAI_RESOURCE_NAME": "{{ conn.weaviate_default.extra_dejson.get('additional_headers').get('AZURE_OPENAI_RESOURCE_NAME') }}",
     "WEAVIATE_HOST_PORT_REST": "{{ conn.weaviate_default.port }}",
     "WEAVIATE_HOST_PORT_GRPC": "{{ conn.weaviate_default.extra_dejson.get('grpc_port') }}",
+    "OPENAI_CONN_TYPE":  "{{ conn.weaviate_default.extra_dejson.get('OPENAI_CONN_TYPE') }}"
 }
 
 DOCKER_URL =  "tcp://docker-socket-proxy:2375"
 
 WEAVIATE_CONN_ID = "weaviate_default"
 COLLECTION_NAME = "recipes"
-CONNEXION_TYPE = "azure"
 
 common_dag_args = {
     "image":"gastrodb_cli:latest",
@@ -60,12 +60,11 @@ with DAG(
             "s3://data/{{data_interval_start | ds}}",
         ],
         network_mode="chapter13_default",
-        environment=ENVIRONMENT
     )
 
     create_collection = DockerOperator(
         task_id="create_collection",
-        command=f"create {COLLECTION_NAME} text-embedding-3-large azure",
+        command=f"create {COLLECTION_NAME} text-embedding-3-large",
         **common_dag_args
     )
 
@@ -75,7 +74,6 @@ with DAG(
             "compare",
             "s3://data/{{data_interval_start | ds}}",
             COLLECTION_NAME,
-            "azure",
         ],
         **common_dag_args
     )
@@ -86,7 +84,6 @@ with DAG(
             "delete",
             "s3://data/{{data_interval_start | ds}}",
             COLLECTION_NAME,
-            "azure",
         ],
          **common_dag_args
     )
@@ -97,7 +94,6 @@ with DAG(
             "save",
             COLLECTION_NAME,
             "s3://data/{{data_interval_start | ds}}",
-            "azure",
         ],
         **common_dag_args
     )

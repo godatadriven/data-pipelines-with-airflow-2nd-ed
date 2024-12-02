@@ -8,8 +8,11 @@ from langchain_weaviate.vectorstores import WeaviateVectorStore
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from pages.utils import PROMPT
+from gastrodb.utils import get_weaviate_client
 
 import json
+
+os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 st.set_page_config(page_title="Recipe Chat", page_icon="💬", layout="wide")
 
@@ -20,18 +23,7 @@ st.title("Mom's Recipe Chat")
 
 col1,col2 = st.columns([5,3])
 
-
-weaviate_client = weaviate.connect_to_custom(
-        http_host='weaviate',
-        http_port=os.getenv("WEAVIATE_HOST_PORT_REST"),
-        http_secure=False,
-        grpc_host='weaviate',
-        grpc_port=os.getenv("WEAVIATE_HOST_PORT_GRPC"),
-        grpc_secure=False,
-        headers={
-                "X-Azure-Api-Key": os.getenv("OPENAI_API_KEY"),
-        }
-    )
+weaviate_client = get_weaviate_client()
 
 openai_client = AzureChatOpenAI(
     model_name="gpt-4", 

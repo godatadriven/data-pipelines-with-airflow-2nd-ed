@@ -1,5 +1,4 @@
 import typer
-import dotenv
 import os
 import json
 import pandas as pd
@@ -27,7 +26,6 @@ import logging
 from weaviate.classes.config import Property, DataType
 from weaviate.classes.query import Filter
 
-dotenv.load_dotenv()
 app = typer.Typer()
 log = logging.getLogger(__name__)
 
@@ -85,10 +83,9 @@ def preprocess(path:str) -> None:
 def create(
         collection_name:str,
         embedding_model:str,  
-        connection_type:str, 
     ) -> None:
 
-    client = get_weaviate_client(connection_type)
+    client = get_weaviate_client()
 
     collections = list(client.collections.list_all().keys())
     existing_collections = [item.lower() for item in collections]
@@ -102,7 +99,7 @@ def create(
     
     collection = client.collections.create(
         name = collection_name,
-        vectorizer_config=[get_vectorizer_config(embedding_model, connection_type)],
+        vectorizer_config=[get_vectorizer_config(embedding_model)],
         properties=[
             Property(name="recipe_uuid", data_type=DataType.UUID, skip_vectorization=True),
             Property(name="recipe_name", data_type=DataType.TEXT),
@@ -119,7 +116,7 @@ def create(
 
 
 @app.command()
-def compare(path: str, collection_name:str, connection_type:str) -> None:
+def compare(path: str, collection_name:str) -> None:
 
     df = (
         load_parquet_from_minio( "preprocessed", path)
@@ -134,7 +131,7 @@ def compare(path: str, collection_name:str, connection_type:str) -> None:
         recipes = df[df.recipe_uuid == recipe]
 
         response = (
-            get_weaviate_client(connection_type)
+            get_weaviate_client()
             .collections
             .get(name=collection_name)
             .query
@@ -155,7 +152,7 @@ def compare(path: str, collection_name:str, connection_type:str) -> None:
 
 
 @app.command()
-def delete(path: str, collection_name:str, connection_type:str) -> None:
+def delete(path: str, collection_name:str) -> None:
 
     df = (
         load_parquet_from_minio( "compared", path)
@@ -168,7 +165,7 @@ def delete(path: str, collection_name:str, connection_type:str) -> None:
 
     if len(df) > 0:
 
-        client = get_weaviate_client(connection_type)
+        client = get_weaviate_client()
         
         (
             client
@@ -182,9 +179,9 @@ def delete(path: str, collection_name:str, connection_type:str) -> None:
 
 
 @app.command()
-def save(collection_name:str, path: str, connection_type:str) -> None:
+def save(collection_name:str, path: str) -> None:
 
-    client = get_weaviate_client(connection_type)
+    client = get_weaviate_client()
 
     source_objects = json.loads( 
         load_parquet_from_minio( "compared", path).drop(columns=["regime"])

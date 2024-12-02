@@ -53,13 +53,17 @@ def upload_file_to_minio(source_path: str, dest_path: str) -> None:
         fs.pipe(f"{base_path}/{filename}", f.read())
 
 
-def get_weaviate_client(connection_type:str) -> WeaviateClient:
+def get_weaviate_client() -> WeaviateClient:
+
+    connection_type = os.getenv("OPENAI_CONN_TYPE")
 
     if connection_type == "azure":
         headers = {"X-Azure-Api-Key": os.getenv("OPENAI_API_KEY")}
     elif connection_type == "openai_api":
         headers = {"X-OpenAI-Api-Key": os.getenv("OPENAI_API_KEY")}
-
+    else:
+        raise ValueError(f"Plese set the env variable OPENAI_CONN_TYPE to either 'azure' or 'openai_api'")
+        
     return weaviate.connect_to_custom(
             http_host='weaviate',
             http_port=os.getenv("WEAVIATE_HOST_PORT_REST"),
@@ -70,8 +74,9 @@ def get_weaviate_client(connection_type:str) -> WeaviateClient:
             headers=headers,
         )
     
+def get_vectorizer_config(embedding_model: str) -> Configure:
 
-def get_vectorizer_config(embedding_model: str, connection_type:str) -> Configure:
+    connection_type = os.getenv("OPENAI_CONN_TYPE")
 
     if connection_type == "azure":
 
@@ -92,7 +97,7 @@ def get_vectorizer_config(embedding_model: str, connection_type:str) -> Configur
                         )
 
     else:
-        raise ValueError(f"Connection type {connection_type} not supported.")
+        raise ValueError(f"Plese set the env variable OPENAI_CONN_TYPE to either 'azure' or 'openai_api'")
 
     return config
     

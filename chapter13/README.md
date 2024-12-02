@@ -50,9 +50,10 @@ Run Instructions
 
 Todo:
 [] Test OpenAI api mode works 
-[] add json parsing to the recipe in the app
-[] Pass port 8084 to the chat as env var
-[] Pass connection mode as a env var
+[] add json parsing to the recipe in the chat app
+[] Pass .env to chat in docker_compose
+[] Fix chat to accept Azure or OpenAI API
+
 
 
 
