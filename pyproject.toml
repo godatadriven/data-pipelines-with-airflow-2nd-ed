@@ -15,6 +15,7 @@ apache-airflow-providers-postgres = "^5.13.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.27.1"
+weaviate-client = "^4.9.0"
 
 [build-system]
 requires = ["poetry-core"]
