@@ -5,7 +5,7 @@ import pandas as pd
 from weaviate.util import generate_uuid5
 
 
-from .utils import (
+from gastrodb.utils import (
     list_files_from_fs, 
     save_df_in_minio, 
     upload_file_to_minio,
@@ -15,12 +15,9 @@ from .utils import (
     load_json_from_minio
 )
 
-from gastrodb.logs import (
-    log_header,
-    log_files_uploaded,
-    log_dataframe,
+from gastrodb.logs import log_header, log_files_uploaded, log_dataframe
+from gastrodb.etl import create_chunks, assign_uuids
 
-)
 
 import logging
 from weaviate.classes.config import Property, DataType
@@ -48,35 +45,20 @@ def upload(ds: str)-> None:
 @app.command()
 def preprocess(path:str) -> None:
 
-    files_to_process = list_files_from_fs(f"{path}/raw")
+    files_to_process = list_files_from_fs(path=f"{path}/raw", extension=".json")
 
-    json_files = [file for file in files_to_process if file.endswith(".json")]
-
-    df = pd.DataFrame(columns=["recipe_name", "chunk"])
-
-    for file in json_files:
-
-        recipe_name = file.replace(".json","").split("/")[-1]
-        data = load_json_from_minio(recipe_name, f"{path}/raw")
-
-        df.loc[len(df)] = {"recipe_name": recipe_name, "chunk": f"{recipe_name} \n Ingredients:{data['ingredients']}"}  
-        df.loc[len(df)] = {"recipe_name": recipe_name, "chunk": f"{recipe_name} \n Instructions:{data['instructions']}"}  
-
-
+    if len(files_to_process) == 0:
+        log.warning("No files to process")
+        return
+    
     df = (
-        df
-        .assign(
-            chunk = lambda df: df.chunk.astype(str).str.strip(),
-            recipe_uuid = lambda df: [generate_uuid5(file) for file in df.recipe_name],
-            chunk_uuid = lambda df: [generate_uuid5(file) for file in df.chunk],
-        )
-        .reset_index(drop=True)
+        create_chunks(files_to_process, f"{path}/raw")
+        .pipe(assign_uuids)
     )
 
     save_df_in_minio(df, path, "preprocessed")
 
     log_dataframe(log, df, "Processed dataframe")
-
 
 
 @app.command()

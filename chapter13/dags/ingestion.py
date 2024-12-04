@@ -53,13 +53,11 @@ with DAG(
 
     preprocess_recipes = DockerOperator(
         task_id="preprocess_recipes",
-        docker_url=DOCKER_URL,
-        image="gastrodb_cli:latest",
         command=[
             "preprocess",
             "s3://data/{{data_interval_start | ds}}",
         ],
-        network_mode="chapter13_default",
+        **common_dag_args
     )
 
     create_collection = DockerOperator(

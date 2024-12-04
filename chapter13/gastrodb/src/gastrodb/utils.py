@@ -6,19 +6,26 @@ import weaviate
 import os
 import json
 
+
 from weaviate.classes.config import Configure
 
 def get_minio_fs(path: str) -> Tuple[fsspec.spec.AbstractFileSystem, str]:   
 
     return fsspec.core.url_to_fs(path)
 
-def list_files_from_fs(path: str) -> List[str]:
+
+def  list_files_from_fs(path: str, extension:str = None)  -> List[str]:
     try:
         fs, base_path = fsspec.core.url_to_fs(path)
     except FileNotFoundError:
         return []
 
-    return fs.ls(base_path)
+    files = fs.ls(base_path)
+  
+    if extension:
+        files = [f for f in files if f.endswith(extension)]
+
+    return files
 
 
 def save_df_in_minio(df: pd.DataFrame, dest_path: str, filename:str) -> None:
@@ -28,12 +35,14 @@ def save_df_in_minio(df: pd.DataFrame, dest_path: str, filename:str) -> None:
     with fs.open(f"{base_path}/{filename}.parquet", "wb") as file_:
         df.to_parquet(file_)
 
+
 def load_parquet_from_minio(filename:str, path:str) -> pd.DataFrame:
 
     fs, base_path = get_minio_fs(path)  
 
     with fs.open(f"{base_path}/{filename}.parquet", "rb") as file_:        
         return pd.read_parquet(file_)
+
 
 def load_json_from_minio(filename:str, path:str) -> pd.DataFrame:
 
@@ -82,7 +91,6 @@ def get_vectorizer_config(embedding_model: str) -> Configure:
 
         config =  Configure.NamedVectors.text2vec_azure_openai(
                         name=embedding_model.replace("-", "_"),
-                        source_properties=["recipe_name", "chunk"],
                         deployment_id=embedding_model,
                         base_url= os.getenv("AZURE_OPENAI_ENDPOINT"),
                         resource_name= os.getenv("AZURE_OPENAI_RESOURCE_NAME"),
@@ -92,7 +100,6 @@ def get_vectorizer_config(embedding_model: str) -> Configure:
 
         config = Configure.NamedVectors.text2vec_openai(
                             name=embedding_model.replace("-", "_"),
-                            source_properties=["recipe_name", "chunk"],
                             model=embedding_model,
                         )
 
