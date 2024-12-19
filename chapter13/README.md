@@ -53,6 +53,7 @@ Todo:
 [] Pass .env to chat in docker_compose
 [] Fix chat to accept Azure or OpenAI API
 [] add json parsing to the recipe in the chat app
+[] can i pass env vars in a more elegant way?
 
 
 

@@ -15,15 +15,19 @@ def get_minio_fs(path: str) -> Tuple[fsspec.spec.AbstractFileSystem, str]:
 
 
 def  list_files_from_fs(path: str, extension:str = None)  -> List[str]:
-    try:
-        fs, base_path = fsspec.core.url_to_fs(path)
-    except FileNotFoundError:
-        return []
+    
+    fs, base_path = fsspec.core.url_to_fs(path)
 
-    files = fs.ls(base_path)
-  
+    try:
+        files = fs.ls(base_path)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"No files found in {path}")
+
     if extension:
         files = [f for f in files if f.endswith(extension)]
+    
+    if len(files) == 0:
+        raise ValueError("No files to process, exiting...")
 
     return files
 

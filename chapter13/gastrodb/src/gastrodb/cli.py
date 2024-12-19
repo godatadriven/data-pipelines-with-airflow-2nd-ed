@@ -34,23 +34,21 @@ def upload(ds: str)-> None:
     source_path = f"/app/sample_recipes/{ds}"
     dest_path = f"s3://data/{ds}/raw"
 
-    files_to_upload = list_files_from_fs(source_path)
+    files_to_upload = list_files_from_fs(source_path,extension=".json")
 
     for file in files_to_upload:
         upload_file_to_minio(file, dest_path)
 
-    log_files_uploaded(log, files_to_upload , dest_path)
-
+    if len(files_to_upload) > 0:
+        log_files_uploaded(log, files_to_upload , dest_path)
+    else:
+        raise ValueError("No files to upload")
 
 @app.command()
 def preprocess(path:str) -> None:
 
     files_to_process = list_files_from_fs(path=f"{path}/raw", extension=".json")
 
-    if len(files_to_process) == 0:
-        log.warning("No files to process")
-        return
-    
     df = (
         create_chunks(files_to_process, f"{path}/raw")
         .pipe(assign_uuids)
@@ -108,16 +106,16 @@ def compare(path: str, collection_name:str) -> None:
 
     log_dataframe(log, df, "Source Dataframe from preprocessed")
 
-    for recipe in df.recipe_uuid.unique():
+    for recipe_uuid in df.recipe_uuid.unique():
 
-        recipes = df[df.recipe_uuid == recipe]
+        recipes = df[df.recipe_uuid == recipe_uuid]
 
         response = (
             get_weaviate_client()
             .collections
             .get(name=collection_name)
             .query
-            .fetch_objects(filters=Filter.by_property("recipe_uuid").equal(recipe))
+            .fetch_objects(filters=Filter.by_property("recipe_uuid").equal(recipe_uuid))
         )
 
         keys_in_db = [str(object.uuid) for object in response.objects]
@@ -163,26 +161,22 @@ def delete(path: str, collection_name:str) -> None:
 @app.command()
 def save(collection_name:str, path: str) -> None:
 
-    client = get_weaviate_client()
-
-    source_objects = json.loads( 
+    source_objects = ( 
         load_parquet_from_minio( "compared", path).drop(columns=["regime"])
-        .to_json(orient="records")
+        .to_dict(orient="records")
     ) 
 
     if len(source_objects) == 0:
         log.warning("No objects to save")
         return
     
+    client = get_weaviate_client()
     collection = client.collections.get(collection_name)
 
     failed_objects = []
     with collection.batch.dynamic() as batch:
         for object in source_objects:
-            batch.add_object(
-                properties=object,
-                uuid=object["chunk_uuid"],
-            )
+            batch.add_object(properties=object)
         
         log.warning(f"Saving {len(source_objects)} objects to {collection_name}")
 

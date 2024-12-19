@@ -12,7 +12,6 @@ import sys
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-
 ENVIRONMENT = {
     "AWS_ENDPOINT_URL_S3": "{{ conn.minio.extra_dejson.get('endpoint_url') }}",
     "AWS_ACCESS_KEY_ID": "{{ conn.minio.login }}",
@@ -25,17 +24,14 @@ ENVIRONMENT = {
     "OPENAI_CONN_TYPE":  "{{ conn.weaviate_default.extra_dejson.get('OPENAI_CONN_TYPE') }}"
 }
 
-DOCKER_URL =  "tcp://docker-socket-proxy:2375"
-
-WEAVIATE_CONN_ID = "weaviate_default"
 COLLECTION_NAME = "recipes"
 
 common_dag_args = {
     "image":"gastrodb_cli:latest",
-    "docker_url":DOCKER_URL,
+    "docker_url":"tcp://docker-socket-proxy:2375",
     "network_mode":"chapter13_default",
     "environment":ENVIRONMENT,
-    "auto_remove":"success",
+    "auto_remove":True,
     "tty":True,
 }
 
@@ -43,7 +39,7 @@ with DAG(
     dag_id="vector_ingestion",
     schedule="@daily",
     start_date=datetime(2024, 10, 1),
-    end_date=datetime(2024, 10, 8),
+    end_date=datetime(2024, 10, 7),
 ):
     upload_recipes_to_minio = DockerOperator(
         task_id="upload_recipes_to_minio",
@@ -57,6 +53,7 @@ with DAG(
             "preprocess",
             "s3://data/{{data_interval_start | ds}}",
         ],
+        trigger_rule="all_done",
         **common_dag_args
     )
 

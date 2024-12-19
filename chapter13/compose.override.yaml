@@ -61,21 +61,19 @@ services:
     environment:
       QUERY_DEFAULTS_LIMIT: 25
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
-      DEFAULT_VECTORIZER_MODULE: 'text2vec-openai'
       PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
-      ENABLE_MODULES: 'text2vec-openai, generative-openai'
       CLUSTER_HOSTNAME: 'node1'
       BACKUP_FILESYSTEM_PATH: '/var/lib/weaviate/backup'
       ENABLE_API_BASED_MODULES: 'true'
     command:
-    - --host
-    - 0.0.0.0
-    - --port
-    - ${WEAVIATE_HOST_PORT_REST}
-    - --scheme
-    - http
+      - --host
+      - 0.0.0.0
+      - --port
+      - ${WEAVIATE_HOST_PORT_REST}
+      - --scheme
+      - http
     volumes:
-    - weaviate_data:/var/lib/weaviate
+      - weaviate_data:/var/lib/weaviate
 
 
   docker-socket-proxy:
