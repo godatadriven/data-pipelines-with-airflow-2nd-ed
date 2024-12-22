@@ -1,7 +1,7 @@
 [project]
-name = "gastrodb"
+name = "vectorvault"
 version = "0.1.0"
-description = "Add your description here"
+description = "Package for chat and CLI of the vectorvault project"
 readme = "README.md"
 requires-python = ">=3.12"
 
@@ -26,7 +26,7 @@ dependencies = [
 package = true
 
 [project.scripts]
-gastrodb = 'gastrodb.cli:app'
+vectorvault = 'vectorvault.cli:app'
 
 [dependency-groups]
 dev = [

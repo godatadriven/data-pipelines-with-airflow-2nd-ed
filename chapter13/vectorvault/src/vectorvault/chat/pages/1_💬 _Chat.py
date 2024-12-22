@@ -8,7 +8,7 @@ from langchain_weaviate.vectorstores import WeaviateVectorStore
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from pages.utils import PROMPT
-from gastrodb.utils import get_weaviate_client
+from vectorvault.utils import get_weaviate_client
 
 import json
 

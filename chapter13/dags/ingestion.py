@@ -27,7 +27,7 @@ ENVIRONMENT = {
 COLLECTION_NAME = "recipes"
 
 common_dag_args = {
-    "image":"gastrodb_cli:latest",
+    "image":"vectorvault_cli:latest",
     "docker_url":"tcp://docker-socket-proxy:2375",
     "network_mode":"chapter13_default",
     "environment":ENVIRONMENT,

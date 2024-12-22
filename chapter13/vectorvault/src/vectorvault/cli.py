@@ -5,7 +5,7 @@ import pandas as pd
 from weaviate.util import generate_uuid5
 
 
-from gastrodb.utils import (
+from vectorvault.utils import (
     list_files_from_fs, 
     save_df_in_minio, 
     upload_file_to_minio,
@@ -15,8 +15,8 @@ from gastrodb.utils import (
     load_json_from_minio
 )
 
-from gastrodb.logs import log_header, log_files_uploaded, log_dataframe
-from gastrodb.etl import create_chunks, assign_uuids
+from vectorvault.logs import log_header, log_files_uploaded, log_dataframe
+from vectorvault.etl import create_chunks, assign_uuids
 
 
 import logging

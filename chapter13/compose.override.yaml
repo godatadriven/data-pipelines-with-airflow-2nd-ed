@@ -84,11 +84,11 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-  gastrodb_cli:
+  vectorvault_cli:
     build: 
-      context: ./gastrodb
+      context: ./vectorvault
       dockerfile: Dockerfile.cli
-    image: gastrodb_cli:latest
+    image: vectorvault_cli:latest
     environment:
       - AWS_ENDPOINT_URL_S3="http://localhost:${MINIO_API_PORT}"
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
@@ -96,11 +96,11 @@ services:
       - OPENAI_CONN_TYPE=${OPENAI_CONN_TYPE}
 
 
-  gastrodb_chat:
+  vectorvault_chat:
     build: 
-      context: ./gastrodb
+      context: ./vectorvault
       dockerfile: Dockerfile.chat
-    image: gastrodb_chat:latest
+    image: vectorvault_chat:latest
     ports:
       - "${STREAMLIT_HOST_PORT}:${STREAMLIT_HOST_PORT}"
     environment:

@@ -1,6 +1,6 @@
 from typing import List
 import pandas as pd
-from gastrodb.utils import load_json_from_minio
+from vectorvault.utils import load_json_from_minio
 from weaviate.util import generate_uuid5
 
 

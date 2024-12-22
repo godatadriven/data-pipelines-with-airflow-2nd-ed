@@ -470,7 +470,7 @@ wheels = [
 ]
 
 [[package]]
-name = "gastrodb"
+name = "vectorvault"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
