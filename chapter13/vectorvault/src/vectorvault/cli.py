@@ -105,10 +105,10 @@ def compare(path: str, collection_name:str) -> None:
 
     with get_weaviate_client() as client:
 
-        for recipe_uuid in df.recipe_uuid.unique():
+        for recipe_name in df.recipe_name.unique():
 
-            recipes = df[df.recipe_uuid == recipe_uuid]
-            filter = Filter.by_property("recipe_uuid").equal(recipe_uuid)
+            recipes = df[df.recipe_name == recipe_name]
+            filter = Filter.by_property("recipe_name").equal(recipe_name)
 
             response = (
                 client
@@ -120,18 +120,13 @@ def compare(path: str, collection_name:str) -> None:
 
             keys_in_db = [str(object.uuid) for object in response.objects]
 
-            log.warning(str(set(keys_in_db)),str(set(recipes.chunk_uuid.tolist())))
-
             if len(keys_in_db) == 0:
                 df.loc[recipes.index, "regime"] = "create"
             elif set(recipes.chunk_uuid) != set(keys_in_db):
+                log.warning(f"Recipe {recipe_name} will be updated")
                 df.loc[recipes.index, "regime"] = "update"
 
-    df  = df.dropna(subset="regime")
-    
-
-
-    save_df_in_minio(df, path, "compared")
+    save_df_in_minio(df.dropna(subset="regime"), path, "compared")
     log_dataframe(log, df, "Saved compared dataframe ")
 
 

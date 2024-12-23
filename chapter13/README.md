@@ -1,5 +1,3 @@
-
-
 Run Instructions
 
 # Run Instructions
@@ -47,14 +45,8 @@ Run Instructions
 7) Run the DAG in Airflow
 
 
-
 Todo:
 [] Test OpenAI api mode works 
-[] Pass .env to chat in docker_compose
 [] Fix chat to accept Azure or OpenAI API
 [] add json parsing to the recipe in the chat app
 [] can i pass env vars in a more elegant way?
-[] Make sure files are updated / saved
-
-
-

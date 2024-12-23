@@ -63,8 +63,8 @@ with DAG(
         **common_dag_args
     )
 
-    compare_db_documents = DockerOperator(
-        task_id="compare_db_documents",
+    compare_objects = DockerOperator(
+        task_id="compare_objects",
         command=[
             "compare",
             "s3://data/{{data_interval_start | ds}}",
@@ -73,8 +73,8 @@ with DAG(
         **common_dag_args
     )
 
-    delete_old_documents = DockerOperator(
-        task_id="delete_old_documents",
+    delete_old_objects = DockerOperator(
+        task_id="delete_old_objects",
         command=[
             "delete",
             "s3://data/{{data_interval_start | ds}}",
@@ -97,7 +97,7 @@ with DAG(
         upload_recipes_to_minio >> 
         preprocess_recipes >> 
         create_collection >> 
-        compare_db_documents >>
-        delete_old_documents >>
+        compare_objects >>
+        delete_old_objects >>
         save_in_vectordb
     )
