@@ -54,7 +54,7 @@ Todo:
 [] Fix chat to accept Azure or OpenAI API
 [] add json parsing to the recipe in the chat app
 [] can i pass env vars in a more elegant way?
-
+[] Make sure files are updated / saved
 
 
 

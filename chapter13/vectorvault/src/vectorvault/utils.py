@@ -6,7 +6,6 @@ import weaviate
 import os
 import json
 
-
 from weaviate.classes.config import Configure
 
 def get_minio_fs(path: str) -> Tuple[fsspec.spec.AbstractFileSystem, str]:   

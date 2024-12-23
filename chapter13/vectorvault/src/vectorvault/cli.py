@@ -2,8 +2,6 @@ import typer
 import os
 import json
 import pandas as pd
-from weaviate.util import generate_uuid5
-
 
 from vectorvault.utils import (
     list_files_from_fs, 
@@ -21,6 +19,8 @@ from vectorvault.etl import create_chunks, assign_uuids
 
 import logging
 from weaviate.classes.config import Property, DataType
+
+
 from weaviate.classes.query import Filter
 
 app = typer.Typer()
@@ -65,34 +65,31 @@ def create(
         embedding_model:str,  
     ) -> None:
 
-    client = get_weaviate_client()
+    with get_weaviate_client() as client:
+        collections = list(client.collections.list_all().keys())
 
-    collections = list(client.collections.list_all().keys())
     existing_collections = [item.lower() for item in collections]
 
     if collection_name.lower() in existing_collections:
         log.warning(f"Collection {collection_name} exists.")
-        client.close()
         return
 
     log.warning(f"Collection {collection_name} does not exist yet...creating it.")  
     
-    collection = client.collections.create(
-        name = collection_name,
-        vectorizer_config=[get_vectorizer_config(embedding_model)],
-        properties=[
-            Property(name="recipe_uuid", data_type=DataType.UUID, skip_vectorization=True),
-            Property(name="recipe_name", data_type=DataType.TEXT),
-            Property(name="chunk_uuid", data_type=DataType.UUID, skip_vectorization=True),
-            Property(name="chunk", data_type=DataType.TEXT),
-        ]
-
-    )
+    with get_weaviate_client() as client:
+        collection = client.collections.create(
+            name = collection_name,
+            vectorizer_config=[get_vectorizer_config(embedding_model)],
+            properties=[
+                Property(name="recipe_uuid", data_type=DataType.UUID, skip_vectorization=True),
+                Property(name="recipe_name", data_type=DataType.TEXT),
+                Property(name="chunk_uuid", data_type=DataType.UUID, skip_vectorization=True),
+                Property(name="chunk", data_type=DataType.TEXT),
+            ]
+        )
 
     log.warning(f"Collection {collection_name} created.")    
     log.warning(collection.config.get().to_dict())
-
-    client.close()
 
 
 @app.command()
@@ -106,26 +103,33 @@ def compare(path: str, collection_name:str) -> None:
 
     log_dataframe(log, df, "Source Dataframe from preprocessed")
 
-    for recipe_uuid in df.recipe_uuid.unique():
+    with get_weaviate_client() as client:
 
-        recipes = df[df.recipe_uuid == recipe_uuid]
+        for recipe_uuid in df.recipe_uuid.unique():
 
-        response = (
-            get_weaviate_client()
-            .collections
-            .get(name=collection_name)
-            .query
-            .fetch_objects(filters=Filter.by_property("recipe_uuid").equal(recipe_uuid))
-        )
+            recipes = df[df.recipe_uuid == recipe_uuid]
+            filter = Filter.by_property("recipe_uuid").equal(recipe_uuid)
 
-        keys_in_db = [str(object.uuid) for object in response.objects]
+            response = (
+                client
+                .collections
+                .get(name=collection_name)
+                .query
+                .fetch_objects(filters=filter)
+            )
 
-        if len(keys_in_db) == 0:
-            df.loc[recipes.index, "regime"] = "create"
-        elif set(recipes.chunk_uuid) != set(keys_in_db):
-            df.loc[recipes.index, "regime"] = "update"
+            keys_in_db = [str(object.uuid) for object in response.objects]
+
+            log.warning(str(set(keys_in_db)),str(set(recipes.chunk_uuid.tolist())))
+
+            if len(keys_in_db) == 0:
+                df.loc[recipes.index, "regime"] = "create"
+            elif set(recipes.chunk_uuid) != set(keys_in_db):
+                df.loc[recipes.index, "regime"] = "update"
 
     df  = df.dropna(subset="regime")
+    
+
 
     save_df_in_minio(df, path, "compared")
     log_dataframe(log, df, "Saved compared dataframe ")
@@ -134,29 +138,27 @@ def compare(path: str, collection_name:str) -> None:
 @app.command()
 def delete(path: str, collection_name:str) -> None:
 
-    df = (
+    recipes_to_delete = (
         load_parquet_from_minio( "compared", path)
         .loc[lambda df: df.regime == "update"]
+        .recipe_name.unique().tolist()
     )
 
-    log_dataframe(log, df, "Chunks to be deleted")
+    log.warning(f"{recipes_to_delete} records to be deleted from {collection_name}")
 
-    log.warning(f"{len(df)} recipes to be deleted from {collection_name}")
+    if len(recipes_to_delete) == 0:
+        log.warning("No records to delete")
+        return
 
-    if len(df) > 0:
-
-        client = get_weaviate_client()
+    with get_weaviate_client() as client:
         
+        filter = Filter.by_property("recipe_name").contains_any(recipes_to_delete)
+
         (
             client
             .collections.get(name=collection_name)
-            .data.delete_many(
-                where=Filter.by_id().contains_any(df.chunk_uuid.unique()) 
-            )
+            .data.delete_many(where=filter)
         )
-
-        client.close()
-
 
 @app.command()
 def save(collection_name:str, path: str) -> None:
@@ -170,24 +172,25 @@ def save(collection_name:str, path: str) -> None:
         log.warning("No objects to save")
         return
     
-    client = get_weaviate_client()
-    collection = client.collections.get(collection_name)
+    with get_weaviate_client() as client:
+        collection = client.collections.get(collection_name)
 
-    failed_objects = []
-    with collection.batch.dynamic() as batch:
-        for object in source_objects:
-            batch.add_object(properties=object)
-        
-        log.warning(f"Saving {len(source_objects)} objects to {collection_name}")
+        failed_objects = []
+        with collection.batch.dynamic() as batch:
+            for object in source_objects:
+                batch.add_object(           
+                    properties=object,
+                    uuid=object["chunk_uuid"],
+                )
+            
+            log.warning(f"Saving {len(source_objects)} objects to {collection_name}")
 
-        if failed_objects:
-            failed_objects = failed_objects.append(collection.batch.failed_objects)
+            if failed_objects:
+                failed_objects = failed_objects.append(collection.batch.failed_objects)
 
-    if len(failed_objects) > 0:
-        log.error(failed_objects)
-        raise ValueError("Failed to save {len(failed_objects)} objects.")
+        if len(failed_objects) > 0:
+            raise ValueError("Failed to save {len(failed_objects)} objects.")
 
-    client.close()
 
 if __name__ == "__main__":
     app()
