@@ -1,0 +1,13 @@
+# Override default values in the Apache Airflow Helm Chart
+#
+# 1 - Overriding the default user
+webserver:
+  # Create initial user.
+  defaultUser:
+    enabled: true
+    role: Admin
+    username: airflow
+    email: airflow@example.com
+    firstName: Airflow
+    lastName: Second Edition
+    password: airflow

@@ -1,5 +1,4 @@
 ---
-version: '3.8'
 services:
   postgres:
     image: postgres:16
@@ -23,8 +22,6 @@ services:
     - server
     - "--tls-san"
     - "k3s-server"
-    - "--bind-address"
-    - "k3s-server"
     tmpfs:
     - /run
     - /var/run
@@ -44,6 +41,12 @@ services:
     - k3s-server:/var/lib/rancher/k3s
     # This is just so that we get the kubeconfig file out
     - .k3s:/output
+    - .registryconfig/registries.yaml:/etc/rancher/k3s/registries.yaml
+    - type: bind
+      source: dags-pvc
+      target: /data
+      bind:
+        propagation: shared
     ports:
     - 6443:6443  # Kubernetes API Server
     - 80:80      # Ingress controller port 80
@@ -68,9 +71,16 @@ services:
     - K3S_TOKEN=26576147927211
     ports:
     - 8081:8080  # Airflow web UI if loadbalancer is on agent server
+    volumes:
+    - .registryconfig/registries.yaml:/etc/rancher/k3s/registries.yaml
+    - type: bind
+      source: dags-pvc
+      target: /data
+      bind:
+        propagation: shared
 
   k3s-cli:
-    image: alpine/k8s:1.31.1
+    image: alpine/k8s:1.32.0
     tty: true
     privileged: true
     environment:
@@ -78,7 +88,17 @@ services:
     volumes:
     - .k3s:/input
     - ./enable-external-dns.sh:/enable-external-dns
+    - ./bash_aliases.sh:/etc/profile.d/bash_aliases.sh
+    - ./values:/etc/helm/values
+
+  registry:
+    image: registry:2
+    ports:
+      - 3632:5000
+    volumes:
+      - container-registry-volume:/var/lib/registry
 
 volumes:
   k3s-server:
   postgres-db-volume:
+  container-registry-volume:
