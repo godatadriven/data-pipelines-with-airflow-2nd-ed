@@ -1,2 +1,0 @@
-apache-airflow~=2.0.0b3
-minio~=5.0.10

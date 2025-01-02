@@ -1,6 +1,12 @@
 import requests
-from airflow.hooks.base_hook import BaseHook
+from airflow.hooks.base import BaseHook
+from dataclasses import dataclass
+from typing import Any, Dict, Generator
 
+@dataclass
+class Connection:
+    session: requests.Session
+    base_url: str
 
 class MovielensHook(BaseHook):
     """
@@ -20,9 +26,9 @@ class MovielensHook(BaseHook):
     """
 
     DEFAULT_SCHEMA = "http"
-    DEFAULT_PORT = 5000
+    DEFAULT_PORT = 8081
 
-    def __init__(self, conn_id, retry=3):
+    def __init__(self, conn_id:str, retry=3):
         super().__init__()
         self._conn_id = conn_id
         self._retry = retry
@@ -61,7 +67,7 @@ class MovielensHook(BaseHook):
             if config.login:
                 self._session.auth = (config.login, config.password)
 
-        return self._session, self._base_url
+        return Connection(session=self._session, base_url=self._base_url)
 
     def close(self):
         """Closes any active session."""
@@ -80,7 +86,7 @@ class MovielensHook(BaseHook):
         """Fetches a list of users."""
         raise NotImplementedError()
 
-    def get_ratings(self, start_date=None, end_date=None, batch_size=100):
+    def get_ratings(self, start_date:str=None, end_date:str=None, batch_size:int=100) -> Generator[Dict[str, Any], None, None]:
         """
         Fetches ratings between the given start/end date.
 
@@ -103,22 +109,22 @@ class MovielensHook(BaseHook):
             batch_size=batch_size,
         )
 
-    def _get_with_pagination(self, endpoint, params, batch_size=100):
+    def _get_with_pagination(self, endpoint:str, params:dict, batch_size:int=100) -> Generator[Dict[str, Any], None, None]:
         """
         Fetches records using a get request with given url/params,
         taking pagination into account.
         """
 
-        session, base_url = self.get_conn()
-        url = base_url + endpoint
+        connection = self.get_conn()
+        url = connection.base_url + endpoint
 
         offset = 0
         total = None
         while total is None or offset < total:
-            response = session.get(url, params={**params, **{"offset": offset, "limit": batch_size}})
+            response = connection.session.get(url, params={**params, **{"offset": offset, "limit": batch_size}})
             response.raise_for_status()
             response_json = response.json()
-
+            
             yield from response_json["result"]
 
             offset += batch_size

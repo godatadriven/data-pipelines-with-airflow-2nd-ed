@@ -6,9 +6,9 @@ from custom.postgres_to_s3_operator import PostgresToS3Operator
 
 dag = DAG(
     dag_id="chapter7_insideairbnb",
-    start_date=datetime(2015, 4, 5),
-    end_date=datetime(2019, 12, 7),
-    schedule_interval="@monthly",
+    start_date=datetime(2023, 6, 1),
+    end_date=datetime(2024, 4, 1),
+    schedule="@monthly",
 )
 
 download_from_postgres = PostgresToS3Operator(

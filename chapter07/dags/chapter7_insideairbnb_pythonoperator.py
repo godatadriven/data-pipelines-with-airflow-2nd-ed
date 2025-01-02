@@ -10,9 +10,9 @@ from minio import Minio
 
 dag = DAG(
     dag_id="chapter7_insideairbnb_python",
-    start_date=datetime(2015, 4, 5),
-    end_date=datetime(2019, 12, 7),
-    schedule_interval="@monthly",
+    start_date=datetime(2023, 6, 1),
+    end_date=datetime(2024, 4, 1),
+    schedule="@monthly",
 )
 
 download_from_postgres = PostgresToS3Operator(
@@ -29,7 +29,7 @@ download_from_postgres = PostgresToS3Operator(
 def _crunch_numbers():
     s3_conn = BaseHook.get_connection("locals3")
     client = Minio(
-        s3_conn.extra_dejson["host"].replace("http://", ""),
+        s3_conn.extra_dejson["endpoint_url"].replace("http://", ""),
         access_key=s3_conn.login,
         secret_key=s3_conn.password,
         secure=False,
@@ -45,7 +45,7 @@ def _crunch_numbers():
             usecols=["id", "price", "download_date"],
             parse_dates=["download_date"],
         )
-        df = df.append(temp_df)
+        df = pd.concat([df, temp_df])
 
     # Per id, get the price increase/decrease
     # There's probably a nicer way to do this
