@@ -137,3 +137,20 @@ helm upgrade --install airflow apache-airflow/airflow --namespace airflow --crea
 ```
 
 Now when you log in http://localhost:8080 with airflow/airflow, you can see the dags `02_teamA_dag_from_pvc` and `02_teamB_dag_from_pvc` being available.
+
+### 05 - Dag dependencies
+
+#### 05a - Baking the dependencies in the airflow image
+
+In values/05-dependencies-in-image-values.yaml we configure the deployment to use an custom container image. This image contains the dag dependency libraries which are added during building the image. The image was pushed to the registry (available in docker compose) so it can be pulled by the helm deployment.
+
+```bash
+# on your local machine
+./publish-custom-images.sh
+```
+
+```bash
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer -f /etc/helm/values/05-dependencies-in-image-values.yaml
+```
+
+Now when you log in http://localhost:8080 with airflow/airflow, you can see the dag `01_dag_dependencies_in_image` being available. The version task should succeed and print the tensorflow version in the logs

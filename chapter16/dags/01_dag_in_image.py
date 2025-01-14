@@ -6,7 +6,7 @@ from airflow.operators.empty import EmptyOperator
 
 with DAG(
     dag_id="01_dag_in_image",
-    description="Dag persistence in custom inmage example.",
+    description="Dag persistence in custom image example.",
     start_date=pendulum.today("UTC").add(days=-5),
     schedule="@daily",
 ):

@@ -1,0 +1,7 @@
+FROM apache/airflow:2.9.3
+
+COPY dags-dependencies ${AIRFLOW_HOME}/dags/
+
+COPY requirements.txt /requirements.txt
+
+RUN pip install -r /requirements.txt
