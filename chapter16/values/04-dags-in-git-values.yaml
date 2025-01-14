@@ -1,0 +1,45 @@
+# Override default values in the Apache Airflow Helm Chart
+#
+# 4 - Dags in persistent volume
+dags:
+  persistence:
+    enabled: false
+  gitSync:
+    enabled: true
+
+    # git repo clone url
+    # ssh example: git@github.com:apache/airflow.git
+    # https example: https://github.com/apache/airflow.git
+    repo: https://github.com/godatadriven/data-pipelines-with-airflow-2nd-ed.git
+    branch: master
+    rev: HEAD
+    # The git revision (branch, tag, or hash) to check out, v4 only
+    ref: master
+    depth: 1
+    # the number of consecutive failures allowed before aborting
+    maxFailures: 0
+    # subpath within the repo where dags are located
+    # should be "" if dags are at repo root
+    subPath: "chapter02/dags"
+
+# 3 - Using the external database
+postgres:
+  enabled: false
+
+data:
+  metadataSecretName: mydatabase
+
+# 2 - Overriding the webserver secret reference
+webserverSecretKeySecretName: my-webserver-secret
+
+# 1 - Overriding the default user since we use a different database
+webserver:
+  # Create initial user.
+  defaultUser:
+    enabled: true
+    role: Admin
+    username: airflow
+    email: airflow@example.com
+    firstName: Airflow
+    lastName: Second Edition
+    password: airflow
