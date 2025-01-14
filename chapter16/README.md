@@ -126,5 +126,14 @@ helm upgrade --install airflow apache-airflow/airflow --namespace airflow --crea
 
 Now when you log in http://localhost:8080 with airflow/airflow, you can see the dags `02_teamA_dag_from_pvc` and `02_teamB_dag_from_pvc` being available.
 
-
 #### 04c - DAGS in a git repository
+
+In values/04-dags-in-git-values.yaml we configure the deployment to use a git sync sidecar container to sync the dags from a git repository. For this example we use the dags from chapter02.
+
+We can update the deployment to make use of this method
+
+```bash
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer -f /etc/helm/values/04-dags-in-git-values.yaml
+```
+
+Now when you log in http://localhost:8080 with airflow/airflow, you can see the dags `02_teamA_dag_from_pvc` and `02_teamB_dag_from_pvc` being available.
