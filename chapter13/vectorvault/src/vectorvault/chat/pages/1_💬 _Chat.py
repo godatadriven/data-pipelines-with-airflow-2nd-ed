@@ -19,7 +19,7 @@ st.set_page_config(page_title="Recipe Chat", page_icon="💬", layout="wide")
 COLLECTION_NAME = "recipes"
 
 
-st.title("Mom's Recipe Chat")
+st.title("Recipe Chat")
 
 col1,col2 = st.columns([5,3])
 
@@ -86,12 +86,12 @@ if question := st.chat_input("What is up?"):
     
         st.markdown(response["answer"])
 
-    if response["provided_recipe"]:
+    # if response["provided_recipe"]:
 
-        for document in st.session_state.context_documents:
-            col2.html(f"<sup>{document.metadata['filename']}</sub>")
-            col2.html(f"<sup><sup>{document.metadata['chunk_uuid']}</sup></sup>")
-            col2.html(f"<sub><sup>{document.page_content}</sup></sub>")
+    #     for document in st.session_state.context_documents:
+    #         col2.html(f"<sup>{document.metadata['filename']}</sub>")
+    #         col2.html(f"<sup><sup>{document.metadata['chunk_uuid']}</sup></sup>")
+    #         col2.html(f"<sub><sup>{document.page_content}</sup></sub>")
 
     st.session_state.messages.append({"role": "assistant", "content": response["answer"]})
 

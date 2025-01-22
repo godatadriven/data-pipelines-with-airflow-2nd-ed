@@ -89,8 +89,7 @@ def create(
         )
 
     log.warning(f"Collection {collection_name} created.")    
-    log.warning(collection.config.get().to_dict())
-
+    
 
 @app.command()
 def compare(path: str, collection_name:str) -> None:

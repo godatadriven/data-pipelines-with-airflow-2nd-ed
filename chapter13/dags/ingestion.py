@@ -73,8 +73,8 @@ with DAG(
         **common_dag_args
     )
 
-    delete_old_objects = DockerOperator(
-        task_id="delete_old_objects",
+    delete_outdated_objects = DockerOperator(
+        task_id="delete_outdated_objects",
         command=[
             "delete",
             "s3://data/{{data_interval_start | ds}}",
@@ -98,6 +98,6 @@ with DAG(
         preprocess_recipes >> 
         create_collection >> 
         compare_objects >>
-        delete_old_objects >>
+        delete_outdated_objects >>
         save_in_vectordb
     )
