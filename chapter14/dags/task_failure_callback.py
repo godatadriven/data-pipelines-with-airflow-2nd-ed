@@ -3,8 +3,8 @@ from airflow.models import DAG
 from airflow.operators.bash import BashOperator
 
 
-def send_error():
-    print("ERROR!")
+def send_error(x):
+    print("THE DAG ERRORED!")
 
 
 dag = DAG(

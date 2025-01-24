@@ -14,7 +14,7 @@ dag = DAG(
 fetch_code = BashOperator(
     task_id="fetch_code",
     bash_command=(
-        "cd /airflow/dags && "
+        "cd /opt/airflow/dags && "
         "git reset --hard origin/master"  # NOTE: Git must be configured for this to work
     ),
     dag=dag,
