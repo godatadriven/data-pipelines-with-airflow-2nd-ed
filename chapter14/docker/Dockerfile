@@ -1,3 +1,3 @@
-FROM airflowbook/chapter12-base-image:latest
+FROM airflowbook/chapter14-base-image:latest
 
 COPY dags/ /opt/airflow/dags/

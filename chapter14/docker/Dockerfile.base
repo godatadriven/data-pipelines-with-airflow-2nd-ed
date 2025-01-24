@@ -1,14 +1,14 @@
-FROM apache/airflow:1.10.11-python3.7
+FROM apache/airflow:2.10.2
 
 COPY requirements.txt /opt/airflow/requirements.txt
 
 USER root
 
 RUN apt-get update && \
-    apt-get install -y gcc && \
-    pip install -r /opt/airflow/requirements.txt && \
-    apt-get autoremove -y && \
-    apt-get clean -y && \
-    rm -rf /var/lib/apt/lists/*
+ apt-get install -y gcc && \
+ apt-get autoremove -y && \
+ apt-get clean -y && \
+ rm -rf /var/lib/apt/lists/*
 
 USER airflow
+RUN pip install --user -r /opt/airflow/requirements.txt && rm /opt/airflow/requirements.txt
