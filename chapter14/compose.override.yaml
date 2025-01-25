@@ -4,6 +4,11 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
     AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
+    AIRFLOW__METRICS__STATSD_ON: 'true'
+    AIRFLOW__METRICS__STATSD_HOST: 'statsd_exporter'
+    AIRFLOW__METRICS__STATSD_PORT: 9125
+    AIRFLOW__METRICS__STATSD_PREFIX: 'airflow'
+
     # Dag specific connection setup
     AIRFLOW_CONN_MOVIELENS: http://airflow:airflow@movielens
     MOVIELENS_USER: airflow
@@ -31,7 +36,7 @@ services:
     <<: *airflow-common
 
   statsd_exporter:
-    image: prom/statsd-exporter:v0.18.0
+    image: prom/statsd-exporter:v0.28.0
     restart: always
     volumes:
       - ./files/statsd_mapping.yml:/tmp/statsd_mapping.yml
@@ -41,7 +46,7 @@ services:
     command: --statsd.mapping-config=/tmp/statsd_mapping.yml
 
   prometheus:
-    image: prom/prometheus:v2.22.0
+    image: prom/prometheus:v3.1.0
     restart: always
     volumes:
       - ./files/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -57,13 +62,13 @@ services:
       - --web.console.templates=/usr/share/prometheus/consoles
 
   grafana:
-    image: grafana/grafana:7.2.1
+    image: grafana/grafana:11.4.0
     restart: always
     ports:
       - "3000:3000"
 
   redis_exporter:
-    image: oliver006/redis_exporter:v1.5.2-alpine
+    image: oliver006/redis_exporter:v1.67.0-alpine
     ports:
       - "9121:9121"
     command: --redis.addr=redis://redis:6379
