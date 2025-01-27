@@ -7,7 +7,7 @@ def send_error():
 
 
 dag = DAG(
-    dag_id="chapter12_dag_failure_callback",
+    dag_id="03_dag_failure_callback",
     on_failure_callback=send_error,
     schedule=None,
     start_date=pendulum.today("UTC").add(days=-3),

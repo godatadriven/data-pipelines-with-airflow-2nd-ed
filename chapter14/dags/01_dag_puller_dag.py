@@ -4,7 +4,7 @@ from airflow.models import DAG
 from airflow.operators.bash import BashOperator
 
 dag = DAG(
-    dag_id="dag_puller_dag",
+    dag_id="01_dag_puller_dag",
     default_args={"depends_on_past": False},
     start_date=datetime.datetime(2024, 1, 1),
     schedule=datetime.timedelta(minutes=5),

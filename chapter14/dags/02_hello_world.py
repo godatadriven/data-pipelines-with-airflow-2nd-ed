@@ -4,7 +4,7 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 
 dag = DAG(
-    dag_id="hello_world",
+    dag_id="02_hello_world",
     start_date=pendulum.today("UTC").add(days=-3),
     max_active_runs=1,
     schedule_interval="@daily",

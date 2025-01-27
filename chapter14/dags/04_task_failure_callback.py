@@ -8,7 +8,7 @@ def send_error(x):
 
 
 dag = DAG(
-    dag_id="chapter12_task_failure_callback",
+    dag_id="04_task_failure_callback",
     default_args={"on_failure_callback": send_error},
     on_failure_callback=send_error,
     schedule=None,
