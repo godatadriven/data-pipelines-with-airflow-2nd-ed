@@ -1,6 +1,6 @@
-# Chapter 13
+# Chapter 15
 
-Code accompanying Chapter 13 (Securing Airflow) of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
+Code accompanying Chapter 15 (Securing Airflow) of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
 
 ## Contents
 
