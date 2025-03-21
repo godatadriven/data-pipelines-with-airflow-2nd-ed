@@ -8,10 +8,13 @@ x-airflow-common:
     - airflow-data-volume:/data
 
 services:
-  airflow-webserver:
+  airflow-apiserver:
     <<: *airflow-common
 
   airflow-scheduler:
+    <<: *airflow-common
+
+  airflow-dag-processor:
     <<: *airflow-common
 
   airflow-worker:
