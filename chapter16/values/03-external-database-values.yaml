@@ -1,0 +1,23 @@
+# Override default values in the Apache Airflow Helm Chart
+#
+# 3 - Using the external database
+postgres:
+  enabled: false
+
+data:
+  metadataSecretName: mydatabase
+
+# 2 - Overriding the webserver secret reference
+webserverSecretKeySecretName: my-webserver-secret
+
+# 1 - Overriding the default user since we use a different database
+webserver:
+  # Create initial user.
+  defaultUser:
+    enabled: true
+    role: Admin
+    username: airflow
+    email: airflow@example.com
+    firstName: Airflow
+    lastName: Second Edition
+    password: airflow
