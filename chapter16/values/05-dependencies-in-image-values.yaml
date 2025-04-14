@@ -1,6 +1,6 @@
 # Override default values in the Apache Airflow Helm Chart
 #
-# 4 - Dags baked inside custom image
+# 4/5 - Dags and dependencies baked inside custom image
 images:
   airflow:
     repository: registry:5000/manning-airflow/airflow-deps

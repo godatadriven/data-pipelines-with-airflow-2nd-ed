@@ -138,7 +138,7 @@ helm upgrade --install airflow apache-airflow/airflow --namespace airflow --crea
 
 Now when you log in http://localhost:8080 with airflow/airflow, you can see the dags `02_teamA_dag_from_pvc` and `02_teamB_dag_from_pvc` being available.
 
-### 05 - Dag dependencies
+### 05 - Dag dependencies (aka installing python libraries)
 
 #### 05a - Baking the dependencies in the airflow image
 
@@ -154,3 +154,10 @@ helm upgrade --install airflow apache-airflow/airflow --namespace airflow --crea
 ```
 
 Now when you log in http://localhost:8080 with airflow/airflow, you can see the dag `01_dag_dependencies_in_image` being available. The version task should succeed and print the tensorflow version in the logs
+
+### 06 - Executors
+
+Airflow let's you configure the executor(s) to use. By default, in the helm chart, this is the CeleryExecutor. We are going to confgure multiple executors by adding the KubernetesExecutor. this enables us to show you how to configure this but also lets use make use of the KubernetesExecutor to explain how you can use different images for different tasks in a DAG.
+
+In values/06-multiple-executors-values.yaml we configure the deployment to use both the CeleryExecutor and the KubernetesExecutor and a default image to use for the KubernetesExecutor via the pod_template_file configuration.
+In the DAG we will use the pod_override mechanism to further configure the k8s pod for the task.
