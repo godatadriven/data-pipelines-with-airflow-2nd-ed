@@ -42,11 +42,7 @@ services:
     # This is just so that we get the kubeconfig file out
     - .k3s:/output
     - .registryconfig/registries.yaml:/etc/rancher/k3s/registries.yaml
-    - type: bind
-      source: dags-pvc
-      target: /data
-      bind:
-        propagation: shared
+    - ./dags-pvc:/data
     ports:
     - 6443:6443  # Kubernetes API Server
     - 80:80      # Ingress controller port 80
@@ -73,11 +69,7 @@ services:
     - 8081:8080  # Airflow web UI if loadbalancer is on agent server
     volumes:
     - .registryconfig/registries.yaml:/etc/rancher/k3s/registries.yaml
-    - type: bind
-      source: dags-pvc
-      target: /data
-      bind:
-        propagation: shared
+    - ./dags-pvc-agent:/data
 
   k3s-cli:
     image: alpine/k8s:1.32.0

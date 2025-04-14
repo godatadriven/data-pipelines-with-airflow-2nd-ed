@@ -10,9 +10,6 @@ config:
     worker_container_repository: '' # Needs to be empty to be overrided via pod_template_file
     worker_container_tag: '' # Needs to be empty to be overrided via pod_template_file
 
-# podTemplate: |
-#   {{ tpl ($.Files.Get "/etc/helm/values/pod_template_default_override.yaml") . | nindent 4 }}
-
 # 4/5 - Dags and dependencies baked inside custom image
 images:
   airflow:
@@ -20,7 +17,7 @@ images:
     tag: k8s
     pullPolicy: Always
   pod_template:
-    repository: registry:5000/manning-airflow/airflow-executors-deps
+    repository: registry:5000/manning-airflow/airflow-executors-tf
     tag: k8s
     pullPolicy: Always
 

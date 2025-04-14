@@ -161,3 +161,12 @@ Airflow let's you configure the executor(s) to use. By default, in the helm char
 
 In values/06-multiple-executors-values.yaml we configure the deployment to use both the CeleryExecutor and the KubernetesExecutor and a default image to use for the KubernetesExecutor via the pod_template_file configuration.
 In the DAG we will use the pod_override mechanism to further configure the k8s pod for the task.
+
+```bash
+# on your local machine
+./publish-custom-images.sh
+```
+
+```bash
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer -f /etc/helm/values/06-multiple-executors-values.yaml
+```

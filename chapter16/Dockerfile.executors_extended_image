@@ -1,7 +1,0 @@
-FROM apache/airflow:2.10.5
-
-COPY dags-executors ${AIRFLOW_HOME}/dags/
-
-COPY requirements.txt /requirements.txt
-
-RUN pip install -r /requirements.txt
