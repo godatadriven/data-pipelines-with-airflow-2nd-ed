@@ -7,7 +7,7 @@ dag = DAG(
     dag_id="02_hello_world",
     start_date=pendulum.today("UTC").add(days=-3),
     max_active_runs=1,
-    schedule_interval="@daily",
+    schedule="@daily",
 )
 
 hello = BashOperator(task_id="hello", bash_command="echo 'hello'", dag=dag)
