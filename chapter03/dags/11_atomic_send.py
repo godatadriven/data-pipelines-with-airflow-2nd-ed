@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
-from airflow.operators.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG
 from pendulum import datetime

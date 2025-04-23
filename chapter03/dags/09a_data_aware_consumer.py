@@ -3,9 +3,9 @@ from pathlib import Path
 import pandas as pd
 import pendulum
 from airflow.providers.standard.operators.python import PythonOperator
-from airflow.sdk import DAG
+from airflow.sdk import DAG, Asset
 
-events_dataset = Dataset("/data/09_data_aware/events")
+events_dataset = Asset("/data/09_data_aware/events")
 
 
 def _calculate_stats(input_path, output_path):
