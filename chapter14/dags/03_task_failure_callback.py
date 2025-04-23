@@ -3,15 +3,15 @@ from airflow.models import DAG
 from airflow.operators.bash import BashOperator
 
 
-def send_error():
-    print("ERROR!")
+def send_error(x):
+    print("THE DAG ERRORED!")
 
 
 dag = DAG(
-    dag_id="chapter12_task_failure_callback",
+    dag_id="04_task_failure_callback",
     default_args={"on_failure_callback": send_error},
     on_failure_callback=send_error,
-    schedule_interval=None,
+    schedule=None,
     start_date=pendulum.today("UTC").add(days=-3),
 )
 

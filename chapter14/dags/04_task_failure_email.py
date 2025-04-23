@@ -3,9 +3,9 @@ from airflow.models import DAG
 from airflow.operators.bash import BashOperator
 
 dag = DAG(
-    dag_id="chapter12_task_failure_email",
+    dag_id="05_task_failure_email",
     default_args={"email": "bob@work.com"},
-    schedule_interval=None,
+    schedule=None,
     start_date=pendulum.today("UTC").add(days=-3),
 )
 

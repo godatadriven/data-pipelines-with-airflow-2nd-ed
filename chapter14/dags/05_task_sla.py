@@ -5,9 +5,9 @@ from airflow.models import DAG
 from airflow.operators.bash import BashOperator
 
 dag = DAG(
-    dag_id="chapter12_task_sla",
+    dag_id="06_task_sla",
     default_args={"email": "bob@work.com"},
-    schedule_interval=datetime.timedelta(hours=12),
+    schedule=datetime.timedelta(hours=12),
     start_date=pendulum.today("UTC").add(days=-3),
 )
 
