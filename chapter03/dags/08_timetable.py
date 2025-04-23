@@ -1,12 +1,11 @@
 from pathlib import Path
 
 import pandas as pd
-
-from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
-from airflow.timetables.events import EventsTimetable
 import pendulum
+from airflow import DAG
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import DAG
 
 
 def _calculate_stats(input_path, output_path):
@@ -14,9 +13,8 @@ def _calculate_stats(input_path, output_path):
 
     events = pd.read_json(input_path, convert_dates=["timestamp"])
 
-    stats = (events
-             .assign(date=lambda df: df["timestamp"].dt.date)
-             .groupby(["date", "user"]).size().reset_index()
+    stats = (
+        events.assign(date=lambda df: df["timestamp"].dt.date).groupby(["date", "user"]).size().reset_index()
     )
 
     Path(output_path).parent.mkdir(exist_ok=True)
@@ -29,7 +27,7 @@ public_holidays = EventsTimetable(
         pendulum.datetime(2024, 3, 31),
         pendulum.datetime(2024, 5, 2),
     ],
-    restrict_to_events=True
+    restrict_to_events=True,
 )
 
 

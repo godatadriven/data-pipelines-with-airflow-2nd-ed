@@ -1,14 +1,12 @@
 from pathlib import Path
 
 import pandas as pd
-from airflow import DAG
-from airflow.datasets import Dataset
-from airflow.exceptions import AirflowSkipException
-from airflow.operators.python import PythonOperator
 import pendulum
+from airflow.exceptions import AirflowSkipException
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import DAG, Asset
 
-
-events_dataset = Dataset("/data/09_data_aware/events/09d")
+events_dataset = Asset("/data/09_data_aware/events/09d")
 
 
 def _fetch_events(start_date, end_date, output_path):
@@ -36,5 +34,5 @@ with DAG(
             "end_date": "{{ data_interval_end | ds }}",
             "output_path": "/data/09_data_aware/events/09d/{{ data_interval_start | ds }}.json",
         },
-        outlets=[events_dataset]
+        outlets=[events_dataset],
     )
