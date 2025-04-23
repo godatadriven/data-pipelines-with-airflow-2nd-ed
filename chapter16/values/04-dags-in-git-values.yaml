@@ -1,6 +1,6 @@
 # Override default values in the Apache Airflow Helm Chart
 #
-# 4 - Dags in persistent volume
+# 4 - Dags in git repository
 dags:
   persistence:
     enabled: false
