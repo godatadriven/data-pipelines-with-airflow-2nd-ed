@@ -6,7 +6,7 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
 
 services:
-  airflow-webserver:
+  airflow-apiserver:
     <<: *airflow-common
 
   airflow-scheduler:
@@ -22,5 +22,8 @@ services:
     <<: *airflow-common
 
   airflow-cli:
+    <<: *airflow-common
+
+  airflow-dag-processor:
     <<: *airflow-common
 

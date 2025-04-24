@@ -2,10 +2,10 @@ from pathlib import Path
 
 import pandas as pd
 import pendulum
-from airflow import DAG
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG
+from airflow.timetables.events import EventsTimetable
 
 
 def _calculate_stats(input_path, output_path):
