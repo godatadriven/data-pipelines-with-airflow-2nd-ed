@@ -5,10 +5,11 @@ Figure: 5.12, 5.13
 
 
 import pendulum
-from airflow import DAG
-from airflow.operators.empty import EmptyOperator
-from airflow.operators.latest_only import LatestOnlyOperator
-from airflow.operators.python import BranchPythonOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.latest_only import LatestOnlyOperator
+from airflow.providers.standard.operators.python import BranchPythonOperator
+from airflow.sdk import DAG
+from airflow.timetables.interval import CronDataIntervalTimetable
 
 ERP_CHANGE_DATE = pendulum.today("UTC").add(days=-1)
 
@@ -23,7 +24,8 @@ def _pick_erp_system(**context):
 with DAG(
     dag_id="07_latest_only_condition",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule="@daily",
+    schedule=CronDataIntervalTimetable("@daily", "UTC"),
+    catchup=True,
 ):
     start = EmptyOperator(task_id="start")
 

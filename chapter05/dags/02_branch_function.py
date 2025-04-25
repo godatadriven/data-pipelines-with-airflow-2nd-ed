@@ -4,9 +4,10 @@ Figure: 5.6
 """
 
 import pendulum
-from airflow import DAG
-from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.timetables.interval import CronDataIntervalTimetable
 
 ERP_CHANGE_DATE = pendulum.today("UTC").add(days=-1)
 
@@ -44,7 +45,8 @@ def _clean_sales_new(**context):
 with DAG(
     dag_id="02_branch_function",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule="@daily",
+    schedule=CronDataIntervalTimetable("@daily", "UTC"),
+    catchup=True,
 ):
     start = EmptyOperator(task_id="start")
 

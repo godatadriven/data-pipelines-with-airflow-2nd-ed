@@ -3,13 +3,15 @@ Listing: 5.3, 5.4, 5.5, 5.6
 Figure: 5.3
 """
 import pendulum
-from airflow import DAG
-from airflow.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.sdk import DAG
+from airflow.timetables.interval import CronDataIntervalTimetable
 
 with DAG(
     dag_id="01_rocket_pipeline_dependencies",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule="@daily",
+    schedule=CronDataIntervalTimetable("@daily", "UTC"),
+    catchup=True,
 ):
     start = EmptyOperator(task_id="start")
 
