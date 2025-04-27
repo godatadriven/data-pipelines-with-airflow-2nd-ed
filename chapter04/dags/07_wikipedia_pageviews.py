@@ -1,9 +1,10 @@
 from urllib import request
 
 import pendulum
-from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.timetables.trigger import CronTriggerTimetable
 
 
 def _get_data(year, month, day, hour, output_path, **_):
@@ -14,9 +15,9 @@ def _get_data(year, month, day, hour, output_path, **_):
     request.urlretrieve(url, output_path)
 
 
-def _fetch_pageviews(pagenames, data_interval_start, **_):
+def _fetch_pageviews(pagenames, logical_date, **_):
     result = dict.fromkeys(pagenames, 0)
-    with open(f"/tmp/wikipageviews-{ data_interval_start.format('YYYYMMDDHH') }") as f:
+    with open(f"/tmp/wikipageviews-{ logical_date.format('YYYYMMDDHH') }") as f:
         for line in f:
             domain_code, page_title, view_counts, _ = line.split(" ")
             if domain_code == "en" and page_title in pagenames:
@@ -28,9 +29,10 @@ def _fetch_pageviews(pagenames, data_interval_start, **_):
 
 with DAG(
     dag_id="07_wikipedia_pageviews",
-    start_date=pendulum.today("UTC").add(days=-1),
-    schedule="@hourly",
+    start_date=pendulum.today("UTC").add(hours=-3),
+    schedule=CronTriggerTimetable("@hourly", timezone="UTC"),
     max_active_runs=1,
+    catchup=True
 ):
     get_data = PythonOperator(
         task_id="get_data",

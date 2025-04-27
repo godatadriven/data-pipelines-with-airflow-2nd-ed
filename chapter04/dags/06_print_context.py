@@ -1,18 +1,19 @@
 from pprint import pprint
 
 import pendulum
-from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.timetables.trigger import CronTriggerTimetable
 
 
 def _print_context(**kwargs):
-    pprint(kwargs)
+    print(kwargs)
 
 
 with DAG(
     dag_id="06_print_context",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule="@hourly",
+    schedule=CronTriggerTimetable("@hourly", timezone="UTC"),
 ):
     print_context = PythonOperator(
         task_id="print_context",

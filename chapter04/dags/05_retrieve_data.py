@@ -1,8 +1,9 @@
 from urllib import request
 
 import pendulum
-from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.timetables.trigger import CronTriggerTimetable
 
 
 def _get_data(year, month, day, hour, output_path, **_):
@@ -15,18 +16,19 @@ def _get_data(year, month, day, hour, output_path, **_):
 
 with DAG(
     dag_id="05_retrieve_data",
-    start_date=pendulum.today("UTC").add(days=-1),
-    schedule="@hourly",
+    start_date=pendulum.today("UTC").add(hours=-3),
+    schedule=CronTriggerTimetable("@hourly", timezone="UTC"),
     max_active_runs=1,
+    catchup=True,
 ):
     get_data = PythonOperator(
         task_id="get_data",
         python_callable=_get_data,
         op_kwargs={
-            "year": "{{ data_interval_start.year }}",
-            "month": "{{ data_interval_start.month }}",
-            "day": "{{ data_interval_start.day }}",
-            "hour": "{{ data_interval_start.hour }}",
-            "output_path": "/tmp/wikipageviews-{{ data_interval_start.format('YYYYMMDDHH') }}.gz",
+            "year": "{{ logical_date.year }}",
+            "month": "{{ logical_date.month }}",
+            "day": "{{ logical_date.day }}",
+            "hour": "{{ logical_date.hour }}",
+            "output_path": "/tmp/wikipageviews-{{ logical_date.format('YYYYMMDDHH') }}.gz",
         },
     )

@@ -3,12 +3,14 @@ x-airflow-common:
   environment:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
-    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
+    AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 60
+    AIRFLOW__API_AUTH__JWT_SECRET: foo
+    AIRFLOW__WEBSERVER__SECRET_KEY: bar
     # Dag specific connection variables
     AIRFLOW_CONN_MY_POSTGRES: postgresql://airflow:airflow@wiki_results:5432/airflow
 
 services:
-  airflow-webserver:
+  airflow-apiserver:
     <<: *airflow-common
 
   airflow-scheduler:
@@ -24,6 +26,9 @@ services:
     <<: *airflow-common
 
   airflow-cli:
+    <<: *airflow-common
+
+  airflow-dag-processor:
     <<: *airflow-common
 
   wiki_results:
