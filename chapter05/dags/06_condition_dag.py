@@ -5,10 +5,12 @@ Figure: 5.12, 5.13
 
 
 import pendulum
-from airflow import DAG
 from airflow.exceptions import AirflowSkipException
-from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import BranchPythonOperator, PythonOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.python import BranchPythonOperator, PythonOperator
+from airflow.sdk import DAG
+from airflow.timetables.base import DataInterval, TimeRestriction
+from airflow.timetables.interval import CronDataIntervalTimetable
 
 ERP_CHANGE_DATE = pendulum.today("UTC").add(days=-1)
 
@@ -20,11 +22,23 @@ def _pick_erp_system(**context):
         return "fetch_sales_new"
 
 
-def _latest_only(dag,data_interval_end, **_):
+def _latest_only(dag, data_interval_start, data_interval_end, **_):
     task_exec_start = pendulum.now("UTC")
-    next_data_interval_end = dag.following_schedule(data_interval_end)#
 
-    if not data_interval_end < task_exec_start < next_data_interval_end:#B
+    time_restriction = TimeRestriction(earliest=None, latest=None, catchup=True)
+    current_interval = DataInterval(start=data_interval_start, end=data_interval_end)
+
+    next_info = dag.timetable.next_dagrun_info(
+                last_automated_data_interval=current_interval,
+                restriction=time_restriction,
+            )
+    if next_info is None:
+        # Last scheduled execution
+        return True
+
+    next_info_start, next_info_end = next_info.data_interval
+
+    if not next_info_start < task_exec_start <= next_info_end:#B
         raise AirflowSkipException("Not the most recent run!")
 
 
@@ -32,7 +46,8 @@ def _latest_only(dag,data_interval_end, **_):
 with DAG(
     dag_id="06_condition_dag",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule="@daily",
+    schedule=CronDataIntervalTimetable("@daily", "UTC"),
+    catchup=True,
 ):
     start = EmptyOperator(task_id="start")
 

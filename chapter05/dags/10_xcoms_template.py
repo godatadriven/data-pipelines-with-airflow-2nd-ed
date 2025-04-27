@@ -5,9 +5,9 @@ Listing: 5.22
 import uuid
 
 import pendulum
-from airflow import DAG
-from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import DAG
 
 
 def _train_model(**context):
@@ -24,6 +24,7 @@ with DAG(
     dag_id="10_xcoms_template",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
+    catchup=True,
 ):
     start = EmptyOperator(task_id="start")
 
