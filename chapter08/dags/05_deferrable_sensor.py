@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from airflow import DAG
+from airflow.sdk import DAG
+from airflow.timetables.interval import CronDataIntervalTimetable
 
 from custom.operators import MovielensFetchRatingsOperator
 from custom.triggers import MovielensSensorAsync
@@ -9,7 +10,8 @@ with DAG(
     description="Fetches ratings from the Movielens API, with a deferrable custom sensor.",
     start_date=datetime(2023, 1, 1),
     end_date=datetime(2023, 1, 10),
-    schedule="@daily",
+    schedule=CronDataIntervalTimetable("@daily", "UTC"),
+    catchup=True
 ):
     wait_for_ratings = MovielensSensorAsync(
         task_id="wait_for_ratings",

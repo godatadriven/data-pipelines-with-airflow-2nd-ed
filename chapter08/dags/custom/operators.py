@@ -2,7 +2,6 @@ import json
 import os
 
 from airflow.models import BaseOperator
-from airflow.utils.decorators import apply_defaults
 from airflow.utils.context import Context
 
 from custom.hooks import MovielensHook
@@ -33,7 +32,6 @@ class MovielensFetchRatingsOperator(BaseOperator):
 
     template_fields = ("_start_date", "_end_date", "_output_path")
 
-    @apply_defaults
     def __init__(
         self,
         conn_id:str,

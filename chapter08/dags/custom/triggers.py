@@ -5,7 +5,6 @@ from airflow.models import BaseOperator
 from airflow.triggers.base import BaseTrigger, TriggerEvent
 from airflow.utils.context import Context
 
-from airflow.utils.decorators import apply_defaults
 
 from custom.hooks import MovielensHook
 import uuid
@@ -17,8 +16,7 @@ class MovielensSensorAsync(BaseOperator):
 
     template_fields = ("_start_date", "_end_date")
 
-    @apply_defaults
-    def __init__(self,  
+    def __init__(self,
                  conn_id:str, 
                  start_date:str="{{data_interval_start | ds}}", 
                  end_date:str="{{data_interval_end | ds}}",

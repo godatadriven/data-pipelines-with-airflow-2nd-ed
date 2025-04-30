@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from airflow import DAG
+from airflow.sdk import DAG
+from airflow.timetables.interval import CronDataIntervalTimetable
 from custom.operators import MovielensFetchRatingsOperator
 
 with DAG(
@@ -8,7 +9,8 @@ with DAG(
     description="Fetches ratings from the Movielens API using a custom operator.",
     start_date=datetime(2023, 1, 1),
     end_date=datetime(2023, 1, 10),
-    schedule="@daily",
+    schedule=CronDataIntervalTimetable("@daily", "UTC"),
+    catchup=True
 ):
     MovielensFetchRatingsOperator(
         task_id="fetch_ratings",
