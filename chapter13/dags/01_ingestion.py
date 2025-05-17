@@ -4,14 +4,6 @@ from pathlib import Path
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
 
-from dotenv import load_dotenv
-import os
-
-import logging
-import sys
-
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-
 ENVIRONMENT = {
     "AWS_ENDPOINT_URL_S3": "{{ conn.minio.extra_dejson.get('endpoint_url') }}",
     "AWS_ACCESS_KEY_ID": "{{ conn.minio.login }}",
@@ -36,17 +28,11 @@ common_dag_args = {
 }
 
 with DAG(
-    dag_id="vector_ingestion",
+    dag_id="01_Ingestion",
     schedule="@daily",
     start_date=datetime(2024, 10, 1),
     end_date=datetime(2024, 10, 7),
 ):
-    upload_recipes_to_minio = DockerOperator(
-        task_id="upload_recipes_to_minio",
-        command="upload {{data_interval_start | ds}}",
-        **common_dag_args
-    )
-
     preprocess_recipes = DockerOperator(
         task_id="preprocess_recipes",
         command=[
@@ -94,7 +80,6 @@ with DAG(
     )
 
     (
-        upload_recipes_to_minio >> 
         preprocess_recipes >> 
         create_collection >> 
         compare_objects >>
