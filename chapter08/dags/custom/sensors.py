@@ -1,6 +1,6 @@
 """Module containing file system sensors."""
 
-from airflow.sensors.base import BaseSensorOperator
+from airflow.sdk import BaseSensorOperator
 from airflow.utils.context import Context
 
 from custom.hooks import MovielensHook

@@ -1,7 +1,7 @@
 import json
 import os
 
-from airflow.models import BaseOperator
+from airflow.sdk import BaseOperator
 from airflow.utils.context import Context
 
 from custom.hooks import MovielensHook
