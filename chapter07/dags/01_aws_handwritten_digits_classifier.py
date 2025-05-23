@@ -4,21 +4,21 @@ import json
 import os
 import pickle
 
-import airflow.utils.dates
-from airflow import DAG
-from airflow.operators.python import PythonOperator
+import pendulum
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.amazon.aws.operators.s3 import S3CopyObjectOperator, S3CreateBucketOperator
 from airflow.providers.amazon.aws.operators.sagemaker import (
     SageMakerEndpointOperator,
     SageMakerTrainingOperator,
 )
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import DAG
 from sagemaker import image_uris
 from sagemaker.amazon.common import write_numpy_to_dense_tensor
 
-BUCKET_NAME=os.environ.get('MNIST_BUCKET')
-REGION_NAME=os.environ.get('AWS_REGION')
-SAGEMAKER_ROLE=os.environ.get('SAGEMAKER_EXEC_ROLE_ARN')
+BUCKET_NAME=os.environ.get("MNIST_BUCKET")
+REGION_NAME=os.environ.get("AWS_REGION")
+SAGEMAKER_ROLE=os.environ.get("SAGEMAKER_EXEC_ROLE_ARN")
 
 
 def _add_bucket_policy():
@@ -47,8 +47,8 @@ def _add_bucket_policy():
 
     # Set the new policy
     s3hook = S3Hook()
-    session = S3Hook().get_session(region_name=REGION_NAME)
-    s3_client = session.client('s3')
+    session = s3hook.get_session(region_name=REGION_NAME)
+    s3_client = session.client("s3")
     s3_client.put_bucket_policy(Bucket=BUCKET_NAME, Policy=bucket_policy)
 
 def _extract_mnist_data():                          #B
@@ -85,7 +85,7 @@ def _extract_mnist_data():                          #B
 with DAG(
     dag_id="01_aws_handwritten_digits_classifier",
     schedule=None,
-    start_date=airflow.utils.dates.days_ago(3),
+    start_date=pendulum.today("UTC").add(days=-3),
 ):
     create_bucket = S3CreateBucketOperator(
         task_id="create_mnist_bucket",
@@ -116,7 +116,7 @@ with DAG(
         config={                                                  #H
             "TrainingJobName": "mnistclassifier-{{ logical_date | ts_nodash }}",
             "AlgorithmSpecification": {
-                "TrainingImage": image_uris.retrieve(framework='kmeans',region=REGION_NAME),
+                "TrainingImage": image_uris.retrieve(framework="kmeans",region=REGION_NAME),
                 "TrainingInputMode": "File",
             },
             "HyperParameters": {"k": "10", "feature_dim": "784"},
@@ -153,7 +153,7 @@ with DAG(
             "Model": {
                 "ModelName": "mnistclassifier-{{ logical_date | ts_nodash }}",
                 "PrimaryContainer": {
-                    "Image": image_uris.retrieve(framework='kmeans',region=REGION_NAME),
+                    "Image": image_uris.retrieve(framework="kmeans",region=REGION_NAME),
                     "ModelDataUrl": (
                         f"s3://{BUCKET_NAME}/mnistclassifier-output/"
                         "mnistclassifier-{{ logical_date | ts_nodash }}/"

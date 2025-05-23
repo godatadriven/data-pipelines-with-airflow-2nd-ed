@@ -2,16 +2,14 @@ import csv
 import io
 import os
 
-from airflow.models import BaseOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from airflow.utils.decorators import apply_defaults
+from airflow.sdk import BaseOperator
 
 
 class PostgresToS3Operator(BaseOperator):
     template_fields = ("_query", "_s3_key")
 
-    @apply_defaults
     def __init__(self, postgres_conn_id, query, s3_conn_id, s3_bucket, s3_key, **kwargs):
         super().__init__(**kwargs)
         self._postgres_conn_id = postgres_conn_id
