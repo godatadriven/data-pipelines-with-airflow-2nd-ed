@@ -1,7 +1,6 @@
 from airflow.models import Connection
-
-from chapter09.dags.custom.movielens_hook import MovielensHook
-from chapter09.dags.custom.movielens_popularity_operator import MovielensPopularityOperator
+from custom.movielens_hook import MovielensHook
+from custom.movielens_popularity_operator import MovielensPopularityOperator
 
 
 def test_movielenspopularityoperator(mocker):

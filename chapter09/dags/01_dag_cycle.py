@@ -1,7 +1,6 @@
 import pendulum
-from airflow import DAG
-from airflow.operators.empty import EmptyOperator
-
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.sdk import DAG
 
 with DAG(
     dag_id="01_dag_cycle",

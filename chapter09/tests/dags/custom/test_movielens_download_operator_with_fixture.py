@@ -1,7 +1,6 @@
 from airflow.models import Connection
-
-from chapter09.dags.custom.movielens_download_operator import MovielensDownloadOperator
-from chapter09.dags.custom.movielens_hook import MovielensHook
+from custom.movielens_download_operator import MovielensDownloadOperator
+from custom.movielens_hook import MovielensHook
 
 
 def test_movielens_operator(tmp_path, mocker, test_dag):
