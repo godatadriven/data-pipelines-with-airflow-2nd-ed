@@ -33,7 +33,7 @@ def test_movielens_operator(tmp_path, mocker):
         task_id="test",
         conn_id="testconn",
         start_date="{{ data_interval_start | ds }}",
-        end_date="{{ data_interval_end | ds}}",
+        end_date="{{ data_interval_end | ds }}",
         output_path=str(tmp_path / "{{ ds }}.json"),
         dag=dag,
     )

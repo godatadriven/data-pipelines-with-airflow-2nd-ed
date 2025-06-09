@@ -7,9 +7,9 @@ import pytest
 from airflow.models import DagBag
 
 DAG_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "..", "dags/*.py"
+    os.path.dirname(__file__), "..", "..", "dags/**/0*.py"
 )
-DAG_FILES = glob.glob(DAG_PATH)
+DAG_FILES = glob.glob(DAG_PATH, recursive=True)
 
 
 @pytest.mark.parametrize("dag_file", DAG_FILES)

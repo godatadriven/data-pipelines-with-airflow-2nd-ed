@@ -22,8 +22,8 @@ def test_movielens_operator(tmp_path, mocker, test_dag):
     task = MovielensDownloadOperator(
         task_id="test",
         conn_id="testconn",
-        start_date="{{ data_interval_start }}",
-        end_date="{{ data_interval_end }}",
+        start_date="{{ data_interval_start | ds }}",
+        end_date="{{ data_interval_end | ds }}",
         output_path=str(tmp_path / "{{ ds }}.json"),
         dag=test_dag,
     )
