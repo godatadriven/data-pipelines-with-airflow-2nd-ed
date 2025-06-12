@@ -5,7 +5,7 @@ import pendulum
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG
-from airflow.timetables.events import EventsTimetable
+from airflow.timetables.trigger import DeltaTriggerTimetable
 
 
 def _calculate_stats(input_path, output_path):
@@ -21,27 +21,19 @@ def _calculate_stats(input_path, output_path):
     stats.to_csv(output_path, index=False)
 
 
-public_holidays = EventsTimetable(
-    event_dates=[
-        pendulum.datetime(2024, 1, 1),
-        pendulum.datetime(2024, 3, 31),
-        pendulum.datetime(2024, 5, 2),
-    ],
-    restrict_to_events=True,
-)
-
-
 with DAG(
-    dag_id="08a_timetable",
-    schedule=public_holidays,
-    start_date=pendulum.datetime(year=2024, month=1, day=1),
+    dag_id="04_trigger_frequency",
+    schedule=DeltaTriggerTimetable(pendulum.duration(days=2)),
+    start_date=pendulum.datetime(year=2024, month=1, day=1, tz="Europe/Amsterdam"),
+    end_date=pendulum.datetime(year=2024, month=1, day=5),
+    catchup=True,
 ):
     fetch_events = BashOperator(
         task_id="fetch_events",
         bash_command=(
-            "mkdir -p /data/08_timetable/events && "
-            "curl -o /data/08_timetable/events/{{ data_interval_start | ds }}.json "
-            "'http://events-api:8081/events/range?start_date={{ macros.ds_add(data_interval_start | ds, -1) }}&end_date={{ data_interval_end | ds }}'"
+            "mkdir -p /data/04_trigger_frequency/events && "
+            "curl -o /data/04_trigger_frequency/events/{{ logical_date | ds }}.json "
+            "http://events-api:8081/events/latest"
         ),
     )
 
@@ -49,9 +41,8 @@ with DAG(
         task_id="calculate_stats",
         python_callable=_calculate_stats,
         op_kwargs={
-            "input_path": "/data/08_timetable/events/{{ ds }}.json",
-            "output_path": "/data/08_timetable/stats/{{ ds }}.csv",
+            "input_path": "/data/04_trigger_frequency/events/{{ logical_date | ds}}.json",
+            "output_path": "/data/04_trigger_frequency/stats/{{ logical_date | ds}}.csv",
         },
     )
-
     fetch_events >> calculate_stats

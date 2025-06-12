@@ -1,8 +1,7 @@
-from collections import defaultdict, Counter
+from collections import Counter, defaultdict
 
 from airflow.models import BaseOperator
-
-from .movielens_hook import MovielensHook
+from custom.movielens_hook import MovielensHook
 
 
 class MovielensPopularityOperator(BaseOperator):

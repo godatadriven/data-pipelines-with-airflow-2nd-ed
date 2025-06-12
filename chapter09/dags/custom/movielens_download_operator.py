@@ -1,8 +1,7 @@
 import json
 
 from airflow.models import BaseOperator
-
-from .movielens_hook import MovielensHook
+from custom.movielens_hook import MovielensHook
 
 
 class MovielensDownloadOperator(BaseOperator):

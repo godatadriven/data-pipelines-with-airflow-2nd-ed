@@ -2,11 +2,10 @@ import os
 
 from airflow.models import Connection
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from custom.movielens_hook import MovielensHook
+from custom.movielens_to_postgres_operator import MovielensToPostgresOperator
 from flaky import flaky
-from pytest_docker_tools import fetch, container
-
-from chapter09.dags.custom.movielens_hook import MovielensHook
-from chapter09.dags.custom.movielens_to_postgres_operator import MovielensToPostgresOperator
+from pytest_docker_tools import container, fetch
 
 postgres_image = fetch(repository="postgres:16-alpine")
 postgres = container(

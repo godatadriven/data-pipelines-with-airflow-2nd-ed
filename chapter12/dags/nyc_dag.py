@@ -6,9 +6,10 @@ import pandas as pd
 import pendulum
 import requests
 from airflow.hooks.base import BaseHook
-from airflow.models import DAG
-from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.timetables.interval import CronDataIntervalTimetable
 from minio import Minio
 from nyctransport.operators.pandas_operator import PandasOperator
 from nyctransport.operators.s3_to_postgres import MinioPandasToPostgres
@@ -16,7 +17,7 @@ from requests.auth import HTTPBasicAuth
 
 with DAG(
     dag_id="nyc_dag",
-    schedule="*/15 * * * *",
+    schedule=CronDataIntervalTimetable("*/15 * * * *", "UTC"),
     start_date=pendulum.today("UTC").add(days=-1),
     catchup=False,
 ):
@@ -153,7 +154,7 @@ with DAG(
     )
 
     def transform_taxi_data(df):
-        return ( 
+        return (
             df
             .assign(
                 starttime=lambda df: pd.to_datetime(df.pickup_datetime),

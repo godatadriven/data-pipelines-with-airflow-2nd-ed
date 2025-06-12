@@ -1,4 +1,4 @@
-from airflow.operators.bash import BashOperator
+from airflow.providers.standard.operators.bash import BashOperator
 
 
 def test_example():

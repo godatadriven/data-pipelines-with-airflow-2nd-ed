@@ -1,12 +1,12 @@
 import os
+from datetime import datetime, timezone
 
 from airflow.models import Connection
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from custom.movielens_hook import MovielensHook
+from dagtestdag import dagtestdag
 from flaky import flaky
-from pytest_docker_tools import fetch, container
-
-from chapter09.dags.dagtestdag import dagtestdag
-from chapter09.dags.custom.movielens_hook import MovielensHook
+from pytest_docker_tools import container, fetch
 
 postgres_image = fetch(repository="postgres:16-alpine")
 postgres = container(
@@ -55,7 +55,7 @@ def test_movielens_to_postgres_operator(mocker, postgres):
     row_count = pg_hook.get_first("SELECT COUNT(*) FROM movielens")[0]
     assert row_count == 0
 
-    dagtestdag.test()
+    dagtestdag.test(logical_date=datetime.now(timezone.utc))
 
     row_count = pg_hook.get_first("SELECT COUNT(*) FROM movielens")[0]
     assert row_count > 0

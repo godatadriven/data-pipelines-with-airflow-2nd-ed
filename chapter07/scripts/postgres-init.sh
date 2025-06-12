@@ -44,28 +44,29 @@ CREATE TABLE IF NOT EXISTS listings(
 EOSQL
 
 # 3. Download Inside Airbnb Amsterdam listings data (http://insideairbnb.com/get-the-data.html)
-listing_url="http://data.insideairbnb.com/the-netherlands/north-holland/amsterdam/{DATE}/visualisations/listings.csv"
+listing_location="/data/insideairbnb/listings-{DATE}.csv"
 listing_dates="
-2024-03-11
-2023-12-12
-2023-09-03
-2023-06-05
+20240610;20250322
+20240905;20250305
+20241207;20250307
+20250302;20250302
 "
-
+unset IFS
 mkdir -p /tmp/insideairbnb
 for d in ${listing_dates}
 do
-  url=${listing_url/\{DATE\}/$d}
-  wget $url -O /tmp/insideairbnb/listing-$d.downloaded.csv
+  IFS=';'
+  read -ra dates <<< "$d"
+  file=${listing_location/\{DATE\}/${dates[0]}}
 
   # Data can contain comma and newlines withing quoted strings which the COPY cmd does not handle well
-  awk -v RS='"' '!(NR%2){gsub(/\n/,"");gsub(/,/,"")} {ORS=RT} 1' /tmp/insideairbnb/listing-$d.downloaded.csv > /tmp/insideairbnb/listing-$d.csv
+  awk -v RS='"' '!(NR%2){gsub(/\n/,"");gsub(/,/,"")} {ORS=RT} 1' /data/insideairbnb/listings-${dates[0]}.csv > /tmp/insideairbnb/listings-${dates[0]}.csv
   # Hacky way to add the "download_date", by appending the date to all rows in the downloaded file
-  sed -i "1 s/$/,download_date/" /tmp/insideairbnb/listing-$d.csv
-  sed -i "2,$ s/$/,$d/" /tmp/insideairbnb/listing-$d.csv
+  sed -i "1 s/$/,download_date/" /tmp/insideairbnb/listings-${dates[0]}.csv
+  sed -i "2,$ s/$/,${dates[1]}/" /tmp/insideairbnb/listings-${dates[0]}.csv
 
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" insideairbnb <<-EOSQL
-    COPY listings FROM '/tmp/insideairbnb/listing-$d.csv' DELIMITER ',' CSV HEADER QUOTE '"';
+    COPY listings FROM '/tmp/insideairbnb/listings-${dates[0]}.csv' DELIMITER ',' CSV HEADER QUOTE '"';
 EOSQL
 done
 

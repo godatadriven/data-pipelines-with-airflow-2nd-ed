@@ -1,4 +1,3 @@
-import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -6,6 +5,7 @@ import pendulum
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG
+from airflow.timetables.trigger import CronTriggerTimetable
 
 
 def _calculate_stats(input_path, output_path):
@@ -22,16 +22,17 @@ def _calculate_stats(input_path, output_path):
 
 
 with DAG(
-    dag_id="03_timedelta",
-    schedule=datetime.timedelta(days=2),
+    dag_id="03_trigger_preset",
     start_date=pendulum.datetime(year=2024, month=1, day=1),
     end_date=pendulum.datetime(year=2024, month=1, day=5),
+    schedule=CronTriggerTimetable("@daily", timezone="UTC"),
+    catchup=True,
 ):
     fetch_events = BashOperator(
         task_id="fetch_events",
         bash_command=(
-            "mkdir -p /data/03_timedelta && "
-            "curl -o /data/03_timedelta/events.json "
+            "mkdir -p /data/03_trigger_preset/events && "
+            "curl -o /data/03_trigger_preset/events/{{ logical_date | ds }}.json "
             "http://events-api:8081/events/latest"
         ),
     )
@@ -40,8 +41,8 @@ with DAG(
         task_id="calculate_stats",
         python_callable=_calculate_stats,
         op_kwargs={
-            "input_path": "/data/03_timedelta/events.json",
-            "output_path": "/data/03_timedelta/stats.csv",
+            "input_path": "/data/03_trigger_preset/events/{{ logical_date | ds}}.json",
+            "output_path": "/data/03_trigger_preset/stats/{{ logical_date | ds}}.csv",
         },
     )
 

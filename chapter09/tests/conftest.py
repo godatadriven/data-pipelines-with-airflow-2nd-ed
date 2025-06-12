@@ -1,11 +1,15 @@
 import datetime
+import os
+import sys
+import uuid
+from pathlib import Path
 
 import pytest
-import uuid
 from airflow.models import DAG
 
 pytest_plugins = ["helpers_namespace"]
 
+sys.path.insert(0, str(Path(os.path.dirname(__file__)).parent / "dags"))
 
 @pytest.fixture
 def test_dag():

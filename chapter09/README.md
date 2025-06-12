@@ -2,14 +2,6 @@
 
 Code accompanying Chapter 9 of the book 'Data pipelines with Apache Airflow'.
 
-## Note
-During the work for this chapter, a bug in Airflow forced a downgrade of the Postgres provider. The bug is described [here](https://github.com/apache/airflow/issues/41373).
-The workaround was to pin the Postgres provider to version 5.0.0:
-```
-apache-airflow-providers-postgres==5.0.0
-```
-
-
 ## Contents
 
 This code example contains the following DAGs:
@@ -49,7 +41,7 @@ To avoid issues with Docker-in-Docker, using a virtual environment is the best w
 python -m venv my-venv
 source my-venv/bin/activate
 pip install -r requirements.txt
-airflow db init
+airflow db reset
 ```
 The last line is needed to initialize a local Airflow database (which is needed for some of the tests). By default this will be a sqlite database in the default `AIRFLOW_HOME` path. If you want something else, the configuration is left to you.
 
