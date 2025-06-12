@@ -5,6 +5,7 @@ import pendulum
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG
+from airflow.timetables.trigger import CronTriggerTimetable
 
 
 def _calculate_stats(input_path, output_path):
@@ -22,15 +23,16 @@ def _calculate_stats(input_path, output_path):
 
 with DAG(
     dag_id="02_daily_schedule",
-    schedule="@daily",
     start_date=pendulum.datetime(year=2024, month=1, day=1),
     end_date=pendulum.datetime(year=2024, month=1, day=5),
+    schedule=CronTriggerTimetable("0 0 * * *", timezone="UTC"),
+    catchup=True,
 ):
     fetch_events = BashOperator(
         task_id="fetch_events",
         bash_command=(
-            "mkdir -p /data/02_daily_schedule && "
-            "curl -o /data/02_daily_schedule/events.json "
+            "mkdir -p /data/02_daily_schedule/events && "
+            "curl -o /data/02_daily_schedule/events/{{ logical_date | ds }}.json "
             "http://events-api:8081/events/latest"
         ),
     )
@@ -39,8 +41,8 @@ with DAG(
         task_id="calculate_stats",
         python_callable=_calculate_stats,
         op_kwargs={
-            "input_path": "/data/02_daily_schedule/events.json",
-            "output_path": "/data/02_daily_schedule/stats.csv",
+            "input_path": "/data/02_daily_schedule/events/{{ logical_date | ds}}.json",
+            "output_path": "/data/02_daily_schedule/stats/{{ logical_date | ds}}.csv",
         },
     )
 

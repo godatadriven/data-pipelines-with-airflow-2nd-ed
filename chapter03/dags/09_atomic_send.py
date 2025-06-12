@@ -4,6 +4,7 @@ import pandas as pd
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG
+from airflow.timetables.interval import CronDataIntervalTimetable
 from pendulum import datetime
 
 
@@ -30,16 +31,16 @@ def _send_stats(email, stats_path):
 
 
 with DAG(
-    dag_id="11_atomic_send",
-    schedule="@daily",
+    dag_id="09_atomic_send",
+    schedule=CronDataIntervalTimetable("0 0 * * *", timezone="UTC"),
     start_date=datetime(2024, 1, 1),
     end_date=datetime(2024, 1, 5),
 ):
     fetch_events = BashOperator(
         task_id="fetch_events",
         bash_command=(
-            "mkdir -p /data/11_atomic_send/events && "
-            "curl -o /data/11_atomic_send/events/{{data_interval_start | ds}}.json "
+            "mkdir -p /data/09_atomic_send/events && "
+            "curl -o /data/09_atomic_send/events/{{data_interval_start | ds}}.json "
             "'http://events-api:8081/events/range?"
             "start_date={{data_interval_start | ds}}&"
             "end_date={{data_interval_end | ds}}'"
@@ -50,8 +51,8 @@ with DAG(
         task_id="calculate_stats",
         python_callable=_calculate_stats,
         op_kwargs={
-            "input_path": "/data/11_atomic_send/events/{{data_interval_start | ds}}.json",
-            "output_path": "/data/11_atomic_send/stats/{{data_interval_start | ds}}.csv",
+            "input_path": "/data/09_atomic_send/events/{{logical_date | ds}}.json",
+            "output_path": "/data/09_atomic_send/stats/{{logical_date | ds}}.csv",
         },
     )
 
@@ -60,7 +61,7 @@ with DAG(
         python_callable=_send_stats,
         op_kwargs={
             "email": "user@example.com",
-            "stats_path": "/data/11_atomic_send/stats/{{data_interval_start | ds}}.csv",
+            "stats_path": "/data/09_atomic_send/stats/{{logical_date | ds}}.csv",
         },
     )
 

@@ -5,6 +5,7 @@ import pendulum
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG
+from airflow.timetables.interval import CronDataIntervalTimetable
 
 
 def _calculate_stats(input_path, output_path):
@@ -21,17 +22,19 @@ def _calculate_stats(input_path, output_path):
 
 
 with DAG(
-    dag_id="05_daily_templated",
-    schedule="@daily",
+    dag_id="05_interval_cron",
+    schedule=CronDataIntervalTimetable("0 0 * * *", timezone="UTC"),
     start_date=pendulum.datetime(year=2024, month=1, day=1),
     end_date=pendulum.datetime(year=2024, month=1, day=5),
+    catchup=True,
 ):
     fetch_events = BashOperator(
         task_id="fetch_events",
         bash_command=(
-            "mkdir -p /data/05_daily_templated && "
-            "curl -o /data/05_daily_templated/events.json "
-            "'http://events-api:8081/events/range?start_date={{ data_interval_start | ds }}&end_date={{ data_interval_end | ds }}'"
+            "mkdir -p /data/05_interval_cron/events/ && "
+            "curl -o /data/05_interval_cron/events/{{ logical_date | ds }}.json "
+            "'http://events-api:8081/events/range?"
+            "start_date={{ data_interval_start | ds }}&end_date={{ data_interval_end | ds }}'"
         ),
     )
 
@@ -39,8 +42,8 @@ with DAG(
         task_id="calculate_stats",
         python_callable=_calculate_stats,
         op_kwargs={
-            "input_path": "/data/05_daily_templated/events.json",
-            "output_path": "/data/05_daily_templated/stats.csv",
+            "input_path": "/data/05_interval_cron/events/{{ logical_date | ds }}.json",
+            "output_path": "/data/05_interval_cron/stats/{{ logical_date | ds }}.csv",
         },
     )
 
