@@ -4,16 +4,17 @@
 
 
 import pendulum
-from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.timetables.trigger import CronTriggerTimetable
 
 def print_conf(**context):
     print(context["dag_run"].conf)
         
 with DAG(
-    dag_id="19_inspect_dag_run_config",
+    dag_id="11_inspect_dag_run_config",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule="@daily",
+    schedule=CronTriggerTimetable("0 16 * * *", timezone="UTC")
 ):
 
     copy_to_raw = PythonOperator(task_id="copy_to_raw", python_callable=print_conf)
