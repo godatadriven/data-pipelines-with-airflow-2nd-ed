@@ -1,14 +1,15 @@
 """DAG demonstrating the umbrella use case with empty operators."""
 
 import pendulum
-from airflow import DAG
-from airflow.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.sdk import DAG
+from airflow.timetables.trigger import CronTriggerTimetable
 
 with DAG(
     dag_id="01_dag_in_image",
     description="Dag persistence in custom image example.",
     start_date=pendulum.today("UTC").add(days=-5),
-    schedule="@daily",
+    schedule=CronTriggerTimetable("@daily", timezone="UTC"),
 ):
     fetch_weather_forecast = EmptyOperator(task_id="fetch_weather_forecast")
     fetch_sales_data = EmptyOperator(task_id="fetch_sales_data")

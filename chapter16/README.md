@@ -31,7 +31,7 @@ Inside the k3s-cli container we can deploy airflow with the following commands:
 ```bash
 /enable-external-dns # make sure the other docker services can be reached from within the k3s cluster
 helm repo add apache-airflow https://airflow.apache.org
-helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer
 ```
 
 to verify the running services/pods we can check with the following command:
@@ -48,7 +48,7 @@ access the webserver at http://localhost:8080 (or http://localhost:8081 if the w
 In values/01-user-values.yaml we create a different admin user to have the same login as the other chapters and have a easy introduction in customizing your Airflow deployment
 
 ```bash
-helm upgrade --install airflow apache-airflow/airflow --namespace airflow --set webserver.service.type=LoadBalancer -f /etc/helm/values/01-user-values.yaml
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --set apiServer.service.type=LoadBalancer -f /etc/helm/values/01-user-values.yaml
 ```
 
 You can verify that the Admin user is changed by logging in http://localhost:8080 with airflow/airflow and go to http://localhost:8080/users/userinfo/ to see the changed values.
@@ -67,7 +67,7 @@ kubectl create secret generic my-webserver-secret --namespace airflow --from-lit
 ```
 
 ```bash
-helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer -f /etc/helm/values/02-webserversecret-values.yaml
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/02-webserversecret-values.yaml
 ```
 
 You can verify this by logging in http://localhost:8080 with airflow/airflow.
@@ -81,7 +81,7 @@ kubectl create secret generic mydatabase --namespace airflow --from-literal=conn
 ```
 
 ```bash
-helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer -f /etc/helm/values/03-external-database-values.yaml
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/03-external-database-values.yaml
 ```
 
 ```bash
@@ -103,7 +103,7 @@ In values/04-dags-in-image-values.yaml we configure the deployment to use an cus
 ```
 
 ```bash
-helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer -f /etc/helm/values/04-dags-in-image-values.yaml
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/04-dags-in-image-values.yaml
 ```
 
 Now when you log in http://localhost:8080 with airflow/airflow, you can see the dag `01_dag_in_image` being available.
@@ -121,7 +121,7 @@ kubectl -n airflow apply -f /etc/helm/values/dag-pvc.yaml
 Then we can update the deployment to make use of this persistent volume
 
 ```bash
-helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer -f /etc/helm/values/04-dags-in-persistent-vol-values.yaml
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/04-dags-in-persistent-vol-values.yaml
 ```
 
 Now when you log in http://localhost:8080 with airflow/airflow, you can see the dags `02_teamA_dag_from_pvc` and `02_teamB_dag_from_pvc` being available.
@@ -133,7 +133,7 @@ In values/04-dags-in-git-values.yaml we configure the deployment to use a git sy
 We can update the deployment to make use of this method
 
 ```bash
-helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer -f /etc/helm/values/04-dags-in-git-values.yaml
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/04-dags-in-git-values.yaml
 ```
 
 Now when you log in http://localhost:8080 with airflow/airflow, you can see the dags `02_teamA_dag_from_pvc` and `02_teamB_dag_from_pvc` being available.
@@ -150,7 +150,7 @@ In values/05-dependencies-in-image-values.yaml we configure the deployment to us
 ```
 
 ```bash
-helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer -f /etc/helm/values/05-dependencies-in-image-values.yaml
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/05-dependencies-in-image-values.yaml
 ```
 
 Now when you log in http://localhost:8080 with airflow/airflow, you can see the dag `01_dag_dependencies_in_image` being available. The version task should succeed and print the tensorflow version in the logs
@@ -168,5 +168,5 @@ In the DAG we will use the pod_override mechanism to further configure the k8s p
 ```
 
 ```bash
-helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set webserver.service.type=LoadBalancer -f /etc/helm/values/06-multiple-executors-values.yaml
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/06-multiple-executors-values.yaml
 ```

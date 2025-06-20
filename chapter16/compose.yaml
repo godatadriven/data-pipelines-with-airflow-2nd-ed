@@ -72,7 +72,7 @@ services:
     - ./dags-pvc-agent:/data
 
   k3s-cli:
-    image: alpine/k8s:1.32.0
+    image: alpine/k8s:1.33.1
     tty: true
     privileged: true
     environment:

@@ -1,9 +1,10 @@
 """DAG demonstrating the umbrella use case with empty operators."""
 
 import pendulum
-from airflow import DAG
-from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.timetables.trigger import CronTriggerTimetable
 
 
 def _tf_version():
@@ -14,7 +15,7 @@ with DAG(
     dag_id="01_dag_dependencies_in_image",
     description="Dag dependencies in custom image example.",
     start_date=pendulum.today("UTC").add(days=-5),
-    schedule="@daily",
+    schedule=CronTriggerTimetable("@daily", timezone="UTC"),
 ):
     some_init_task = EmptyOperator(task_id="init")
     version = PythonOperator(task_id="version", python_callable=_tf_version)

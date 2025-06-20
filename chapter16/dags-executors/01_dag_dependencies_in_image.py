@@ -1,10 +1,11 @@
 """DAG demonstrating the umbrella use case with empty operators."""
 
 import pendulum
-from airflow import DAG
 from airflow.exceptions import AirflowException
-from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.timetables.trigger import CronTriggerTimetable
 from kubernetes.client import models as k8s
 
 
@@ -27,12 +28,19 @@ with DAG(
     dag_id="01_dag_dependencies_in_image",
     description="Dag dependencies in custom image example.",
     start_date=pendulum.today("UTC").add(days=-5),
-    schedule="@daily",
+    schedule=CronTriggerTimetable("@daily", timezone="UTC"),
 ):
     some_init_task = EmptyOperator(task_id="init")
-    version_fail = PythonOperator(task_id="version_celery", python_callable=_tf_version, executor="CeleryExecutor")
-    version_k8s = PythonOperator(task_id="version_k8s", python_callable=_tf_version, executor="KubernetesExecutor",
-      executor_config={
+    version_fail = PythonOperator(
+        task_id="version_celery",
+        python_callable=_tf_version,
+        executor="CeleryExecutor"
+    )
+    version_k8s = PythonOperator(
+        task_id="version_k8s",
+        python_callable=_tf_version,
+        executor="KubernetesExecutor",
+        executor_config={
             "pod_override": k8s.V1Pod(
                 spec=k8s.V1PodSpec(
                     containers=[
@@ -50,8 +58,11 @@ with DAG(
             ),
         }
     )
-    version_k8s_old = PythonOperator(task_id="version_k8s_old", python_callable=_tf_version_old, executor="KubernetesExecutor",
-      executor_config={
+    version_k8s_old = PythonOperator(
+        task_id="version_k8s_old",
+        python_callable=_tf_version_old,
+        executor="KubernetesExecutor",
+        executor_config={
             "pod_override": k8s.V1Pod(
                 spec=k8s.V1PodSpec(
                     containers=[
