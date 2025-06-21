@@ -25,7 +25,7 @@ def _tf_version_old():
 
 
 with DAG(
-    dag_id="01_dag_dependencies_in_image",
+    dag_id="01_dag_dependencies_in_image_multiple_executors",
     description="Dag dependencies in custom image example.",
     start_date=pendulum.today("UTC").add(days=-5),
     schedule=CronTriggerTimetable("@daily", timezone="UTC"),
