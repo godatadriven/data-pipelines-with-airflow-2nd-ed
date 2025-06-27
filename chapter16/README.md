@@ -29,7 +29,6 @@ You could use [k9s](https://k9scli.io/) or install kubectl locally. To make sure
 Inside the k3s-cli container we can deploy airflow with the following commands:
 
 ```bash
-/enable-external-dns # make sure the other docker services can be reached from within the k3s cluster
 helm repo add apache-airflow https://airflow.apache.org
 helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer
 ```
@@ -40,7 +39,7 @@ to verify the running services/pods we can check with the following command:
 kubectl --namespace airflow get pods
 ```
 
-access the webserver at http://localhost:8080 (or http://localhost:8081 if the webserver pod ends up being deployed at the agent node. This can be verified with the `kubectl --namespace airflow get pods -o wide` command). In the rest of this README we refer to the webserver as http://localhost:8080.
+access the UI at http://localhost:8080 (or http://localhost:8081 if the api-server pod ends up being deployed at the agent node. This can be verified with the `kubectl --namespace airflow get pods -o wide` command). In the rest of this README we refer to the webserver as http://localhost:8080.
 
 
 ### 01 - Overriding the default user
@@ -52,15 +51,10 @@ helm upgrade --install airflow apache-airflow/airflow --namespace airflow --set 
 ```
 
 You can verify that the Admin user is changed by logging in http://localhost:8080 with airflow/airflow and go to http://localhost:8080/users/userinfo/ to see the changed values.
-You can also see that the affected pods (at least the webserver) have been changed (age is more recent)
-
-```bash
-kubectl --namespace airflow get pods
-```
 
 ### 02 - Providing the webserver secret
 
-In values/02-webserversecret-values.yaml we provide our own secret to prevent the UI warning about a non-static secret.
+In values/02-webserversecret-values.yaml we provide our own secret to prevent the deployment warning about using a non-static secret.
 
 ```bash
 kubectl create secret generic my-webserver-secret --namespace airflow --from-literal="webserver-secret-key=$(python3 -c 'import secrets; print(secrets.token_hex(16))')"
@@ -69,8 +63,6 @@ kubectl create secret generic my-webserver-secret --namespace airflow --from-lit
 ```bash
 helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/02-webserversecret-values.yaml
 ```
-
-You can verify this by logging in http://localhost:8080 with airflow/airflow.
 
 ### 03 - Using an external database
 
@@ -81,6 +73,8 @@ kubectl create secret generic mydatabase --namespace airflow --from-literal=conn
 ```
 
 ```bash
+/enable-external-dns # make sure the other docker services can be reached from within the k3s cluster
+
 helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/03-external-database-values.yaml
 ```
 
@@ -145,11 +139,6 @@ Now when you log in http://localhost:8080 with airflow/airflow, you can see the 
 In values/05-dependencies-in-image-values.yaml we configure the deployment to use an custom container image. This image contains the dag dependency libraries which are added during building the image. The image was pushed to the registry (available in docker compose) so it can be pulled by the helm deployment.
 
 ```bash
-# on your local machine
-./publish-custom-images.sh
-```
-
-```bash
 helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/05-dependencies-in-image-values.yaml
 ```
 
@@ -161,11 +150,6 @@ Airflow let's you configure the executor(s) to use. By default, in the helm char
 
 In values/06-multiple-executors-values.yaml we configure the deployment to use both the CeleryExecutor and the KubernetesExecutor and a default image to use for the KubernetesExecutor via the pod_template_file configuration.
 In the DAG we will use the pod_override mechanism to further configure the k8s pod for the task.
-
-```bash
-# on your local machine
-./publish-custom-images.sh
-```
 
 ```bash
 helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/06-multiple-executors-values.yaml

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+AIRFLOW_IMAGE_NAME=${AIRFLOW_IMAGE_NAME:-apache/airflow:3.0.2}
 function publish_custom_images() {
     echo "==============================================="
     echo "== Build local airflow image(s)              =="

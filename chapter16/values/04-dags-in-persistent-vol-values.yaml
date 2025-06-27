@@ -5,8 +5,6 @@ dags:
   persistence:
     enabled: true
     existingClaim: local-path-dag-volume-claim
-  gitSync:
-    enabled: false
 
 # 3 - Using the external database
 postgres:
