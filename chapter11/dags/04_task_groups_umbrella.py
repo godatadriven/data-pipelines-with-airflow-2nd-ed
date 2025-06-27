@@ -1,14 +1,14 @@
 import pendulum
-from airflow import DAG
-from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import BranchPythonOperator, PythonOperator
-from airflow.utils.task_group import TaskGroup
+from airflow.sdk import DAG, TaskGroup
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.python import BranchPythonOperator, PythonOperator
+from airflow.timetables.trigger import CronTriggerTimetable
 
 ERP_CHANGE_DATE = pendulum.today("UTC").add(days=-1)
 
 
 def _pick_erp_system(**context):
-    if context["execution_date"] < ERP_CHANGE_DATE:
+    if context["logical_date"] < ERP_CHANGE_DATE:
         return "fetch_sales.fetch_sales_old"
     else:
         return "fetch_sales.fetch_sales_new"
@@ -33,7 +33,7 @@ def _clean_sales_new(**context):
 with DAG(
     dag_id="04_task_groups_umbrella",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule="@daily",
+    schedule=CronTriggerTimetable("0 16 * * *", timezone="UTC"),
 ) as dag:
     start = EmptyOperator(task_id="start")
 

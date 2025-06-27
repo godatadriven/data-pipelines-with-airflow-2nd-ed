@@ -1,8 +1,7 @@
 import pendulum
 import requests
-from airflow import DAG
-from airflow.decorators import task, task_group
-
+from airflow.sdk import DAG, task, task_group
+from airflow.timetables.trigger import CronTriggerTimetable
 
 @task
 def fetch_ratings():
@@ -25,5 +24,7 @@ def print_group(rating):
     print_movie(rating) >> print_rating(rating)
 
 
-with DAG(dag_id="08_dynamic_task_mapping_taskgroup",start_date=pendulum.today("UTC").add(days=-5), schedule="@daily") as dag:
+with DAG(dag_id="08_dynamic_task_mapping_taskgroup",
+         start_date=pendulum.today("UTC").add(days=-5),
+         schedule=CronTriggerTimetable("0 16 * * *", timezone="UTC")) as dag:
     print_group.expand(rating=fetch_ratings())

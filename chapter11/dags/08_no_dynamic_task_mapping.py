@@ -1,7 +1,8 @@
 import pendulum
 import requests
-from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.timetables.trigger import CronTriggerTimetable
 
 
 def _fetch_ratings(ti):
@@ -18,7 +19,9 @@ def _print_rating(ti):
 def add_function(x: int, y: int):
     return x + y
 
-with DAG(dag_id="09_no_dynamic_task_mapping",start_date=pendulum.today("UTC").add(days=-5), schedule="@daily"):
+with DAG(dag_id="09_no_dynamic_task_mapping",
+         start_date=pendulum.today("UTC").add(days=-5),
+         schedule=CronTriggerTimetable("0 16 * * *", timezone="UTC")):
     fetch_ratings = PythonOperator(
         task_id="fetch_ratings",
         python_callable=_fetch_ratings
