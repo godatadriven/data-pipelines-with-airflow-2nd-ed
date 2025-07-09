@@ -1,6 +1,6 @@
 import pendulum
-from airflow.models import DAG
-from airflow.operators.bash import BashOperator
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.bash import BashOperator
 
 
 def send_error(x):
@@ -8,7 +8,7 @@ def send_error(x):
 
 
 dag = DAG(
-    dag_id="04_task_failure_callback",
+    dag_id="03_task_failure_callback",
     default_args={"on_failure_callback": send_error},
     on_failure_callback=send_error,
     schedule=None,

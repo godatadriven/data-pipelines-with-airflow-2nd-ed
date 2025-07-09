@@ -1,0 +1,5 @@
+FROM apache/airflow:3.0.2
+
+# We need this specific release as it contains a fix for parsing the execution API url
+# This has not been released at the time of writing (July 2025).
+RUN pip install apache-airflow-providers-edge3==1.1.2rc1
