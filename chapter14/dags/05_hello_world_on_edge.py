@@ -11,7 +11,11 @@ dag = DAG(
     schedule=CronTriggerTimetable("0 16 * * *", timezone="UTC"),
 )
 
-hello = BashOperator(task_id="hello", bash_command="echo 'hello'", dag=dag, executor='airflow.providers.edge3.executors.EdgeExecutor')
-world = PythonOperator(task_id="world", python_callable=lambda: print("airflow"), dag=dag)
-
+hello = BashOperator(task_id="hello",
+                     bash_command="echo 'hello'",
+                     dag=dag,
+                     executor='airflow.providers.edge3.executors.EdgeExecutor')
+world = PythonOperator(task_id="world",
+                       python_callable=lambda: print("airflow"),
+                       dag=dag)
 hello >> world

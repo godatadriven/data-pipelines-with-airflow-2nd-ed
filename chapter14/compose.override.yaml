@@ -17,7 +17,7 @@ x-airflow-common:
     AIRFLOW__CORE__EXECUTOR: 'CeleryExecutor,airflow.providers.edge3.executors.EdgeExecutor'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
-    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
+    AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL : 60
     AIRFLOW__METRICS__STATSD_ON: 'true'
     AIRFLOW__METRICS__STATSD_HOST: 'statsd_exporter'
     AIRFLOW__METRICS__STATSD_PORT: 9125
@@ -137,6 +137,16 @@ services:
         exec /entrypoint airflow version
     # yamllint enable rule:line-length
     user: "0:0"
+
+  smtp-server:
+    image: maildev/maildev:2.0.5
+    command: [ "bin/maildev", "--web", "1080", "--smtp", "2525", "--incoming-user", "airflow_smtp_user", "--incoming-pass", "airflow_smtp_passw0rd" ]
+    hostname: smtp-server
+    domainname: airflow.local.io
+    ports:
+      - 1080:1080
+      - 2525:2525
+
 
 volumes:
   airflow-data-volume:
