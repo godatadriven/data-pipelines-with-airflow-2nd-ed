@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-apache-airflow = { extras = ["postgres"], version = "^3.0.0" }
+apache-airflow = { extras = ["postgres"], version = "^3.0.2" }
 pre-commit = "^3.5.0"
 pandas = "^2.2.3"
 apache-airflow-providers-postgres = "^5.13.0"
