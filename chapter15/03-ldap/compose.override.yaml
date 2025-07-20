@@ -1,0 +1,64 @@
+x-airflow-common:
+  &airflow-common
+  environment:
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__TEST_CONNECTION: "Enabled"
+    AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 60
+    AIRFLOW__API_AUTH__JWT_SECRET: foo
+    AIRFLOW__API__SECRET_KEY: bar
+  volumes:
+    - ./webserver_config.py:/opt/airflow/webserver_config.py
+
+services:
+  airflow-apiserver:
+    <<: *airflow-common
+
+  airflow-dag-processor:
+    <<: *airflow-common
+
+  airflow-scheduler:
+    <<: *airflow-common
+
+  airflow-worker:
+    <<: *airflow-common
+
+  airflow-triggerer:
+    <<: *airflow-common
+
+  airflow-init:
+    <<: *airflow-common
+
+  airflow-cli:
+    <<: *airflow-common
+
+  openldap:
+    image: bitnami/openldap:2
+    environment:
+      - LDAP_ADMIN_USERNAME=admin
+      - LDAP_ADMIN_PASSWORD=admin
+      - LDAP_ROOT=dc=apacheairflow,dc=com
+      - LDAP_ADMIN_DN=cn=admin,dc=apacheairflow,dc=com
+      - LDAP_CUSTOM_LDIF_DIR=/ldifs
+      - LDAP_LOGLEVEL=-1
+      - LDAP_PORT=389
+    ports:
+      - '389:389'
+      - '1389:1389'
+      - '1636:1636'
+    volumes:
+      - ./bootstrap.ldif:/ldifs/bootstrap.ldif
+      - openldap_data:/bitnami/openldap
+
+  openldap_ui:
+    image: phpldapadmin/phpldapadmin:2
+    environment:
+      - LDAP_HOST=openldap
+      - LDAP_PORT=1389
+    ports:
+      - "8081:8080"
+    depends_on:
+      - openldap
+
+volumes:
+  openldap_data:
