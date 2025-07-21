@@ -1,11 +1,11 @@
 x-airflow-common:
   &airflow-common
   environment:
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__TEST_CONNECTION: "Enabled"
     AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 60
     AIRFLOW__API_AUTH__JWT_SECRET: foo
-    AIRFLOW__WEBSERVER__SECRET_KEY: bar
+    AIRFLOW__API__SECRET_KEY: bar
 
 services:
   airflow-apiserver:

@@ -35,6 +35,7 @@ with DAG(
     schedule=CronDataIntervalTimetable("0 0 * * *", timezone="UTC"),
     start_date=datetime(2024, 1, 1),
     end_date=datetime(2024, 1, 5),
+    catchup=True,
 ):
     fetch_events = BashOperator(
         task_id="fetch_events",

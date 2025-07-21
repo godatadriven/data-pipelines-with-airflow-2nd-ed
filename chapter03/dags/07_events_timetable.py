@@ -42,7 +42,7 @@ with DAG(
         bash_command=(
             "mkdir -p /data/07_events_timetable/events && "
             "curl -o /data/07_events_timetable/events/{{ logical_date | ds }}.json "
-            "'http://events-api:8081/events/latest"
+            "'http://events-api:8081/events/latest'"
         ),
     )
 
