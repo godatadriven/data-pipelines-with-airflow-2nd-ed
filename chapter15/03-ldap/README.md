@@ -5,7 +5,7 @@ Demonstrate RBAC UI + LDAP authentication using OpenLDAP.
 ## Usage
 
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 Login in Airflow with username `bsmith` and password `test`.

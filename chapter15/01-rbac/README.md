@@ -7,7 +7,7 @@ This is mainly based on the standard compose file.
 ## Usage
 
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Create first user

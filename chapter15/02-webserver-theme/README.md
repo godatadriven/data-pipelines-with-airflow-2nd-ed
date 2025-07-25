@@ -5,7 +5,7 @@ This docker-compose file demonstrates settings a webserver theme in `webserver_c
 ## Usage
 
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 Wait 5 seconds or so for the webserver to come up.
