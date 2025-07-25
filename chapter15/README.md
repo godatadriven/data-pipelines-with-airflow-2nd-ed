@@ -1,19 +1,38 @@
-# Chapter 15
+# Chapter 14
 
-Code accompanying Chapter 15 (Securing Airflow) of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
+Code accompanying Chapter 14 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
 
 ## Contents
 
-This folder holds three example Docker Compose examples:
+This folder contains DAGs from Chapter 14. Topics covered are monitoring, logging, scaling horizontal, etc. An
+accompanying Docker Compose setup was built for demonstration purposes. This includes:
 
-- `01-rbac`: Example explaining the RBAC interface
-- `02-webserver-theme`: Explaining the UI configuration
-- `03-ldap`: Example configuration fetching user credentials from OpenLDAP
-- `04-ssl`: Example configuring a secure connection between Airflow components
-- `05-secretsbackend`: Example fetching secrets from HashiCorp Vault
+- Airflow (webserver, scheduler, and Celery workers)
+- PostgreSQL database for Airflow metastore
+- Redis for Celery queue
+- Flower, a Celery monitoring tool
+- Prometheus, for scraping and storing metrics
+- Grafana, for visualizing metrics
+- And a Redis & StatsD exporter to expose metrics
 
-Each folder holds a Docker Compose file which can be started with `docker compose up -d`.
+Given the number of services, this can become a bit resource-heavy on your machine.
+
+Unfortunately, not everything can be scripted/pre-initialized, especially in Grafana. Therefore, you must add
+Prometheus as a datasource and create a dashboard yourself.
 
 ## Usage
 
-Read the `README.md` file in the respective directory.
+To get started with the code examples, start Airflow with Docker Compose with the following command:
+
+```bash
+docker compose up -d
+```
+
+The webserver initializes a few things, so wait for a few seconds, and you should be able to access the
+Airflow webserver at http://localhost:8080.
+
+To stop running the examples, run the following command:
+
+```bash
+docker compose down -v
+```

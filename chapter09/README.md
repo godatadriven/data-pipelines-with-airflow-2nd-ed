@@ -1,29 +1,47 @@
-# Chapter 9
+# Chapter 8
 
-Code accompanying Chapter 9 of the book 'Data pipelines with Apache Airflow'.
+Code accompanying Chapter 8 of the book 'Data pipelines with Apache Airflow'.
 
 ## Contents
 
 This code example contains the following DAGs:
 
-- 01_dag_cycle.py
-- 02_bash_operator_no_command.py
-- 03_duplicate_task_ids.py
-- 04_nodags.py
-- dagtestdag.py (Not numbered as this causes issues when importing the module in pytest...)
+- 01_python.py - Our initial DAG in which we illustrate the use case using the built-in PythonOperator.
+- 02_hook.py - Adjusted version of the former DAG, in which we use a custom Airflow hook for connecting to the Movie API.
+- 03_operator.py - Another version of the same DAG, using a custom operator class instead of the builtin PythonOperator.
+- 04_sensor.py - Final version of the DAG, in which we also demonstrate how to build a custom sensor class.
 
-These DAGs are not intended to run in the UI (some even fail deliberately) and are there to show how to use tests. Because they are not intended, they have been explicitly added to the 
-`.airflowignore` file to avoid errors showing up in the UI.
+Besides this, the example also contains the following files:
 
-The `dags/custom` directory contains a custom Hook and a number of operators, that were introduced in chapter 8. We use these 
-to show how to write tests for your (custom) operators. Tests can be found in the corresponding `tests` directory.
+```
+├── api                         <- Docker image for the movie API.
+├── dags                        <- Folder containing our DAGs.
+│   ├── custom                  <- Custom hooks, etc. used in the DAGs.
+│   │   ├── __init__.py
+│   │   ├── hooks.py
+│   │   ├── operators.py
+│   │   ├── ranking.py
+│   │   └── sensors.py
+│   └── *.py                    <- The DAGs mentioned above.
+├── docker-compose.yml
+├── src
+│   └── airflow-movielens       <- Same code as the 'custom' directory,
+│       ├── setup.py               built as a proper Python package.
+│       └── src
+│           └── airflow_movielens
+│               ├── __init__.py
+│               ├── hooks.py
+│               ├── operators.py
+│               └── sensors.py
+└── readme.md                   <- This file.
+```
 
 ## Usage
 
 To get started with the code examples, start Airflow in docker using the following command:
 
 ```bash
-docker compose up
+docker compose up -d --build
 ```
 
 Wait for a few seconds and you should be able to access the examples at http://localhost:8080/.
@@ -33,20 +51,3 @@ To stop running the examples, run the following command:
 ```bash
 docker compose down -v
 ```
-
-For running the tests themselves, we recommend using a local Python environment. This is because some of the tests depend on Docker to run services in, e.g. Postgres.
-To avoid issues with Docker-in-Docker, using a virtual environment is the best way to go. To set this up:
-
-```bash
-python -m venv my-venv
-source my-venv/bin/activate
-pip install -r requirements.txt
-airflow db reset
-```
-The last line is needed to initialize a local Airflow database (which is needed for some of the tests). By default this will be a sqlite database in the default `AIRFLOW_HOME` path. If you want something else, the configuration is left to you.
-
-You should now be able to run the tests, e.g.
-```bash
-pytest tests/
-```
-Please note that Docker is a requirement for running all tests. The tests  that use Docker (test_dagtestdag and test_movielens_to_postgres_operator) can exhibit flaky behaviour, so they have been marked with `@flaky`. This setup was confirmed to work with Python 3.12.4

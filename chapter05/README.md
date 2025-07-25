@@ -1,35 +1,32 @@
-# Chapter 5
+# Chapter 4
 
-Code accompanying Chapter 5 of the book 'Data pipelines with Apache Airflow'.
+Code accompanying Chapter 4 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
 
 ## Contents
 
-This code example contains the following DAGs:
+This folder contains DAGs from Chapter 4. The filenames and DAG ids follow the listing ids in the book. Near
+the end of the chapter, we demonstrate usage of the SQLExecuteQueryOperator. The Docker Compose example in this
+folder creates a second Postgres database so you don't have to setup things yourself when running the example.
+If you like, you can access it:
 
-- 01_rocket_pipeline_dependencies.py - Initial DAG with several tasks.
-- 02_branch_function.py - Branching within a function.
-- 03_branch_dag_old_new.py - Branching within the DAG.
-- 04_branch_dag_join.py - Branching within the DAG with a join.
-- 05_condition_function.py - Condition within a function.
-- 06_condition_dag.py - Condition within the DAG.
-- 07_latest_only_condition.py - Condition for latest only.
-- 08_trigger_rules.py - DAG illustrating several trigger rules.
-- 09_xcoms.py - Xcoms basics.
-- 10_xcoms_template.py - Xcoms with templating.
-- 11_xcoms_return.py - Default XComs.
-- 12_taskflow.py - Taskflow API.
-- 13_dag_decorator.py - Using a dag decorator.
-- 14_taskflow_mixed_operators.py - Mixon taskflow and 'normal' tasks.
+- Host: `localhost`
+- Port: `5433`
+- Username: `airflow`
+- Password: `airflow`
+- Database: `airflow`
+
+This database is initialized with the `pageview_counts` table as shown in the book.
 
 ## Usage
 
-To get started with the code examples, start Airflow in docker using the following command:
+To get started with the code examples, start Airflow with Docker Compose with the following command:
 
 ```bash
 docker compose up -d
 ```
 
-Wait for a few seconds and you should be able to access the examples at http://localhost:8080/.
+The webserver initializes a few things, so wait for a few seconds, and you should be able to access the
+Airflow webserver at http://localhost:8080.
 
 To stop running the examples, run the following command:
 

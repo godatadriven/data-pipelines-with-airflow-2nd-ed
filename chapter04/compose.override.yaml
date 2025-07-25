@@ -1,19 +1,21 @@
-x-airflow-common:
-  &airflow-common
+x-airflow-common: &airflow-common
   environment:
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__TEST_CONNECTION: "Enabled"
     AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 60
     AIRFLOW__API_AUTH__JWT_SECRET: foo
     AIRFLOW__API__SECRET_KEY: bar
-    # Dag specific connection variables
-    AIRFLOW_CONN_MY_POSTGRES: postgresql://airflow:airflow@wiki_results:5432/airflow
+  volumes:
+    - airflow-data-volume:/data
 
 services:
   airflow-apiserver:
     <<: *airflow-common
 
   airflow-scheduler:
+    <<: *airflow-common
+
+  airflow-dag-processor:
     <<: *airflow-common
 
   airflow-worker:
@@ -28,21 +30,33 @@ services:
   airflow-cli:
     <<: *airflow-common
 
-  airflow-dag-processor:
+  airflow-data:
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:|version|}
     <<: *airflow-common
+    entrypoint: /bin/bash
+    # yamllint disable rule:line-length
+    command:
+      - -c
+      - |
+        if [[ -z "${AIRFLOW_UID}" ]]; then
+          echo
+          echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
+          echo "If you are on Linux, you SHOULD follow the instructions below to set "
+          echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
+          echo "For other operating systems you can get rid of the warning with manually created .env file:"
+          echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
+          echo
+        fi
+        chown -R "${AIRFLOW_UID}:0" /data
+        exec /entrypoint airflow version
+    # yamllint enable rule:line-length
+    user: "0:0"
 
-  wiki_results:
-    image: postgres:13
-    environment:
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
+  events-api:
+    build: ./docker/events-api
+    image: manning-airflow/events-api
     ports:
-      - "5433:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 10s
-      retries: 5
-    volumes:
-      - ./scripts/create_table.sql:/docker-entrypoint-initdb.d/create_table.sql
+      - "8081:8081"
+
+volumes:
+  airflow-data-volume:

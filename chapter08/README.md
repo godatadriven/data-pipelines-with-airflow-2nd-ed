@@ -1,39 +1,30 @@
-# Chapter 8
+# Chapter 7
 
-Code accompanying Chapter 8 of the book 'Data pipelines with Apache Airflow'.
+Code accompanying Chapter 7 of the book 'Data pipelines with Apache Airflow'.
 
 ## Contents
 
 This code example contains the following DAGs:
 
-- 01_python.py - Our initial DAG in which we illustrate the use case using the built-in PythonOperator.
-- 02_hook.py - Adjusted version of the former DAG, in which we use a custom Airflow hook for connecting to the Movie API.
-- 03_operator.py - Another version of the same DAG, using a custom operator class instead of the builtin PythonOperator.
-- 04_sensor.py - Final version of the DAG, in which we also demonstrate how to build a custom sensor class.
+- chapter7 - Dag illustrating the Sagemaker external connections.
+- chapter7 - Small DAG illustrating the postgres-to-s3 operator.
 
-Besides this, the example also contains the following files:
+## Preparation
 
-```
-├── api                         <- Docker image for the movie API.
-├── dags                        <- Folder containing our DAGs.
-│   ├── custom                  <- Custom hooks, etc. used in the DAGs.
-│   │   ├── __init__.py
-│   │   ├── hooks.py
-│   │   ├── operators.py
-│   │   ├── ranking.py
-│   │   └── sensors.py
-│   └── *.py                    <- The DAGs mentioned above.
-├── docker-compose.yml
-├── src
-│   └── airflow-movielens       <- Same code as the 'custom' directory,
-│       ├── setup.py               built as a proper Python package.
-│       └── src
-│           └── airflow_movielens
-│               ├── __init__.py
-│               ├── hooks.py
-│               ├── operators.py
-│               └── sensors.py
-└── readme.md                   <- This file.
+For the 01_aws_hadwritten_digits_classifier the following needs to be prepared:
+
+- Get a AWS ACCES KEY and a AWS SECRET and make sure these are available in the shell where the code is executed
+- Create A Sagemaker Execution Role see: https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html. The ARN needs to be made available to the shell.
+- Specify the region to use where the role was created and where the DAG will execute its tasks
+
+```sh
+export SAGEMAKER_EXEC_ROLE_ARN=
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_REGION=
+export AWS_DEFAULT_REGION=
+# When SECRET KEY contains forward slash it needs to be urlencoded
+export ENCODED_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY//\//%2F}
 ```
 
 ## Usage
@@ -50,4 +41,38 @@ To stop running the examples, run the following command:
 
 ```bash
 docker compose down -v
+```
+
+## Testing the mnist classifier
+
+To test the Mnist classifier that was made available as a Sagemaker Endpoint the book describes a small api application build with Chalice.
+
+This app can be run locally as follows:
+
+```sh
+cd api/classifier
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_REGION=
+export AWS_DEFAULT_REGION=
+chalice local --port 8000
+```
+
+## Executing the airflow test commands
+
+To execute the airflow test commands from the book we need a local environment with the correct python packages
+
+```sh
+python3 -m venv .airflowlocal
+source .airflowlocal/bin/activate
+pip install -r requirements.txt
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_REGION=
+export AWS_DEFAULT_REGION=
+
+airflow tasks test 01_aws_handwritten_digits_classifier create_mnist_bucket 2024-01-01
 ```
