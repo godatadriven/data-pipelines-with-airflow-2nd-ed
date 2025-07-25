@@ -1,6 +1,6 @@
-# Chapter 9
+# Chapter 10
 
-Code accompanying Chapter 9 of the book 'Data pipelines with Apache Airflow'.
+Code accompanying Chapter 10 of the book 'Data pipelines with Apache Airflow'.
 
 ## Contents
 
@@ -15,7 +15,7 @@ This code example contains the following DAGs:
 These DAGs are not intended to run in the UI (some even fail deliberately) and are there to show how to use tests. Because they are not intended, they have been explicitly added to the 
 `.airflowignore` file to avoid errors showing up in the UI.
 
-The `dags/custom` directory contains a custom Hook and a number of operators, that were introduced in chapter 8. We use these 
+The `dags/custom` directory contains a custom Hook and a number of operators, that were introduced in chapter 9. We use these
 to show how to write tests for your (custom) operators. Tests can be found in the corresponding `tests` directory.
 
 ## Usage

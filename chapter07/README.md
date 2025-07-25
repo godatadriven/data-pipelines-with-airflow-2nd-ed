@@ -1,10 +1,10 @@
-# Chapter 6
+# Chapter 7
 
-Code accompanying Chapter 6 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
+Code accompanying Chapter 7 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
 
 ## Contents
 
-This folder contains DAGs from Chapter 6.
+This folder contains DAGs from Chapter 7.
 
 ## Usage
 
@@ -27,7 +27,7 @@ To run the Kafka example DAG:
 1. Turn the DAG on
 2. Bash into the Kafka container:
    ```bash
-   docker exec -it chapter06-kafka-1 /bin/bash
+   docker exec -it chapter07-kafka-1 /bin/bash
    ```
 3. Run the CLI producer:
    ```bash

@@ -1,6 +1,6 @@
-# Chapter 12
+# Chapter 13
 
-Code accompanying Chapter 12 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
+Code accompanying Chapter 13 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
 
 Much of this use case was based on the ideas in https://toddwschneider.com/posts/taxi-vs-citi-bike-nyc, where
 the fastest method of transportation (Citi Bikes or Yellow Taxis) between two NYC neighborhoods at given times

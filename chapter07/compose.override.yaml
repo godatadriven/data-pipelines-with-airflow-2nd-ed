@@ -73,7 +73,7 @@ services:
   kafka-init:
     image: apache/kafka:3.9.1
     restart: no
-    entrypoint: /bin/bash -c "./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --topic events"
+    entrypoint: /bin/bash -c "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --topic events"
     depends_on:
       kafka:
         condition: service_healthy

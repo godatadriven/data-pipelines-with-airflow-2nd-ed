@@ -1,6 +1,6 @@
-# Chapter 8
+# Chapter 9
 
-Code accompanying Chapter 8 of the book 'Data pipelines with Apache Airflow'.
+Code accompanying Chapter 9 of the book 'Data pipelines with Apache Airflow'.
 
 ## Contents
 

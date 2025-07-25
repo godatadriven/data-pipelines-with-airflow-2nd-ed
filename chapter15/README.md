@@ -1,10 +1,10 @@
-# Chapter 14
+# Chapter 15
 
-Code accompanying Chapter 14 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
+Code accompanying Chapter 15 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
 
 ## Contents
 
-This folder contains DAGs from Chapter 14. Topics covered are monitoring, logging, scaling horizontal, etc. An
+This folder contains DAGs from Chapter 15. Topics covered are monitoring, logging, scaling horizontal, etc. An
 accompanying Docker Compose setup was built for demonstration purposes. This includes:
 
 - Airflow (webserver, scheduler, and Celery workers)

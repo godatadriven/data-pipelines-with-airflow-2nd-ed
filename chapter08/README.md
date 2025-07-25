@@ -1,13 +1,13 @@
-# Chapter 7
+# Chapter 8
 
-Code accompanying Chapter 7 of the book 'Data pipelines with Apache Airflow'.
+Code accompanying Chapter 8 of the book 'Data pipelines with Apache Airflow'.
 
 ## Contents
 
 This code example contains the following DAGs:
 
-- chapter7 - Dag illustrating the Sagemaker external connections.
-- chapter7 - Small DAG illustrating the postgres-to-s3 operator.
+- chapter8 - Dag illustrating the Sagemaker external connections.
+- chapter8 - Small DAG illustrating the postgres-to-s3 operator.
 
 ## Preparation
 
