@@ -1,0 +1,36 @@
+x-airflow-common:
+  &airflow-common
+  environment:
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__TEST_CONNECTION: "Enabled"
+    AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 60
+    AIRFLOW__API_AUTH__JWT_SECRET: foo
+    AIRFLOW__API__SECRET_KEY: bar
+    AIRFLOW__API__SSL_CERT: /opt/airflow/ssl/certificate.pem
+    AIRFLOW__API__SSL_KEY: /opt/airflow/ssl/privatekey.pem
+  volumes:
+    - ./certificate.pem:/opt/airflow/ssl/certificate.pem
+    - ./privatekey.pem:/opt/airflow/ssl/privatekey.pem
+
+services:
+  airflow-apiserver:
+    <<: *airflow-common
+
+  airflow-dag-processor:
+    <<: *airflow-common
+
+  airflow-scheduler:
+    <<: *airflow-common
+
+  airflow-worker:
+    <<: *airflow-common
+
+  airflow-triggerer:
+    <<: *airflow-common
+
+  airflow-init:
+    <<: *airflow-common
+
+  airflow-cli:
+    <<: *airflow-common

@@ -4,9 +4,10 @@ Figure: 5.8, 5.9
 """
 
 import pendulum
-from airflow import DAG
-from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import BranchPythonOperator, PythonOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.python import BranchPythonOperator, PythonOperator
+from airflow.sdk import DAG
+from airflow.timetables.interval import CronDataIntervalTimetable
 
 ERP_CHANGE_DATE = pendulum.today("UTC").add(days=-1)
 
@@ -37,7 +38,8 @@ def _clean_sales_new(**context):
 with DAG(
     dag_id="03_branch_dag_old_new",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule="@daily",
+    schedule=CronDataIntervalTimetable("@daily", "UTC"),
+    catchup=True,
 ):
     start = EmptyOperator(task_id="start")
 
@@ -53,9 +55,9 @@ with DAG(
     clean_weather = EmptyOperator(task_id="clean_weather")
 
     # Using the wrong trigger rule ("all_success") results in tasks being skipped downstream.
-    # join_datasets = EmptyOperator(task_id="join_datasets")
+    join_datasets = EmptyOperator(task_id="join_datasets")
 
-    join_datasets = EmptyOperator(task_id="join_datasets", trigger_rule="none_failed")
+    # join_datasets = EmptyOperator(task_id="join_datasets", trigger_rule="none_failed")
     train_model = EmptyOperator(task_id="train_model")
     deploy_model = EmptyOperator(task_id="deploy_model")
 

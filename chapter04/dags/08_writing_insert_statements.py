@@ -1,9 +1,10 @@
 from urllib import request
 
 import pendulum
-from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.timetables.trigger import CronTriggerTimetable
 
 
 def _get_data(year, month, day, hour, output_path, **_):
@@ -14,9 +15,9 @@ def _get_data(year, month, day, hour, output_path, **_):
     request.urlretrieve(url, output_path)
 
 
-def _fetch_pageviews(pagenames, data_interval_start, **_):
+def _fetch_pageviews(pagenames, logical_date, **_):
     result = dict.fromkeys(pagenames, 0)
-    with open(f"/tmp/wikipageviews-{ data_interval_start.format('YYYYMMDDHH') }") as f:
+    with open(f"/tmp/wikipageviews-{ logical_date.format('YYYYMMDDHH') }") as f:
         for line in f:
             domain_code, page_title, view_counts, _ = line.split(" ")
             if domain_code == "en" and page_title in pagenames:
@@ -26,30 +27,31 @@ def _fetch_pageviews(pagenames, data_interval_start, **_):
         for pagename, pageviewcount in result.items():
             f.write(
                 "INSERT INTO pageview_counts VALUES ("
-                f"'{pagename}', {pageviewcount}, '{data_interval_start}'"
+                f"'{pagename}', {pageviewcount}, '{logical_date}'"
                 ");\n"
             )
 
 
 with DAG(
     dag_id="08_writing_insert_statements",
-    start_date=pendulum.today("UTC").add(days=-1),
-    schedule="@hourly",
+    start_date=pendulum.today("UTC").add(hours=-3),
+    schedule=CronTriggerTimetable("@hourly", timezone="UTC"),
     max_active_runs=1,
+    catchup=True
 ):
     get_data = PythonOperator(
         task_id="get_data",
         python_callable=_get_data,
         op_kwargs={
-            "year": "{{ data_interval_start.year }}",
-            "month": "{{ data_interval_start.month }}",
-            "day": "{{ data_interval_start.day }}",
-            "hour": "{{ data_interval_start.hour }}",
-            "output_path": "/tmp/wikipageviews-{{ data_interval_start.format('YYYYMMDDHH') }}.gz",
+            "year": "{{ logical_date.year }}",
+            "month": "{{ logical_date.month }}",
+            "day": "{{ logical_date.day }}",
+            "hour": "{{ logical_date.hour }}",
+            "output_path": "/tmp/wikipageviews-{{ logical_date.format('YYYYMMDDHH') }}.gz",
         },
     )
 
-    extract_gz = BashOperator(task_id="extract_gz", bash_command="gunzip --force /tmp/wikipageviews-{{ data_interval_start.format('YYYYMMDDHH') }}.gz")
+    extract_gz = BashOperator(task_id="extract_gz", bash_command="gunzip --force /tmp/wikipageviews-{{ logical_date.format('YYYYMMDDHH') }}.gz")
 
     fetch_pageviews = PythonOperator(
         task_id="fetch_pageviews",

@@ -1,8 +1,10 @@
 import os
 
 import pendulum
-from airflow import DAG
-from airflow.operators.bash import BashOperator
+from airflow.sdk import DAG
+
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.timetables.trigger import CronTriggerTimetable
 
 
 def generate_tasks(dataset_name, raw_dir, processed_dir, preprocess_script, output_dir, dag):
@@ -37,7 +39,8 @@ def generate_tasks(dataset_name, raw_dir, processed_dir, preprocess_script, outp
 with DAG(
     dag_id="01_task_factory",
     start_date=pendulum.today("UTC").add(days=-5),
-    schedule="@daily",
+    schedule=CronTriggerTimetable("0 16 * * *", timezone="UTC"),
+    catchup=True
 ) as dag:
     for dataset in ["sales", "customers"]:
         generate_tasks(

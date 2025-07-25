@@ -1,6 +1,6 @@
 import pendulum
-from airflow import DAG
-from airflow.operators.bash import BashOperator
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.sdk import DAG
 
 with DAG(
     dag_id="chapter09_bash_operator_no_command",

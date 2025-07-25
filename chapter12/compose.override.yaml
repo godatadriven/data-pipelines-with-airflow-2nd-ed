@@ -1,13 +1,15 @@
 x-airflow-common:
   &airflow-common
   environment:
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
-    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
+    AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL : 60
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__TEST_CONNECTION: "Enabled"
+    AIRFLOW__API_AUTH__JWT_SECRET: foo
+    AIRFLOW__API__SECRET_KEY: bar
     # Dag specific connection setup
-    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
     AIRFLOW__CORE__FERNET_KEY: hCRoPUYBO27QiEg1MRu5hSjLG7yNd8y8XKlm-8kRlkQ=
-    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
     AIRFLOW_CONN_S3: aws://AKIAIOSFODNN7EXAMPLE:wJalrXUtnFEMI%2FK7MDENG%2FbPxRfiCYEXAMPLEKEY@/?endpoint_url=http%3A%2F%2Fminio%3A9000
     AIRFLOW_CONN_CITIBIKE: http://citibike:cycling@citibike_api:5000
     AIRFLOW_CONN_TAXI: http://taxi_fileserver
@@ -18,7 +20,10 @@ x-airflow-common:
     - build:/opt/airflow/nyctransport/build
 
 services:
-  airflow-webserver:
+  airflow-apiserver:
+    <<: *airflow-common
+
+  airflow-dag-processor:
     <<: *airflow-common
 
   airflow-scheduler:
@@ -37,7 +42,7 @@ services:
     <<: *airflow-common
 
   airflow-python-build:
-    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.9.2}
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:|version|}
     <<: *airflow-common
     entrypoint: /bin/bash
     # yamllint disable rule:line-length

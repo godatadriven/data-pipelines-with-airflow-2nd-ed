@@ -1,13 +1,14 @@
 import pendulum
-from airflow.models import DAG
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.timetables.trigger import CronTriggerTimetable
 
 dag = DAG(
-    dag_id="02_hello_world",
+    dag_id="01_hello_world",
     start_date=pendulum.today("UTC").add(days=-3),
     max_active_runs=1,
-    schedule="@daily",
+    schedule=CronTriggerTimetable("0 16 * * *", timezone="UTC"),
 )
 
 hello = BashOperator(task_id="hello", bash_command="echo 'hello'", dag=dag)

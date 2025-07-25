@@ -3,10 +3,10 @@ import pathlib
 
 import pendulum
 import requests
-from requests.exceptions import MissingSchema, ConnectionError
-from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import DAG
+from requests.exceptions import ConnectionError, MissingSchema
 
 
 def _get_pictures():

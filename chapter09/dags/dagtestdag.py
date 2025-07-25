@@ -1,8 +1,8 @@
 import datetime
 
-from airflow import DAG
+from airflow.models import DAG
 
-from .custom.movielens_to_postgres_operator import MovielensToPostgresOperator
+from chapter09.dags.custom.movielens_to_postgres_operator import MovielensToPostgresOperator
 
 dagtestdag = DAG(
     "dagtestdag",

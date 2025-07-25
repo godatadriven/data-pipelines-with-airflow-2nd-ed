@@ -22,3 +22,15 @@ To stop running the examples, run the following command:
 ```bash
 docker compose down -v
 ```
+
+To run the Kafka example DAG:
+1. Turn the DAG on
+2. Bash into the Kafka container:
+   ```bash
+   docker exec -it chapter06-kafka-1 /bin/bash
+   ```
+3. Run the CLI producer:
+   ```bash
+   /opt/kafka/bin/kafka-console-producer.sh --topic events --bootstrap-server localhost:9092
+   ```
+   Send a message when `>` appears. This will trigger the `12_kafka_trigger` DAG to run.

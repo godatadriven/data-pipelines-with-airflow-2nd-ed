@@ -6,13 +6,13 @@ Figure: 5.18
 import uuid
 
 import pendulum
-from airflow import DAG
-from airflow.decorators import task
+from airflow.sdk import DAG, task
 
 with DAG(
     dag_id="12_taskflow",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule="@daily",
+    catchup=True,
 ):
 
     @task

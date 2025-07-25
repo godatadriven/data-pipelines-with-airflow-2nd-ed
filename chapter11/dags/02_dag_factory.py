@@ -1,15 +1,15 @@
 import os
 
 import pendulum
-from airflow import DAG
-from airflow.operators.bash import BashOperator
-
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.timetables.trigger import CronTriggerTimetable
 
 def generate_dag(dataset_name, raw_dir, processed_dir, preprocess_script):
     with DAG(
         dag_id=f"02_dag_factory_{dataset_name}",
         start_date=pendulum.today("UTC").add(days=-5),
-        schedule="@daily",
+        schedule=CronTriggerTimetable("0 16 * * *", timezone="UTC"),
     ) as dag:
         raw_file_path = os.path.join(raw_dir, dataset_name, "{ds_nodash}.json")
         processed_file_path = os.path.join(processed_dir, dataset_name, "{ds_nodash}.json")

@@ -6,9 +6,10 @@
 from pathlib import Path
 
 import pendulum
-from airflow import DAG
-from airflow.operators.empty import EmptyOperator
-from airflow.sensors.python import PythonSensor
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.providers.standard.sensors.python import PythonSensor
+from airflow.timetables.trigger import CronTriggerTimetable
 
 
 def _wait_for_supermarket(supermarket_id_):
@@ -21,8 +22,9 @@ def _wait_for_supermarket(supermarket_id_):
 with DAG(
     dag_id="08_reschedule_mode_example",
     start_date=pendulum.today("UTC").add(days=-14),
-    schedule="0 16 * * *",
+    schedule=CronTriggerTimetable("0 16 * * *", timezone="UTC"),
     description="A batch workflow for ingesting supermarket promotions data, demonstrating the PythonSensor.",
+    catchup=True
 ):
     create_metrics = EmptyOperator(task_id="create_metrics")
 

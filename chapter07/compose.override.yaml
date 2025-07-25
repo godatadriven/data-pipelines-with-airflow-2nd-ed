@@ -1,24 +1,30 @@
 x-airflow-common:
   &airflow-common
   environment:
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
-    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL : 60
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__TEST_CONNECTION: "Enabled"
+    AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 60
+    AIRFLOW__API_AUTH__JWT_SECRET: foo
+    AIRFLOW__WEBSERVER__SECRET_KEY: bar
     # Dag specific connection setup
     AWS_REGION: ${AWS_REGION}
     MNIST_BUCKET: ${MNIST_BUCKET}
     SAGEMAKER_EXEC_ROLE_ARN: ${SAGEMAKER_EXEC_ROLE_ARN}
     AIRFLOW_CONN_INSIDE_AIRBNB: postgres://insideairbnb:insideairbnb@insideairbnb:5432/insideairbnb
-    AIRFLOW_CONN_LOCALS3: s3://secretaccess:secretkey@?endpoint_url=http%3A%2F%2Flocals3%3A9000
+    AIRFLOW_CONN_LOCALS3: aws://secretaccess:secretkey@?endpoint_url=http%3A%2F%2Flocals3%3A9000
     AIRFLOW_CONN_AWS_DEFAULT: aws://${AWS_ACCESS_KEY_ID}:${ENCODED_AWS_SECRET_ACCESS_KEY}@/?region_name=${AWS_REGION}
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
+    - ./dependencies:/dependencies
 
 services:
-  airflow-webserver:
+  airflow-apiserver:
     <<: *airflow-common
 
   airflow-scheduler:
+    <<: *airflow-common
+
+  airflow-dag-processor:
     <<: *airflow-common
 
   airflow-worker:
@@ -48,6 +54,7 @@ services:
       retries: 5
     volumes:
       - ./scripts/postgres-init.sh:/docker-entrypoint-initdb.d/postgres-init.sh
+      - ./data/insideairbnb:/data/insideairbnb
       - postgres-data-db-volume:/var/lib/postgresql/data
 
   locals3:

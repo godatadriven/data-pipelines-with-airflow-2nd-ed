@@ -1,5 +1,5 @@
 import pendulum
-from airflow import DAG
+from airflow.sdk import DAG
 
 with DAG(
     dag_id="02_download_rocket_launches",

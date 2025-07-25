@@ -1,7 +1,6 @@
 """Module containing file system sensors."""
 
-from airflow.sensors.base import BaseSensorOperator
-from airflow.utils.decorators import apply_defaults
+from airflow.sdk import BaseSensorOperator
 from airflow.utils.context import Context
 
 from custom.hooks import MovielensHook
@@ -21,7 +20,6 @@ class MovielensRatingsSensor(BaseSensorOperator):
 
     template_fields = ("_start_date", "_end_date")
 
-    @apply_defaults
     def __init__(
         self, 
         conn_id:str, 

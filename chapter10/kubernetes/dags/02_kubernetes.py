@@ -1,8 +1,9 @@
 import os
 from datetime import datetime
 
-from airflow import DAG
-from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from airflow.sdk import DAG
+from airflow.timetables.interval import CronDataIntervalTimetable
 from kubernetes.client import models as k8s
 
 with DAG(
@@ -10,7 +11,8 @@ with DAG(
     description="Fetches ratings from the Movielens API using kubernetes.",
     start_date=datetime(2023, 1, 1),
     end_date=datetime(2023, 1, 3),
-    schedule="@daily",
+    schedule=CronDataIntervalTimetable("@daily", "UTC"),
+    catchup=True,
     default_args={"depends_on_past": True},
     max_active_runs=1,
 ) as dag:
@@ -25,11 +27,11 @@ with DAG(
         cmds=["fetch-ratings"],
         arguments=[
             "--start_date",
-            "{{data_interval_start | ds}}",
+            "{{ data_interval_start | ds }}",
             "--end_date",
-            "{{data_interval_end | ds}}",
+            "{{ data_interval_end | ds }}",
             "--output_path",
-            "/data/ratings/{{data_interval_start | ds}}.json",
+            "/data/ratings/{{ data_interval_start | ds }}.json",
             "--user",
             os.environ["MOVIELENS_USER"],
             "--password",
@@ -53,9 +55,9 @@ with DAG(
         cmds=["rank-movies"],
         arguments=[
             "--input_path",
-            "/data/ratings/{{data_interval_start | ds}}.json",
+            "/data/ratings/{{ data_interval_start | ds }}.json",
             "--output_path",
-            "/data/rankings/{{data_interval_start | ds}}.csv",
+            "/data/rankings/{{ data_interval_start | ds }}.csv",
         ],
         namespace="airflow",
         name="rank-movies",

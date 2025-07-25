@@ -1,7 +1,7 @@
 import logging
 
-from airflow.models import BaseOperator
-from airflow.utils.decorators import apply_defaults
+from airflow.sdk import BaseOperator
+from airflow.utils.context import Context
 
 
 class PandasOperator(BaseOperator):
@@ -11,7 +11,6 @@ class PandasOperator(BaseOperator):
         "_output_callable_kwargs",
     )
 
-    @apply_defaults
     def __init__(
         self,
         input_callable,
@@ -36,7 +35,7 @@ class PandasOperator(BaseOperator):
         self._output_callable = output_callable
         self._output_callable_kwargs = output_callable_kwargs or {}
 
-    def execute(self, context):
+    def execute(self, context:Context):
         df = self._input_callable(**self._input_callable_kwargs)
         logging.info("Read DataFrame with shape: %s.", df.shape)
 

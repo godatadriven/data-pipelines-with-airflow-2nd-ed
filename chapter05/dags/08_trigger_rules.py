@@ -2,21 +2,23 @@
 Figure: 5.14, 5.15
 """
 
+
 import pendulum
-from airflow import DAG
-from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.timetables.interval import CronDataIntervalTimetable
 
 
 def _fetch_sales(**context):
     if context["data_interval_start"] > pendulum.today("UTC").add(days=-2):
         raise Exception("Something when wrong")
 
-
 with DAG(
     dag_id="08_trigger_rules",
     start_date=pendulum.today("UTC").add(days=-3),
-    schedule="@daily",
+    schedule=CronDataIntervalTimetable("@daily", "UTC"),
+    catchup=True,
 ):
     start = EmptyOperator(task_id="start")
 

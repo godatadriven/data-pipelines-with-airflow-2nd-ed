@@ -3,8 +3,9 @@ import json
 import logging
 import os
 
-from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.timetables.interval import CronDataIntervalTimetable
 from custom.hooks import MovielensHook
 
 with DAG(
@@ -12,7 +13,8 @@ with DAG(
     description="Fetches ratings from the Movielens API using a custom hook.",
     start_date=datetime(2023, 1, 1),
     end_date=datetime(2023, 1, 10),
-    schedule="@daily",
+    schedule=CronDataIntervalTimetable("@daily", "UTC"),
+    catchup=True,
 ):
 
     def _fetch_ratings(conn_id:str, templates_dict:dict, batch_size:int=1000, **_):

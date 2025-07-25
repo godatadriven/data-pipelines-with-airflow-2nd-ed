@@ -7,11 +7,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-apache-airflow = {extras = ["postgres"], version = "^2.10.2"}
+apache-airflow = { extras = ["postgres"], version = "^3.0.3" }
 pre-commit = "^3.5.0"
 pandas = "^2.2.3"
 apache-airflow-providers-postgres = "^5.13.0"
-
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.27.1"
@@ -19,7 +18,6 @@ ipykernel = "^6.27.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
 
 [tool.ruff]
 line-length = 110
@@ -35,3 +33,7 @@ line-length = 110
 [tool.isort]
 line_length = 110
 profile = "black"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"

@@ -63,7 +63,7 @@ chalice local --port 8000
 
 ## Executing the airflow test commands
 
-To execute the airflow test commands form the book we need a local environment with the correct python packages
+To execute the airflow test commands from the book we need a local environment with the correct python packages
 
 ```sh
 python3 -m venv .airflowlocal
