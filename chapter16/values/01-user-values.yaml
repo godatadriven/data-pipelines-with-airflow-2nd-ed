@@ -1,5 +1,8 @@
 # Override default values in the Apache Airflow Helm Chart
 #
+defaultAirflowTag: "3.0.3"
+airflowVersion: "3.0.3"
+
 # 1 - Overriding the default user
 webserver:
   # Create initial user.
