@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
+
 from airflow.sdk import DAG
 from airflow.timetables.interval import CronDataIntervalTimetable
-
 from custom.operators import MovielensFetchRatingsOperator
 from custom.triggers import MovielensSensorAsync
 
