@@ -7,7 +7,6 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.sdk import BaseOperator
 from airflow.utils.context import Context
 from minio import Minio
-from sqlalchemy import create_engine
 
 
 class MinioPandasToPostgres(BaseOperator):
@@ -55,8 +54,8 @@ class MinioPandasToPostgres(BaseOperator):
         df["airflow_execution_date"] = pd.Timestamp(context["data_interval_start"].timestamp(), unit="s")
         logging.info("Read DataFrame with shape: %s.", df.shape)
 
-        engine = create_engine(PostgresHook(postgres_conn_id=self._postgres_conn_id).get_uri())
-        with engine.begin() as conn:
+        engine = PostgresHook(postgres_conn_id=self._postgres_conn_id).get_sqlalchemy_engine()
+        with engine.connect() as conn:
             conn.execute(
                 f"DELETE FROM {self._postgres_table} "
                 f"WHERE airflow_execution_date='{context['data_interval_start']}';"

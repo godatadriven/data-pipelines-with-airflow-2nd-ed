@@ -39,7 +39,7 @@ You can test if the API is running properly using:
 kubectl -n airflow port-forward --address 0.0.0.0 svc/movielens 8081:8081
 ```
 
-and opening http://localhost:5557 in the browser (this should show a hello world page from the API).
+and opening http://localhost:8081 in the browser (this should show a hello world page from the API).
 
 Once this initial setup is complete, you should be able to run the Kubernetes DAG from within Airflow
 

@@ -24,7 +24,7 @@ openssl req \
 ## Usage
 
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 Log in to the secure website https://localhost:8080

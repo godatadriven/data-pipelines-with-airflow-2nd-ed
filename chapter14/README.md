@@ -1,10 +1,10 @@
-# Chapter 12
+# Chapter 14
 
-Code accompanying Chapter 12 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
+Code accompanying Chapter 14 of the book [Data Pipelines with Apache Airflow](https://www.manning.com/books/data-pipelines-with-apache-airflow).
 
 ## Contents
 
-This folder contains DAGs from Chapter 12. Topics covered are monitoring, logging, scaling horizontal, etc. An
+This folder contains DAGs from Chapter 14. Topics covered are monitoring, logging, scaling horizontal, etc. An
 accompanying Docker Compose setup was built for demonstration purposes. This includes:
 
 - Airflow (webserver, scheduler, and Celery workers)
@@ -25,7 +25,7 @@ Prometheus as a datasource and create a dashboard yourself.
 To get started with the code examples, start Airflow with Docker Compose with the following command:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 The webserver initializes a few things, so wait for a few seconds, and you should be able to access the
@@ -34,5 +34,5 @@ Airflow webserver at http://localhost:8080.
 To stop running the examples, run the following command:
 
 ```bash
-docker-compose down -v
+docker compose down -v
 ```

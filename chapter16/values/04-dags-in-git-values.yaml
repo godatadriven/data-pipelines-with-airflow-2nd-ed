@@ -1,5 +1,8 @@
 # Override default values in the Apache Airflow Helm Chart
 #
+defaultAirflowTag: "3.0.3"
+airflowVersion: "3.0.3"
+
 # 4 - Dags in git repository
 dags:
   persistence:
@@ -29,8 +32,9 @@ postgres:
 data:
   metadataSecretName: mydatabase
 
-# 2 - Overriding the webserver secret reference
-webserverSecretKeySecretName: my-webserver-secret
+# 2 - Overriding the api secret reference
+apiSecretKeySecretName: my-apiserver-secret
+webserverSecretKeySecretName: my-apiserver-secret
 
 # 1 - Overriding the default user since we use a different database
 webserver:
