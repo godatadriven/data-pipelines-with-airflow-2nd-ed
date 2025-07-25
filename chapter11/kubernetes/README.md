@@ -1,10 +1,10 @@
-# Chapter 10 - Kubernetes
+# Chapter 11 - Kubernetes
 
-Code accompanying the Kubernetes part of Chapter 10 from the book 'Data pipelines with Apache Airflow'.
+Code accompanying the Kubernetes part of Chapter 11 from the book 'Data pipelines with Apache Airflow'.
 
 ## Contents
 
-This directory contains the Kubernetes equivalent of the recommender system demonstrated in the chapter10_1_docker example.
+This directory contains the Kubernetes equivalent of the recommender system demonstrated in the chapter11_1_docker example.
 
 ### Usage
 

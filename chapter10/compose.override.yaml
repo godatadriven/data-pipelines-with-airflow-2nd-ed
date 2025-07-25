@@ -6,14 +6,7 @@ x-airflow-common:
     AIRFLOW__CORE__TEST_CONNECTION: "Enabled"
     AIRFLOW__API_AUTH__JWT_SECRET: foo
     AIRFLOW__WEBSERVER__SECRET_KEY: bar
-    # Movielens settings.
-    AIRFLOW_CONN_MOVIELENS: http://airflow:airflow@movielens
-    MOVIELENS_USER: airflow
-    MOVIELENS_PASSWORD: airflow
-    MOVIELENS_HOST: http://movielens:8081
-
   volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
     - airflow-data-volume:/data
 
 services:
@@ -59,28 +52,6 @@ services:
         exec /entrypoint airflow version
     # yamllint enable rule:line-length
     user: "0:0"
-
-  movielens:
-    build: ../../chapter08/docker/movielens-api
-    image: manning-airflow/movielens-api
-    ports:
-      - "8081:8081"
-    environment:
-      API_USER: airflow
-      API_PASSWORD: airflow
-
-  # These aren't actual services, but we include them to make sure that the
-  # corresponding images are built by when pulling up docker-compose.
-  movielens-fetch:
-    build:
-      context: images/movielens-fetch
-    image: manning-airflow/movielens-fetch
-    restart: "no"
-  movielens-rank:
-    build:
-      context: images/movielens-rank
-    image: manning-airflow/movielens-rank
-    restart: "no"
 
 volumes:
   airflow-data-volume:

@@ -1,6 +1,6 @@
-# Chapter 10 - Docker
+# Chapter 11 - Docker
 
-Code accompanying the Docker part of Chapter 10 from the book 'Data pipelines with Apache Airflow'.
+Code accompanying the Docker part of Chapter 11 from the book 'Data pipelines with Apache Airflow'.
 
 ## Contents
 

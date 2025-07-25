@@ -13,7 +13,7 @@ function publish_local_images() {
     echo "==============================================="
     echo "== Build local movielens api image           =="
     echo "==============================================="
-    docker build -t manning-airflow/movielens-api:k8s -f ../../chapter08/docker/movielens-api/Dockerfile ../../chapter08/docker/movielens-api
+    docker build -t manning-airflow/movielens-api:k8s -f ../../chapter09/docker/movielens-api/Dockerfile ../../chapter09/docker/movielens-api
     echo "==============================================="
     echo "== Build local movielens fetch image         =="
     echo "==============================================="
