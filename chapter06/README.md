@@ -31,6 +31,6 @@ To run the Kafka example DAG:
    ```
 3. Run the CLI producer:
    ```bash
-   ./opt/kafka/bin/kafka-console-producer --topic events --bootstrap-server localhost:9092
+   /opt/kafka/bin/kafka-console-producer.sh --topic events --bootstrap-server localhost:9092
    ```
    Send a message when `>` appears. This will trigger the `12_kafka_trigger` DAG to run.
