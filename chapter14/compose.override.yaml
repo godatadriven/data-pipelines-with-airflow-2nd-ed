@@ -1,0 +1,134 @@
+x-airflow-common: &airflow-common
+  environment:
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__TEST_CONNECTION: "Enabled"
+    AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 60
+    AIRFLOW__API_AUTH__JWT_SECRET: foo
+    AIRFLOW__API__SECRET_KEY: bar
+    AIRFLOW_CONN_MINIO: aws://${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}@?endpoint_url=http%3A%2F%2Fminio%3A${MINIO_API_PORT}
+    AIRFLOW_CONN_WEAVIATE_DEFAULT: '{ "conn_type": "weaviate", "host": "weaviate", "port": "${WEAVIATE_HOST_PORT_REST}", "extra": { "OPENAI_CONN_TYPE":"${OPENAI_CONN_TYPE}",  "grpc_host": "weaviate", "grpc_port": "${WEAVIATE_HOST_PORT_GRPC}","additional_headers" : { "OPENAI_API_KEY": "${AZURE_OPENAI_API_KEY}","AZURE_OPENAI_RESOURCE_NAME": "${AZURE_OPENAI_RESOURCE_NAME}","AZURE_OPENAI_ENDPOINT": "${AZURE_OPENAI_ENDPOINT}"}}}'
+  volumes:
+    - airflow-data-volume:/data
+
+services:
+  airflow-apiserver:
+    <<: *airflow-common
+
+  airflow-scheduler:
+    <<: *airflow-common
+
+  airflow-worker:
+    <<: *airflow-common
+
+  airflow-triggerer:
+    <<: *airflow-common
+
+  airflow-init:
+    <<: *airflow-common
+
+  airflow-cli:
+    <<: *airflow-common
+
+  airflow-dag-processor:
+    <<: *airflow-common
+
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.27.0
+    restart: on-failure:0
+    ports:
+     - ${WEAVIATE_HOST_PORT_REST}:${WEAVIATE_HOST_PORT_REST}
+     - ${WEAVIATE_HOST_PORT_GRPC}:${WEAVIATE_HOST_PORT_GRPC}
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      CLUSTER_HOSTNAME: 'node1'
+      BACKUP_FILESYSTEM_PATH: '/var/lib/weaviate/backup'
+      ENABLE_API_BASED_MODULES: 'true'
+    command:
+      - --host
+      - 0.0.0.0
+      - --port
+      - ${WEAVIATE_HOST_PORT_REST}
+      - --scheme
+      - http
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+
+
+  docker-socket-proxy:
+    image: alpine/socat
+    command: "TCP4-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock"
+    ports:
+      - "2376:2375"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  vectorvault_cli:
+    build: 
+      context: ./vectorvault
+      dockerfile: Dockerfile.cli
+    image: vectorvault_cli:latest
+    environment:
+      - AWS_ENDPOINT_URL_S3="http://localhost:${MINIO_API_PORT}"
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - OPENAI_CONN_TYPE=${OPENAI_CONN_TYPE}
+
+
+  vectorvault_chat:
+    build: 
+      context: ./vectorvault
+      dockerfile: Dockerfile.chat
+    image: vectorvault_chat:latest
+    ports:
+      - "${STREAMLIT_HOST_PORT}:${STREAMLIT_HOST_PORT}"
+    environment:
+      - AWS_ENDPOINT_URL_S3="http://localhost:${MINIO_API_PORT}"
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - WEAVIATE_HOST_PORT_REST=${WEAVIATE_HOST_PORT_REST}
+      - WEAVIATE_HOST_PORT_GRPC=${WEAVIATE_HOST_PORT_GRPC}
+      - OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_RESOURCE_NAME=${AZURE_OPENAI_RESOURCE_NAME}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - OPENAI_CONN_TYPE=${OPENAI_CONN_TYPE}
+      - STREAMLIT_HOST_PORT=${STREAMLIT_HOST_PORT}
+
+
+  minio:
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    volumes:
+      - minio:/data
+    ports:
+      - "${MINIO_API_PORT}:${MINIO_API_PORT}"
+      - "${MINIO_UI_PORT}:${MINIO_UI_PORT}"
+    command: server /data --address :${MINIO_API_PORT} --console-address ":${MINIO_UI_PORT}"
+    environment:
+      MINIO_ROOT_USER: airflow
+      MINIO_ROOT_PASSWORD: apacheairflow
+
+  minio_init:
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      while ! /usr/bin/mc config host add minio http://minio:${MINIO_API_PORT} ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY}; do echo 'MinIO not up and running yet...' && sleep 1; done;
+      echo 'Added mc host config.';
+      /usr/bin/mc mb minio/data || true;
+      exit 0;
+      "
+    restart: "on-failure"
+
+networks:
+  minionetwork:
+    driver: bridge
+
+volumes:
+  airflow-data-volume:
+  minio_data:
+    driver: local
+  minio:
+  weaviate_data:
+    driver: local
