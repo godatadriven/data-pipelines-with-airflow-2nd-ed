@@ -9,7 +9,7 @@ from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.timetables.trigger import CronTriggerTimetable
 
 with DAG(
-    dag_id="18_with_dag_run_configuration",
+    dag_id="10_with_dag_run_configuration",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule=CronTriggerTimetable("0 16 * * *", timezone="UTC"),
     description="A batch workflow for ingesting supermarket promotions data, demonstrating the PythonSensor.",

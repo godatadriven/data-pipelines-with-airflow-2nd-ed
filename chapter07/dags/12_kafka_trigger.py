@@ -5,16 +5,12 @@
 from airflow.sdk import DAG, AssetWatcher, Asset
 from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.providers.common.messaging.triggers.msg_queue import MessageQueueTrigger
-from airflow.timetables.trigger import CronTriggerTimetable
 
 trigger = MessageQueueTrigger(
     queue="kafka://kafka:9092/events",
-    apply_function="12_kafka_trigger.apply_function",
+    apply_function="custom.kafka_util.apply_function",
 )
 
-def apply_function(message):
-    print(f"Value in message is {message.value()}")
-    return True
 
 asset = Asset("kafka_queue_asset", watchers=[AssetWatcher(name="kafka_watcher", trigger=trigger)])
 
