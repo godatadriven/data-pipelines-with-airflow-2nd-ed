@@ -5,12 +5,15 @@ x-airflow-common:
     AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
     AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 60
     AIRFLOW__API_AUTH__JWT_SECRET: foo
-    AIRFLOW__WEBSERVER__SECRET_KEY: bar
+    AIRFLOW__API__SECRET_KEY: bar
     # Dag specific connection setup
     AIRFLOW_CONN_MOVIELENS: http://airflow:airflow@movielens
     MOVIELENS_USER: airflow
     MOVIELENS_PASSWORD: airflow
   volumes:
+    - ./src:/opt/airflow/custom/src
+    - ./setup.py:/opt/airflow/custom/setup.py
+    - build:/opt/airflow/custom/build
     - airflow-data-volume:/data
 
 services:
@@ -67,3 +70,4 @@ services:
 
 volumes:
   airflow-data-volume:
+  build:

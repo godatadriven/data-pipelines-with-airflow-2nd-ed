@@ -23,7 +23,7 @@ x-airflow-common:
     AIRFLOW__METRICS__STATSD_PORT: 9125
     AIRFLOW__METRICS__STATSD_PREFIX: 'airflow'
     AIRFLOW__API_AUTH__JWT_SECRET: foo
-    AIRFLOW__WEBSERVER__SECRET_KEY: bar
+    AIRFLOW__API__SECRET_KEY: bar
     AIRFLOW__EDGE__API_URL: 'http://airflow-apiserver:8080/edge_worker/v1/rpcapi'
     AIRFLOW__EDGE__API_ENABLED: "true"
     AIRFLOW__CORE__INTERNAL_API_SECRET_KEY: foo
@@ -146,7 +146,6 @@ services:
     ports:
       - 1080:1080
       - 2525:2525
-
 
 volumes:
   airflow-data-volume:
