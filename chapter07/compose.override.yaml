@@ -18,6 +18,9 @@ x-airflow-common:
       }
     }'
   volumes:
+    - ./src:/opt/airflow/custom/src
+    - ./setup.py:/opt/airflow/custom/setup.py
+    - build:/opt/airflow/custom/build
     - airflow-data-volume:/data
 
 
@@ -103,4 +106,5 @@ services:
 
 volumes:
   airflow-data-volume:
+  build:
 
