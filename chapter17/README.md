@@ -54,14 +54,19 @@ You can verify that the Admin user is changed by logging in http://localhost:808
 
 ### 02 - Providing the webserver secret
 
-In values/02-webserversecret-values.yaml we provide our own secret to prevent the deployment warning about using a non-static secret.
+In values/02-apiserversecret-values.yaml we provide our own secret to prevent the deployment warning about using a non-static secret.
 
+```bash
+kubectl create secret generic my-apiserver-secret --namespace airflow --from-literal="api-secret-key=$(python3 -c 'import secrets; print(secrets.token_hex(16))')"
+```
+
+for now in helm chart version 1.18 also the webserver secret is still needed.
 ```bash
 kubectl create secret generic my-webserver-secret --namespace airflow --from-literal="webserver-secret-key=$(python3 -c 'import secrets; print(secrets.token_hex(16))')"
 ```
 
 ```bash
-helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/02-webserversecret-values.yaml
+helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace --set apiServer.service.type=LoadBalancer -f /etc/helm/values/02-apiserversecret-values.yaml
 ```
 
 ### 03 - Using an external database
