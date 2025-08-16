@@ -21,7 +21,6 @@ COLLECTION_NAME = "recipes"
 
 common_dag_args = {
     "image":"vectorvault_cli:latest",
-    "docker_url":"tcp://docker-socket-proxy:2375",
     "network_mode":"chapter14_default",
     "environment":ENVIRONMENT,
     "auto_remove":"success",

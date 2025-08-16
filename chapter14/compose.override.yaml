@@ -9,6 +9,9 @@ x-airflow-common: &airflow-common
     AIRFLOW_CONN_WEAVIATE_DEFAULT: '{ "conn_type": "weaviate", "host": "weaviate", "port": "${WEAVIATE_HOST_PORT_REST}", "extra": { "OPENAI_CONN_TYPE":"${OPENAI_CONN_TYPE}",  "grpc_host": "weaviate", "grpc_port": "${WEAVIATE_HOST_PORT_GRPC}","additional_headers" : { "OPENAI_API_KEY": "${AZURE_OPENAI_API_KEY}","AZURE_OPENAI_RESOURCE_NAME": "${AZURE_OPENAI_RESOURCE_NAME}","AZURE_OPENAI_ENDPOINT": "${AZURE_OPENAI_ENDPOINT}"}}}'
   volumes:
     - airflow-data-volume:/data
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+  networks:
+    - default
 
 services:
   airflow-apiserver:
@@ -54,15 +57,6 @@ services:
       - http
     volumes:
       - weaviate_data:/var/lib/weaviate
-
-
-  docker-socket-proxy:
-    image: alpine/socat
-    command: "TCP4-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock"
-    ports:
-      - "2376:2375"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
 
   vectorvault_cli:
     build: 
@@ -114,14 +108,19 @@ services:
       - minio
     entrypoint: >
       /bin/sh -c "
-      while ! /usr/bin/mc config host add minio http://minio:${MINIO_API_PORT} ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY}; do echo 'MinIO not up and running yet...' && sleep 1; done;
+      while ! /usr/bin/mc config host add minio http://minio:${MINIO_API_PORT} airflow apacheairflow; do echo 'MinIO not up and running yet...' && sleep 1; done;
       echo 'Added mc host config.';
       /usr/bin/mc mb minio/data || true;
+      /usr/bin/mc admin user add minio ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY};
+      /usr/bin/mc admin policy attach minio readwrite --user ${AWS_ACCESS_KEY_ID};
+      echo 'Created access key: ${AWS_ACCESS_KEY_ID}';
       exit 0;
       "
     restart: "on-failure"
 
 networks:
+  default:
+    driver: bridge
   minionetwork:
     driver: bridge
 

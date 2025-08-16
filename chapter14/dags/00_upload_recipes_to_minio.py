@@ -15,7 +15,6 @@ with DAG(
         task_id="upload_recipes_to_minio",
         command="upload {{data_interval_start | ds}}",
         image="vectorvault_cli:latest",
-        docker_url="tcp://docker-socket-proxy:2375",
         network_mode="chapter14_default",
         environment={
                 "AWS_ENDPOINT_URL_S3":"{{ conn.minio.extra_dejson.get('endpoint_url') }}",
