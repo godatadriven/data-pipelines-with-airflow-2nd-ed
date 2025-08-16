@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 import pendulum
 
-from airflow import DAG
+from airflow.sdk import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.timetables.trigger import CronTriggerTimetable
 

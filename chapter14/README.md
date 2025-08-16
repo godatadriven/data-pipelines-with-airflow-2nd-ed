@@ -3,17 +3,17 @@ Run Instructions
 # Run Instructions
 
 0) Get into the project directory
-    `cd chapter13_genai`
+    `cd chapter14`
 
 
 1) Run the Docker compose file
-    `docker-compose up`
+    `docker compose up -d`
 
 2) Once MinIO is running, you can access the MinIO web interface at `http://localhost:8083` with the following credentials:
     - Access Key: `airflow`
     - Pass: `apacheairflow`
 
-3) Copy all the contents of the `.env.template` file in the root of the chapter folder to the `.env` file
+3) Copy the contents of the `.env.template` file located in the chapter folder into a new file named `.env`.
 
 4) Create an access key in MinIO UI and update the `.env` file in this repo on the following variables
     ```
@@ -40,15 +40,6 @@ Run Instructions
         AZURE_OPENAI_ENDPOINT=https://project-openai-nl.openai.azure.com/
         ```
 6) Stop docker-compose (ctrl+c) and run it again to apply the changes
-    `docker-compose up --build`
+    `docker compose up  -d --build`
 
 7) Run the DAG in Airflow
-
-
-Todo:
-[] Test OpenAI api mode works 
-[] Fix chat to accept Azure or OpenAI API
-[] add json parsing to the recipe in the chat app
-[] can i pass env vars in a more elegant way?
-[] add user to the collection so we can have tenent isolation
-[] Fix and improve chat UI
