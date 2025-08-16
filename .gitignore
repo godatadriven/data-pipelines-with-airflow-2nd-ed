@@ -151,3 +151,4 @@ config/airflow.cfg
 
 # Mac
 .DS_Store
+**/airflow.cfg
