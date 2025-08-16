@@ -1,3 +1,8 @@
+# Local Development Commands
+
+**Note:** These commands are intended for local development. The `vectorvault_chat` service is already defined in `compose.override.yaml`.
+
+
 1) For Dockerfile.cli
 
 docker build -t cli -f Dockerfile.cli .
