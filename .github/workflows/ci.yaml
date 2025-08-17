@@ -26,7 +26,7 @@ jobs:
         run: pip install flake8
       - name: Run Flake8
         run: flake8
-        working-directory: chapter09/dags
+        working-directory: chapter10/dags
 
 #      - name: Install Pylint
 #        run: pip install pylint
@@ -38,8 +38,57 @@ jobs:
         run: pip install black
       - name: Run Black
         run: find . -name "*.py" | xargs black --check
-        working-directory: chapter09/dags
+        working-directory: chapter10/dags
 
       - name: Test DAG integrity
         run: pytest tests/
-        working-directory: chapter09/
+        working-directory: chapter10/
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: run shellcheck
+        uses: sudo-bot/action-shellcheck@latest
+        with:
+          # https://github.com/koalaman/shellcheck#how-to-use
+          cli-args: "-x validate-dag-runs.sh"
+
+  validate-chapters-no-failures:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        chapter:
+          - chapter01
+          - chapter02
+          - chapter03
+          - chapter04
+          - chapter05
+          - chapter06
+          - chapter07
+          # - chapter08
+          - chapter09
+          # - chapter10
+          - chapter11/docker
+          - chapter11/kubernetes
+          - chapter12
+          - chapter13
+          - chapter14
+          # - chapter15
+          - chapter16/01-rbac
+          - chapter16/02-webserver-theme
+          - chapter16/03-ldap
+          - chapter16/04-ssl
+          - chapter16/05-secretsbackend
+          # - chapter17
+    #     airflow_version: ["3.0.5rc2"]
+    # env:
+    #   AIRFLOW_VERSION: ${{ matrix.airflow_version }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run CI ${{ matrix.chapter }}
+        run: |
+          echo Run Ci for chapter ${{ matrix.chapter }}
+          ./validate-dag-runs.sh ${{ matrix.chapter }}

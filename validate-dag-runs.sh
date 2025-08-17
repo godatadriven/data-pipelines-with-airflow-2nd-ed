@@ -137,6 +137,7 @@ start() {
         echo "Found dag_id(s): ${DAG_IDS} in dag files."
       fi
     fi
+    # shellcheck source=chapter01/.env
     set -o allexport && source "${CHAPTER}"/.env && set +o allexport
 
     docker compose -f "${CHAPTER}/compose.yaml" -f "${CHAPTER}/compose.override.yaml" up -d --build --force-recreate
