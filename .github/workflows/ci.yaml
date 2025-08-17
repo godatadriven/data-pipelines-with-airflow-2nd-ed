@@ -91,4 +91,4 @@ jobs:
       - name: Run CI ${{ matrix.chapter }}
         run: |
           echo Run Ci for chapter ${{ matrix.chapter }}
-          ./validate-dag-runs.sh ${{ matrix.chapter }}
+          ./validate-dag-runs.sh -c ${{ matrix.chapter }}
