@@ -1,7 +1,7 @@
 # Override default values in the Apache Airflow Helm Chart
 #
-defaultAirflowTag: "3.0.5rc2"
-airflowVersion: "3.0.5rc2"
+defaultAirflowTag: "3.0.6"
+airflowVersion: "3.0.6"
 
 # 4 - Dags in git repository
 dags:

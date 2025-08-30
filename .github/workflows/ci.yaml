@@ -67,7 +67,7 @@ jobs:
           - chapter04
           - chapter05
           - chapter06
-          - chapter07
+          # - chapter07 # Temporary ignore since sensors are not triggered and ci run will never finish
           # - chapter08
           - chapter09
           # - chapter10
@@ -83,7 +83,7 @@ jobs:
           - chapter16/04-ssl
           - chapter16/05-secretsbackend
           # - chapter17
-    #     airflow_version: ["3.0.5rc2"]
+    #     airflow_version: ["3.0.6"]
     # env:
     #   AIRFLOW_VERSION: ${{ matrix.airflow_version }}
     steps:

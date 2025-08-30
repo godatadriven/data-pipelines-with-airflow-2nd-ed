@@ -54,7 +54,7 @@ To enable validating all dags of all chapters in a CI setting the script `valida
 
 - Add script to update airflow version in envs, dockerfiles etc
 ```bash
-sed -i 's/\"3\.0\.3\"/\"3.0.5rc2\"/g' chapter17/values/*.yaml
-sed -i 's/apache\/airflow:3\.0\.3/apache\/airflow:3.0.5rc2/g' chapter*/**/.env
-sed -i 's/apache\/airflow:3\.0\.3/apache\/airflow:3.0.5rc2/g' chapter*/Docker.*
+sed -i -e 's/\"3\.0\.5rc2\"/\"3.0.6\"/g' chapter17/values/*.yaml
+sed -i -e 's/apache\/airflow:3\.0\.5rc2/apache\/airflow:3.0.6/g' chapter*/.env
+sed -i -e 's/apache\/airflow:3\.0\.5rc2/apache\/airflow:3.0.6/g' chapter*/Dockerfile.*
 ```
