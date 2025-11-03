@@ -5,11 +5,12 @@ import pendulum
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG, Asset
 
-events_dataset = Asset("/data/09_data_aware/events")
+events_dataset = Asset("file:///data/events_02")
 
 
-def _calculate_stats(input_path, output_path):
+def _calculate_stats(input_path, output_path, triggering_asset_events):
     """Calculates event statistics."""
+
     events = pd.read_json(input_path, convert_dates=["timestamp"], lines=True)
 
     stats = (
@@ -21,17 +22,15 @@ def _calculate_stats(input_path, output_path):
 
 
 with DAG(
-    dag_id="09a_data_aware_consumer",
+    dag_id="02b_metadata_consumer",
     schedule=[events_dataset],
-    start_date=pendulum.datetime(year=2024, month=1, day=1),
+    start_date=pendulum.yesterday(),
 ):
     calculate_stats = PythonOperator(
         task_id="calculate_stats",
         python_callable=_calculate_stats,
         op_kwargs={
-            "input_path": "/data/09_data_aware/events/{{ (triggering_dataset_events.values() | first | first).source_dag_run.data_interval_start | ds }}.json",
-            "output_path": "/data/09_data_aware/stats/{{ (triggering_dataset_events.values() | first | first).source_dag_run.data_interval_start | ds }}.csv",
+            "input_path": "/data/events_02/{{ (triggering_asset_events.values() | first | first).extra.date }}.json",
+            "output_path": "/data/stats_02/{{ (triggering_asset_events.values() | first | first).extra.date }}.csv",
         },
     )
-
-    calculate_stats
