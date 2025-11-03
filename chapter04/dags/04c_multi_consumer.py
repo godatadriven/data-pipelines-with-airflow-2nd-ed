@@ -38,9 +38,9 @@ with DAG(
         python_callable=_calculate_stats,
         op_kwargs={
             "input_paths": [
-                "/data/events_04_1/{{ _get_event(triggering_asset_events, '/data/events_03_1').extra.date }}.json",
-                "/data/events_04_2/{{ _get_event(triggering_asset_events, '/data/events_03_2').extra.date }}.json",
+                "/data/events_04_1/{{ get_event(triggering_asset_events, 'file:///data/events_04_1').extra.date }}.json",
+                "/data/events_04_2/{{ get_event(triggering_asset_events, 'file:///data/events_04_2').extra.date }}.json",
             ],
-            "output_path": "/data/stats_04/{{ _get_event(triggering_asset_events, '/data/events_03_1').extra.date }}.csv",
+            "output_path": "/data/stats_04/{{ get_event(triggering_asset_events, 'file:///data/events_04_1').extra.date }}.csv",
         },
     )

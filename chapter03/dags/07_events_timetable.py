@@ -24,8 +24,8 @@ def _calculate_stats(input_path, output_path):
 public_holidays = EventsTimetable(
     event_dates=[
         pendulum.datetime(year=2024, month=1, day=1),
-        pendulum.datetime(2024, 3, 31),
-        pendulum.datetime(2024, 5, 2),
+        pendulum.datetime(year=2024, month=3, day=31),
+        pendulum.datetime(year=2024, month=5, day=2),
     ],
     restrict_to_events=True,
 )

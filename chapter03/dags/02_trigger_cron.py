@@ -22,7 +22,7 @@ def _calculate_stats(input_path, output_path):
 
 
 with DAG(
-    dag_id="02_daily_schedule",
+    dag_id="02_trigger_cron",
     start_date=pendulum.datetime(year=2024, month=1, day=1),
     end_date=pendulum.datetime(year=2024, month=1, day=5),
     schedule=CronTriggerTimetable("0 0 * * *", timezone="UTC"),
@@ -31,8 +31,8 @@ with DAG(
     fetch_events = BashOperator(
         task_id="fetch_events",
         bash_command=(
-            "mkdir -p /data/02_daily_schedule/events && "
-            "curl -o /data/02_daily_schedule/events/{{ logical_date | ds }}.json "
+            "mkdir -p /data/02_trigger_cron/events && "
+            "curl -o /data/02_trigger_cron/events/{{ logical_date | ds }}.json "
             "http://events-api:8081/events/latest"
         ),
     )
@@ -41,8 +41,8 @@ with DAG(
         task_id="calculate_stats",
         python_callable=_calculate_stats,
         op_kwargs={
-            "input_path": "/data/02_daily_schedule/events/{{ logical_date | ds}}.json",
-            "output_path": "/data/02_daily_schedule/stats/{{ logical_date | ds}}.csv",
+            "input_path": "/data/02_trigger_cron/events/{{ logical_date | ds}}.json",
+            "output_path": "/data/02_trigger_cron/stats/{{ logical_date | ds}}.csv",
         },
     )
 

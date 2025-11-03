@@ -145,6 +145,7 @@ private/
 data
 logs
 config/airflow.cfg
+plugins
 
 # Pyenv
 .python-version
